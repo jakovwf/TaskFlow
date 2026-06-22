@@ -6,61 +6,257 @@ datasource db {
   provider = "postgresql"
 }
 
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  DONE
+enum WorkspaceMemberRole {
+  OWNER
+  MEMBER
+}
+
+enum BoardMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum NotificationType {
+  BOARD_INVITE
+  CARD_ASSIGNED
+  CARD_MOVED
+  COMMENT_ADDED
+  MEMBER_JOINED
+  BOARD_UPDATED
+}
+
+enum ActivityType {
+  CARD_CREATED
+  CARD_MOVED
+  CARD_UPDATED
+  CARD_DELETED
+  CARD_ASSIGNED
+  CARD_UNASSIGNED
+  COMMENT_ADDED
+  COMMENT_DELETED
+  LIST_CREATED
+  LIST_RENAMED
+  LIST_DELETED
+  MEMBER_INVITED
+  MEMBER_JOINED
+  MEMBER_REMOVED
+  BOARD_UPDATED
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+
+  ownedWorkspaces      Workspace[]        @relation("WorkspaceOwner")
+  workspaceMemberships WorkspaceMember[]
+  boardMemberships     BoardMember[]
+  sentInvites          BoardInvite[]      @relation("InviteSender")
+  cardAssignments      CardMember[]
+  comments             Comment[]
+  attachments          Attachment[]
+  activities           Activity[]
+  notifications        Notification[]
+  pushSubscriptions    PushSubscription[]
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  projects Project[]
-  comments Comment[]
+  owner   User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  members WorkspaceMember[]
+  boards  Board[]
 }
 
-model Project {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model WorkspaceMember {
+  id          String              @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceMemberRole @default(MEMBER)
 
-  ownerId Int
-  owner   User @relation(fields: [ownerId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  tasks Task[]
+  @@unique([workspaceId, userId])
 }
 
-model Task {
-  id          Int        @id @default(autoincrement())
+model Board {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  backgroundUrl String?
+  workspaceId   String
+  createdAt     DateTime @default(now())
+
+  workspace  Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members    BoardMember[]
+  invites    BoardInvite[]
+  lists      List[]
+  labels     Label[]
+  activities Activity[]
+}
+
+model BoardMember {
+  id      String          @id @default(cuid())
+  boardId String
+  userId  String
+  role    BoardMemberRole @default(MEMBER)
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, userId])
+}
+
+model BoardInvite {
+  id              String          @id @default(cuid())
+  boardId         String
+  invitedByUserId String
+  invitedEmail    String
+  token           String          @unique @default(cuid())
+  role            BoardMemberRole @default(MEMBER)
+  status          InviteStatus    @default(PENDING)
+  expiresAt       DateTime
+  createdAt       DateTime        @default(now())
+
+  board         Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  invitedBy     User           @relation("InviteSender", fields: [invitedByUserId], references: [id])
+  notifications Notification[]
+}
+
+model List {
+  id        String   @id @default(cuid())
+  title     String
+  position  Float
+  boardId   String
+  createdAt DateTime @default(now())
+
+  board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards Card[]
+}
+
+model Card {
+  id          String    @id @default(cuid())
   title       String
   description String?
-  status      TaskStatus @default(TODO)
+  position    Float
+  listId      String
   dueDate     DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime  @default(now())
 
-  projectId Int
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  list          List           @relation(fields: [listId], references: [id], onDelete: Cascade)
+  members       CardMember[]
+  labels        CardLabel[]
+  comments      Comment[]
+  attachments   Attachment[]
+  notifications Notification[]
+}
 
-  comments Comment[]
+model CardMember {
+  id     String @id @default(cuid())
+  cardId String
+  userId String
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, userId])
+}
+
+model Label {
+  id      String @id @default(cuid())
+  name    String
+  color   String
+  boardId String
+
+  board Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards CardLabel[]
+}
+
+model CardLabel {
+  id      String @id @default(cuid())
+  cardId  String
+  labelId String
+
+  card  Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, labelId])
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   content   String
+  cardId    String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  card   Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  filename     String
+  url          String
+  cardId       String
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  card       Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+}
+
+model Activity {
+  id        String       @id @default(cuid())
+  type      ActivityType
+  payload   Json
+  boardId   String
+  userId    String
+  createdAt DateTime     @default(now())
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id              String           @id @default(cuid())
+  userId          String
+  type            NotificationType
+  message         String
+  isRead          Boolean          @default(false)
+  relatedBoardId  String?
+  relatedCardId   String?
+  relatedInviteId String?
+  createdAt       DateTime         @default(now())
+
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedCard   Card?        @relation(fields: [relatedCardId], references: [id], onDelete: SetNull)
+  relatedInvite BoardInvite? @relation(fields: [relatedInviteId], references: [id], onDelete: SetNull)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
   createdAt DateTime @default(now())
 
-  taskId Int
-  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-  authorId Int
-  author   User @relation(fields: [authorId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

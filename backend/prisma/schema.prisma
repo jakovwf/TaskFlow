@@ -214,6 +214,7 @@ model Attachment {
   id           String   @id @default(cuid())
   filename     String
   url          String
+  publicId     String?
   cardId       String
   uploadedById String
   createdAt    DateTime @default(now())

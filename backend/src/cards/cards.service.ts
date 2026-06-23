@@ -4,8 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ActivityType } from '@prisma/client';
+import { ActivityType, NotificationType } from '@prisma/client';
 import { ActivityService } from '../activity/activity.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddCardLabelDto } from './dto/add-card-label.dto';
 import { AssignCardMemberDto } from './dto/assign-card-member.dto';
@@ -18,6 +19,7 @@ export class CardsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activityService: ActivityService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(listId: string, userId: string, createCardDto: CreateCardDto) {
@@ -205,6 +207,10 @@ export class CardsService {
     await this.requireUserExists(assignCardMemberDto.userId);
 
     const card = await this.getCardActivityContext(cardId);
+    const assigner = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { displayName: true },
+    });
 
     const existingMember = await this.prisma.cardMember.findUnique({
       where: {
@@ -239,6 +245,14 @@ export class CardsService {
         cardTitle: card.title,
         assignedUserId: assignCardMemberDto.userId,
       },
+    });
+
+    await this.notificationsService.createNotification({
+      userId: assignCardMemberDto.userId,
+      type: NotificationType.CARD_ASSIGNED,
+      message: `${assigner?.displayName ?? 'Neko'} vam je dodelio zadatak: ${card.title}`,
+      relatedBoardId: card.list.boardId,
+      relatedCardId: cardId,
     });
 
     return cardMember;

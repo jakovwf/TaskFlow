@@ -10,6 +10,7 @@ import { CommentsModule } from './comments/comments.module';
 import { InvitesModule } from './invites/invites.module';
 import { LabelsModule } from './labels/labels.module';
 import { ListsModule } from './lists/lists.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
@@ -28,6 +29,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     AttachmentsModule,
     InvitesModule,
     ActivityModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

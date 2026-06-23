@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ActivityModule } from '../activity/activity.module';
 import { BoardRoleGuard } from '../boards/guards/board-role.guard';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { InviteBoardRoleGuard } from './guards/invite-board-role.guard';
 import { InvitesController } from './invites.controller';
 import { InvitesService } from './invites.service';
@@ -9,6 +10,7 @@ import { InvitesService } from './invites.service';
 @Module({
   imports: [
     ActivityModule,
+    NotificationsModule,
     MailerModule.forRoot({
       transport: {
         host: process.env.MAIL_HOST,

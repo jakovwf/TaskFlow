@@ -5,9 +5,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { ActivityType, BoardMemberRole, InviteStatus } from '@prisma/client';
+import {
+  ActivityType,
+  BoardMemberRole,
+  InviteStatus,
+  NotificationType,
+} from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { ActivityService } from '../activity/activity.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInviteDto } from './dto/create-invite.dto';
 
@@ -22,6 +28,7 @@ export class InvitesService {
     private readonly prisma: PrismaService,
     private readonly mailerService: MailerService,
     private readonly activityService: ActivityService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(
@@ -53,6 +60,21 @@ export class InvitesService {
       userId: invitedByUserId,
       payload: { invitedEmail: invite.invitedEmail },
     });
+
+    const invitedUser = await this.prisma.user.findUnique({
+      where: { email: invite.invitedEmail },
+      select: { id: true },
+    });
+
+    if (invitedUser) {
+      await this.notificationsService.createNotification({
+        userId: invitedUser.id,
+        type: NotificationType.BOARD_INVITE,
+        message: `Pozvani ste na board ${invite.board.title}`,
+        relatedBoardId: boardId,
+        relatedInviteId: invite.id,
+      });
+    }
 
     return invite;
   }

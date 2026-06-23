@@ -1,0 +1,213 @@
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
+import { BoardMemberRole, InviteStatus } from '@prisma/client';
+import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateInviteDto } from './dto/create-invite.dto';
+
+interface CurrentUser {
+  userId: string;
+  email: string;
+}
+
+@Injectable()
+export class InvitesService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailerService: MailerService,
+  ) {}
+
+  async create(
+    boardId: string,
+    invitedByUserId: string,
+    createInviteDto: CreateInviteDto,
+  ) {
+    const token = randomUUID();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const invite = await this.prisma.boardInvite.create({
+      data: {
+        boardId,
+        invitedByUserId,
+        invitedEmail: createInviteDto.inviteeEmail,
+        token,
+        expiresAt,
+        status: InviteStatus.PENDING,
+        role: BoardMemberRole.MEMBER,
+      },
+      include: this.inviteInclude,
+    });
+
+    await this.sendInviteEmail(invite.invitedEmail, invite.board.title, token);
+
+    return invite;
+  }
+
+  findAll(boardId: string) {
+    return this.prisma.boardInvite.findMany({
+      where: { boardId },
+      include: this.inviteInclude,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async revoke(id: string) {
+    const invite = await this.prisma.boardInvite.findUnique({
+      where: { id },
+    });
+
+    if (!invite) {
+      throw new NotFoundException('Invite not found');
+    }
+
+    if (invite.status !== InviteStatus.PENDING) {
+      throw new BadRequestException('Only pending invites can be revoked');
+    }
+
+    return this.prisma.boardInvite.delete({
+      where: { id },
+      include: this.inviteInclude,
+    });
+  }
+
+  async preview(token: string) {
+    const invite = await this.findInviteByToken(token);
+
+    return {
+      id: invite.id,
+      token: invite.token,
+      invitedEmail: invite.invitedEmail,
+      status: invite.status,
+      role: invite.role,
+      expiresAt: invite.expiresAt,
+      board: invite.board,
+      invitedBy: invite.invitedBy,
+    };
+  }
+
+  async accept(token: string, currentUser: CurrentUser) {
+    const invite = await this.findInviteByToken(token);
+    await this.ensureInviteCanBeUsed(invite, currentUser);
+
+    const existingMember = await this.prisma.boardMember.findUnique({
+      where: {
+        boardId_userId: {
+          boardId: invite.boardId,
+          userId: currentUser.userId,
+        },
+      },
+    });
+
+    if (existingMember) {
+      throw new BadRequestException('User is already a board member');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const boardMember = await tx.boardMember.create({
+        data: {
+          boardId: invite.boardId,
+          userId: currentUser.userId,
+          role: BoardMemberRole.MEMBER,
+        },
+      });
+
+      const updatedInvite = await tx.boardInvite.update({
+        where: { id: invite.id },
+        data: { status: InviteStatus.ACCEPTED },
+        include: this.inviteInclude,
+      });
+
+      return {
+        invite: updatedInvite,
+        boardMember,
+      };
+    });
+  }
+
+  async decline(token: string, currentUser: CurrentUser) {
+    const invite = await this.findInviteByToken(token);
+    await this.ensureInviteCanBeUsed(invite, currentUser);
+
+    return this.prisma.boardInvite.update({
+      where: { id: invite.id },
+      data: { status: InviteStatus.DECLINED },
+      include: this.inviteInclude,
+    });
+  }
+
+  private async findInviteByToken(token: string) {
+    const invite = await this.prisma.boardInvite.findUnique({
+      where: { token },
+      include: this.inviteInclude,
+    });
+
+    if (!invite) {
+      throw new NotFoundException('Invite not found');
+    }
+
+    return invite;
+  }
+
+  private async ensureInviteCanBeUsed(
+    invite: Awaited<ReturnType<InvitesService['findInviteByToken']>>,
+    currentUser: CurrentUser,
+  ) {
+    if (invite.expiresAt < new Date()) {
+      await this.prisma.boardInvite.update({
+        where: { id: invite.id },
+        data: { status: InviteStatus.EXPIRED },
+      });
+      throw new BadRequestException('Invite has expired');
+    }
+
+    if (invite.status !== InviteStatus.PENDING) {
+      throw new BadRequestException('Invite is not pending');
+    }
+
+    if (invite.invitedEmail.toLowerCase() !== currentUser.email.toLowerCase()) {
+      throw new ForbiddenException('Invite email does not match current user');
+    }
+  }
+
+  private async sendInviteEmail(
+    invitedEmail: string,
+    boardTitle: string,
+    token: string,
+  ) {
+    const frontendUrl = process.env.FRONTEND_URL?.replace(/\/$/, '') ?? '';
+    const inviteUrl = `${frontendUrl}/invites/${token}`;
+
+    await this.mailerService.sendMail({
+      to: invitedEmail,
+      from: process.env.MAIL_FROM,
+      subject: `Invite to board ${boardTitle}`,
+      text: `You have been invited to board "${boardTitle}". Open this link to respond: ${inviteUrl}`,
+      html: `<p>You have been invited to board <strong>${boardTitle}</strong>.</p><p><a href="${inviteUrl}">Open invite</a></p>`,
+    });
+  }
+
+  private readonly safeUserSelect = {
+    id: true,
+    email: true,
+    displayName: true,
+    avatarUrl: true,
+    createdAt: true,
+  };
+
+  private readonly inviteInclude = {
+    board: {
+      select: {
+        id: true,
+        title: true,
+      },
+    },
+    invitedBy: {
+      select: this.safeUserSelect,
+    },
+  };
+}

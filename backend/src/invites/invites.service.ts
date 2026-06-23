@@ -5,8 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { BoardMemberRole, InviteStatus } from '@prisma/client';
+import { ActivityType, BoardMemberRole, InviteStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { ActivityService } from '../activity/activity.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInviteDto } from './dto/create-invite.dto';
 
@@ -20,6 +21,7 @@ export class InvitesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mailerService: MailerService,
+    private readonly activityService: ActivityService,
   ) {}
 
   async create(
@@ -44,6 +46,13 @@ export class InvitesService {
     });
 
     await this.sendInviteEmail(invite.invitedEmail, invite.board.title, token);
+
+    await this.activityService.logActivity({
+      type: ActivityType.MEMBER_INVITED,
+      boardId,
+      userId: invitedByUserId,
+      payload: { invitedEmail: invite.invitedEmail },
+    });
 
     return invite;
   }
@@ -107,7 +116,7 @@ export class InvitesService {
       throw new BadRequestException('User is already a board member');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const boardMember = await tx.boardMember.create({
         data: {
           boardId: invite.boardId,
@@ -127,6 +136,15 @@ export class InvitesService {
         boardMember,
       };
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.MEMBER_JOINED,
+      boardId: invite.boardId,
+      userId: currentUser.userId,
+      payload: { userId: currentUser.userId },
+    });
+
+    return result;
   }
 
   async decline(token: string, currentUser: CurrentUser) {

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ActivityModule } from './activity/activity.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AttachmentsModule } from './attachments/attachments.module';
@@ -26,6 +27,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     UsersModule,
     AttachmentsModule,
     InvitesModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

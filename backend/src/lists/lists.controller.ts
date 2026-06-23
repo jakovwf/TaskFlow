@@ -5,9 +5,11 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { BoardMemberRole } from '@prisma/client';
+import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../boards/decorators/roles.decorator';
 import { BoardRoleGuard } from '../boards/guards/board-role.guard';
@@ -16,6 +18,13 @@ import { ReorderListsDto } from './dto/reorder-lists.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { ListBoardRoleGuard } from './guards/list-board-role.guard';
 import { ListsService } from './lists.service';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    userId: string;
+    email: string;
+  };
+}
 
 @UseGuards(JwtAuthGuard)
 @Controller()
@@ -31,9 +40,14 @@ export class ListsController {
   @Post('boards/:boardId/lists')
   create(
     @Param('boardId') boardId: string,
+    @Req() request: AuthenticatedRequest,
     @Body() createListDto: CreateListDto,
   ) {
-    return this.listsService.create(boardId, createListDto);
+    return this.listsService.create(
+      boardId,
+      request.user.userId,
+      createListDto,
+    );
   }
 
   @Roles(
@@ -43,15 +57,19 @@ export class ListsController {
   )
   @UseGuards(ListBoardRoleGuard)
   @Patch('lists/:id')
-  update(@Param('id') id: string, @Body() updateListDto: UpdateListDto) {
-    return this.listsService.update(id, updateListDto);
+  update(
+    @Param('id') id: string,
+    @Req() request: AuthenticatedRequest,
+    @Body() updateListDto: UpdateListDto,
+  ) {
+    return this.listsService.update(id, request.user.userId, updateListDto);
   }
 
   @Roles(BoardMemberRole.OWNER, BoardMemberRole.ADMIN)
   @UseGuards(ListBoardRoleGuard)
   @Delete('lists/:id')
-  remove(@Param('id') id: string) {
-    return this.listsService.remove(id);
+  remove(@Param('id') id: string, @Req() request: AuthenticatedRequest) {
+    return this.listsService.remove(id, request.user.userId);
   }
 
   @Roles(BoardMemberRole.OWNER, BoardMemberRole.ADMIN)

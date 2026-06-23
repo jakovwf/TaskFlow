@@ -3,14 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BoardMemberRole } from '@prisma/client';
+import { ActivityType, BoardMemberRole } from '@prisma/client';
+import { ActivityService } from '../activity/activity.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityService: ActivityService,
+  ) {}
 
   findAll(cardId: string) {
     return this.prisma.comment.findMany({
@@ -20,8 +24,14 @@ export class CommentsService {
     });
   }
 
-  create(cardId: string, authorId: string, createCommentDto: CreateCommentDto) {
-    return this.prisma.comment.create({
+  async create(
+    cardId: string,
+    authorId: string,
+    createCommentDto: CreateCommentDto,
+  ) {
+    const card = await this.getCardActivityContext(cardId);
+
+    const comment = await this.prisma.comment.create({
       data: {
         cardId,
         authorId,
@@ -29,6 +39,18 @@ export class CommentsService {
       },
       include: this.commentInclude,
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.COMMENT_ADDED,
+      boardId: card.list.boardId,
+      userId: authorId,
+      payload: {
+        cardId,
+        commentPreview: createCommentDto.content.slice(0, 50),
+      },
+    });
+
+    return comment;
   }
 
   async update(
@@ -96,10 +118,36 @@ export class CommentsService {
       }
     }
 
-    return this.prisma.comment.delete({
+    const deletedComment = await this.prisma.comment.delete({
       where: { id },
       include: this.commentInclude,
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.COMMENT_DELETED,
+      boardId: comment.card.list.boardId,
+      userId,
+      payload: { cardId: deletedComment.cardId },
+    });
+
+    return deletedComment;
+  }
+
+  private async getCardActivityContext(cardId: string) {
+    const card = await this.prisma.card.findUnique({
+      where: { id: cardId },
+      select: {
+        list: {
+          select: { boardId: true },
+        },
+      },
+    });
+
+    if (!card) {
+      throw new NotFoundException('Card not found');
+    }
+
+    return card;
   }
 
   private readonly safeUserSelect = {

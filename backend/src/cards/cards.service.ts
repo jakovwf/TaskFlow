@@ -4,6 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ActivityType } from '@prisma/client';
+import { ActivityService } from '../activity/activity.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddCardLabelDto } from './dto/add-card-label.dto';
 import { AssignCardMemberDto } from './dto/assign-card-member.dto';
@@ -13,15 +15,18 @@ import { UpdateCardDto } from './dto/update-card.dto';
 
 @Injectable()
 export class CardsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityService: ActivityService,
+  ) {}
 
-  async create(listId: string, createCardDto: CreateCardDto) {
+  async create(listId: string, userId: string, createCardDto: CreateCardDto) {
     const aggregate = await this.prisma.card.aggregate({
       where: { listId },
       _max: { position: true },
     });
 
-    return this.prisma.card.create({
+    const card = await this.prisma.card.create({
       data: {
         title: createCardDto.title,
         description: createCardDto.description,
@@ -31,6 +36,15 @@ export class CardsService {
       },
       include: this.cardInclude,
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.CARD_CREATED,
+      boardId: card.list.boardId,
+      userId,
+      payload: { cardTitle: card.title },
+    });
+
+    return card;
   }
 
   findOne(id: string) {
@@ -40,8 +54,8 @@ export class CardsService {
     });
   }
 
-  update(id: string, updateCardDto: UpdateCardDto) {
-    return this.prisma.card.update({
+  async update(id: string, userId: string, updateCardDto: UpdateCardDto) {
+    const card = await this.prisma.card.update({
       where: { id },
       data: {
         title: updateCardDto.title,
@@ -50,17 +64,71 @@ export class CardsService {
       },
       include: this.cardInclude,
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.CARD_UPDATED,
+      boardId: card.list.boardId,
+      userId,
+      payload: { cardTitle: card.title },
+    });
+
+    return card;
   }
 
-  remove(id: string) {
-    return this.prisma.card.delete({
+  async remove(id: string, userId: string) {
+    const existingCard = await this.prisma.card.findUnique({
+      where: { id },
+      select: {
+        title: true,
+        list: {
+          select: { boardId: true },
+        },
+      },
+    });
+
+    if (!existingCard) {
+      throw new NotFoundException('Card not found');
+    }
+
+    const deletedCard = await this.prisma.card.delete({
       where: { id },
       include: this.cardInclude,
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.CARD_DELETED,
+      boardId: existingCard.list.boardId,
+      userId,
+      payload: { cardTitle: existingCard.title },
+    });
+
+    return deletedCard;
   }
 
-  async reorder(boardId: string, reorderCardsDto: ReorderCardsDto) {
-    return this.prisma.$transaction(async (tx) => {
+  async reorder(
+    boardId: string,
+    userId: string,
+    reorderCardsDto: ReorderCardsDto,
+  ) {
+    const existingCards = await this.prisma.card.findMany({
+      where: {
+        id: {
+          in: reorderCardsDto.items.map((item) => item.id),
+        },
+        list: { boardId },
+      },
+      select: {
+        id: true,
+        title: true,
+        listId: true,
+      },
+    });
+
+    const existingCardsById = new Map(
+      existingCards.map((card) => [card.id, card]),
+    );
+
+    const cards = await this.prisma.$transaction(async (tx) => {
       const targetLists = await tx.list.findMany({
         where: {
           boardId,
@@ -106,10 +174,37 @@ export class CardsService {
         orderBy: [{ listId: 'asc' }, { position: 'asc' }],
       });
     });
+
+    await Promise.all(
+      reorderCardsDto.items.map(async (item) => {
+        const existingCard = existingCardsById.get(item.id);
+
+        if (existingCard && existingCard.listId !== item.listId) {
+          await this.activityService.logActivity({
+            type: ActivityType.CARD_MOVED,
+            boardId,
+            userId,
+            payload: {
+              cardTitle: existingCard.title,
+              fromListId: existingCard.listId,
+              toListId: item.listId,
+            },
+          });
+        }
+      }),
+    );
+
+    return cards;
   }
 
-  async assignMember(cardId: string, assignCardMemberDto: AssignCardMemberDto) {
+  async assignMember(
+    cardId: string,
+    userId: string,
+    assignCardMemberDto: AssignCardMemberDto,
+  ) {
     await this.requireUserExists(assignCardMemberDto.userId);
+
+    const card = await this.getCardActivityContext(cardId);
 
     const existingMember = await this.prisma.cardMember.findUnique({
       where: {
@@ -124,7 +219,7 @@ export class CardsService {
       throw new ConflictException('User is already assigned to this card');
     }
 
-    return this.prisma.cardMember.create({
+    const cardMember = await this.prisma.cardMember.create({
       data: {
         cardId,
         userId: assignCardMemberDto.userId,
@@ -135,16 +230,29 @@ export class CardsService {
         },
       },
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.CARD_ASSIGNED,
+      boardId: card.list.boardId,
+      userId,
+      payload: {
+        cardTitle: card.title,
+        assignedUserId: assignCardMemberDto.userId,
+      },
+    });
+
+    return cardMember;
   }
 
-  async unassignMember(cardId: string, userId: string) {
-    await this.requireCardMember(cardId, userId);
+  async unassignMember(cardId: string, removedUserId: string, userId: string) {
+    await this.requireCardMember(cardId, removedUserId);
+    const card = await this.getCardActivityContext(cardId);
 
-    return this.prisma.cardMember.delete({
+    const cardMember = await this.prisma.cardMember.delete({
       where: {
         cardId_userId: {
           cardId,
-          userId,
+          userId: removedUserId,
         },
       },
       include: {
@@ -153,6 +261,18 @@ export class CardsService {
         },
       },
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.CARD_UNASSIGNED,
+      boardId: card.list.boardId,
+      userId,
+      payload: {
+        cardTitle: card.title,
+        removedUserId,
+      },
+    });
+
+    return cardMember;
   }
 
   async addLabel(cardId: string, addCardLabelDto: AddCardLabelDto) {
@@ -248,6 +368,24 @@ export class CardsService {
     if (!cardLabel) {
       throw new NotFoundException('Card label not found');
     }
+  }
+
+  private async getCardActivityContext(cardId: string) {
+    const card = await this.prisma.card.findUnique({
+      where: { id: cardId },
+      select: {
+        title: true,
+        list: {
+          select: { boardId: true },
+        },
+      },
+    });
+
+    if (!card) {
+      throw new NotFoundException('Card not found');
+    }
+
+    return card;
   }
 
   private readonly safeUserSelect = {

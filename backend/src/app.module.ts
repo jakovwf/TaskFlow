@@ -8,6 +8,7 @@ import { CommentsModule } from './comments/comments.module';
 import { LabelsModule } from './labels/labels.module';
 import { ListsModule } from './lists/lists.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { UsersModule } from './users/users.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 
 @Module({
@@ -20,6 +21,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     CardsModule,
     LabelsModule,
     CommentsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

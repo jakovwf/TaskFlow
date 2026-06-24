@@ -15,6 +15,13 @@
       @if (board.description) {
         <p class="mt-2 text-base-content/70">{{ board.description }}</p>
       }
+      @if (boardContext$ | async; as context) {
+        @if (context.currentUser) {
+          <p class="mt-1 text-sm text-base-content/60">
+            Prijavljen korisnik: {{ context.currentUser.displayName }}
+          </p>
+        }
+      }
     </header>
 
     <form class="mb-6 flex gap-2" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
@@ -38,81 +45,17 @@
         (cdkDropListDropped)="dropList($event, board.id, board.lists ?? [])"
       >
         @for (list of board.lists; track list.id) {
-          <div class="w-80 shrink-0 rounded-lg border border-base-300 bg-base-100 p-4" cdkDrag>
-            <div class="mb-3 flex gap-2">
-              <input #listTitle type="text" class="input input-bordered input-sm flex-1" [value]="list.title" />
-              <button
-                type="button"
-                class="btn btn-sm"
-                [disabled]="loading$ | async"
-                (click)="renameList(list.id, listTitle.value)"
-              >
-                Sačuvaj
-              </button>
-              <button
-                type="button"
-                class="btn btn-error btn-sm"
-                [disabled]="loading$ | async"
-                (click)="removeList(list.id)"
-              >
-                Obriši
-              </button>
-            </div>
-
-            @if (list.cards?.length) {
-              <div
-                class="mb-4 min-h-10 space-y-2"
-                cdkDropList
-                [id]="list.id"
-                [cdkDropListData]="list.cards ?? []"
-                [cdkDropListConnectedTo]="cardDropListIds(board.lists)"
-                (cdkDropListDropped)="dropCard($event, board.id)"
-              >
-                @for (card of list.cards; track card.id) {
-                  <button
-                    type="button"
-                    class="block w-full rounded border border-base-300 bg-base-200 p-3 text-left"
-                    cdkDrag
-                    (click)="openCard(card)"
-                  >
-                    <h3 class="font-medium">{{ card.title }}</h3>
-                    @if (card.description) {
-                      <p class="mt-1 text-sm text-base-content/70">{{ card.description }}</p>
-                    }
-                  </button>
-                }
-              </div>
-            } @else {
-              <div
-                class="mb-4 min-h-10"
-                cdkDropList
-                [id]="list.id"
-                [cdkDropListData]="emptyCards"
-                [cdkDropListConnectedTo]="cardDropListIds(board.lists)"
-                (cdkDropListDropped)="dropCard($event, board.id)"
-              >
-                <p class="text-sm text-base-content/60">Lista nema kartice.</p>
-              </div>
-            }
-
-            <div class="grid gap-2">
-              <input #cardTitle type="text" class="input input-bordered input-sm" placeholder="Nova kartica" />
-              <input
-                #cardDescription
-                type="text"
-                class="input input-bordered input-sm"
-                placeholder="Opis, opciono"
-              />
-              <button
-                type="button"
-                class="btn btn-primary btn-sm"
-                [disabled]="loading$ | async"
-                (click)="createCard(list.id, cardTitle, cardDescription)"
-              >
-                Dodaj karticu
-              </button>
-            </div>
-          </div>
+          <app-board-list
+            cdkDrag
+            [list]="list"
+            [loading]="loading$ | async"
+            [connectedDropLists]="cardDropListIds(board.lists)"
+            (renameList)="renameList($event)"
+            (deleteList)="removeList($event)"
+            (createCard)="createCard($event)"
+            (cardSelected)="openCard($event)"
+            (cardDropped)="dropCard($event, board.id)"
+          />
         }
       </section>
     } @else {
@@ -121,43 +64,12 @@
       </p>
     }
 
-    @if (selectedCard; as card) {
-      <section class="mt-6 rounded-lg border border-base-300 bg-base-100 p-4">
-        <div class="mb-4 flex items-center justify-between gap-3">
-          <h2 class="text-xl font-semibold">Kartica</h2>
-          <button type="button" class="btn btn-ghost btn-sm" (click)="closeCard()">Zatvori</button>
-        </div>
-
-        <form class="grid gap-3" [formGroup]="cardEditForm" (ngSubmit)="saveSelectedCard()">
-          <label class="form-control">
-            <span class="label-text mb-1">Naslov</span>
-            <input type="text" formControlName="title" class="input input-bordered" />
-          </label>
-
-          <label class="form-control">
-            <span class="label-text mb-1">Opis</span>
-            <textarea formControlName="description" class="textarea textarea-bordered"></textarea>
-          </label>
-
-          <div class="flex gap-2">
-            <button
-              type="submit"
-              class="btn btn-primary"
-              [disabled]="cardEditForm.invalid || (loading$ | async)"
-            >
-              Sačuvaj karticu
-            </button>
-            <button
-              type="button"
-              class="btn btn-error"
-              [disabled]="loading$ | async"
-              (click)="removeSelectedCard()"
-            >
-              Obriši karticu
-            </button>
-          </div>
-        </form>
-      </section>
-    }
+    <app-card-detail
+      [card]="selectedCard"
+      [loading]="loading$ | async"
+      (close)="closeCard()"
+      (save)="saveCard($event)"
+      (delete)="removeCard($event)"
+    />
   }
 </main>

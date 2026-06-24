@@ -1,0 +1,10 @@
+<button
+  type="button"
+  class="block w-full rounded border border-base-300 bg-base-200 p-3 text-left"
+  (click)="selectCard()"
+>
+  <h3 class="font-medium">{{ card.title }}</h3>
+  @if (card.description) {
+    <p class="mt-1 text-sm text-base-content/70">{{ card.description }}</p>
+  }
+</button>

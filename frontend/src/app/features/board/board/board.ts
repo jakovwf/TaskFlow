@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { distinctUntilChanged, map } from 'rxjs';
+import { combineLatest, distinctUntilChanged, map } from 'rxjs';
 import {
   createCard,
   createList,
@@ -17,16 +17,19 @@ import {
   updateCard,
   updateList,
 } from '../../../store/boards/boards.actions';
+import { selectCurrentUser } from '../../../store/auth/auth.selectors';
 import {
   selectBoardsError,
   selectBoardsLoading,
   selectSelectedBoard,
 } from '../../../store/boards/boards.selectors';
 import { BoardList, Card } from '../../../store/models';
+import { BoardListComponent } from '../components/board-list/board-list';
+import { CardDetailComponent } from '../components/card-detail/card-detail';
 
 @Component({
   selector: 'app-board',
-  imports: [AsyncPipe, DragDropModule, ReactiveFormsModule, RouterLink],
+  imports: [AsyncPipe, BoardListComponent, CardDetailComponent, DragDropModule, ReactiveFormsModule, RouterLink],
   templateUrl: './board.html',
   styleUrl: './board.scss',
 })
@@ -38,16 +41,14 @@ export class Board {
   readonly board$ = this.store.select(selectSelectedBoard);
   readonly loading$ = this.store.select(selectBoardsLoading);
   readonly error$ = this.store.select(selectBoardsError);
-  readonly emptyCards: Card[] = [];
+  readonly boardContext$ = combineLatest({
+    board: this.board$,
+    currentUser: this.store.select(selectCurrentUser),
+  });
   selectedCard: Card | null = null;
 
   readonly listForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
-  });
-
-  readonly cardEditForm = this.formBuilder.nonNullable.group({
-    title: ['', [Validators.required, Validators.minLength(1)]],
-    description: [''],
   });
 
   constructor() {
@@ -75,73 +76,33 @@ export class Board {
     this.listForm.reset();
   }
 
-  renameList(listId: string, title: string): void {
-    const trimmedTitle = title.trim();
-
-    if (!trimmedTitle) {
-      return;
-    }
-
-    this.store.dispatch(updateList({ listId, title: trimmedTitle }));
+  renameList(event: { listId: string; title: string }): void {
+    this.store.dispatch(updateList(event));
   }
 
   removeList(listId: string): void {
     this.store.dispatch(deleteList({ listId }));
   }
 
-  createCard(listId: string, titleInput: HTMLInputElement, descriptionInput: HTMLInputElement): void {
-    const title = titleInput.value.trim();
-    const description = descriptionInput.value.trim();
-
-    if (!title) {
-      return;
-    }
-
-    this.store.dispatch(createCard({ listId, title, description: description || undefined }));
-    titleInput.value = '';
-    descriptionInput.value = '';
+  createCard(event: { listId: string; title: string; description?: string }): void {
+    this.store.dispatch(createCard(event));
   }
 
   openCard(card: Card): void {
     this.selectedCard = card;
-    this.cardEditForm.setValue({
-      title: card.title,
-      description: card.description ?? '',
-    });
   }
 
   closeCard(): void {
     this.selectedCard = null;
-    this.cardEditForm.reset();
   }
 
-  saveSelectedCard(): void {
-    const card = this.selectedCard;
-
-    if (!card || this.cardEditForm.invalid) {
-      this.cardEditForm.markAllAsTouched();
-      return;
-    }
-
-    const { title, description } = this.cardEditForm.getRawValue();
-    this.store.dispatch(
-      updateCard({
-        cardId: card.id,
-        title,
-        description: description.trim() || undefined,
-      }),
-    );
+  saveCard(event: { cardId: string; title: string; description?: string }): void {
+    this.store.dispatch(updateCard(event));
     this.closeCard();
   }
 
-  removeSelectedCard(): void {
-    const card = this.selectedCard;
-
-    if (!card) {
-      return;
-    }
-
-    this.store.dispatch(deleteCard({ cardId: card.id }));
+  removeCard(event: { cardId: string; listId: string }): void {
+    this.store.dispatch(deleteCard({ cardId: event.cardId }));
     this.closeCard();
   }
 

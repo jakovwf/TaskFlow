@@ -1,0 +1,29 @@
+@if (card) {
+  <section class="mt-6 rounded-lg border border-base-300 bg-base-100 p-4">
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <h2 class="text-xl font-semibold">Kartica</h2>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="emitClose()">Zatvori</button>
+    </div>
+
+    <form class="grid gap-3" [formGroup]="form" (ngSubmit)="emitSave()">
+      <label class="form-control">
+        <span class="label-text mb-1">Naslov</span>
+        <input type="text" formControlName="title" class="input input-bordered" />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text mb-1">Opis</span>
+        <textarea formControlName="description" class="textarea textarea-bordered"></textarea>
+      </label>
+
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
+          Sačuvaj karticu
+        </button>
+        <button type="button" class="btn btn-error" [disabled]="loading" (click)="emitDelete()">
+          Obriši karticu
+        </button>
+      </div>
+    </form>
+  </section>
+}

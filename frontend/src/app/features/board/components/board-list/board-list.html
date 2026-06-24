@@ -1,0 +1,46 @@
+<div class="w-80 shrink-0 rounded-lg border border-base-300 bg-base-100 p-4">
+  <div class="mb-3 flex gap-2">
+    <input #listTitle type="text" class="input input-bordered input-sm flex-1" [value]="list.title" />
+    <button type="button" class="btn btn-sm" [disabled]="loading" (click)="emitRename(listTitle.value)">
+      Sačuvaj
+    </button>
+    <button type="button" class="btn btn-error btn-sm" [disabled]="loading" (click)="emitDelete()">
+      Obriši
+    </button>
+  </div>
+
+  <div
+    class="mb-4 min-h-10 space-y-2"
+    cdkDropList
+    [id]="list.id"
+    [cdkDropListData]="list.cards ?? emptyCards"
+    [cdkDropListConnectedTo]="connectedDropLists"
+    (cdkDropListDropped)="emitCardDrop($event)"
+  >
+    @if (list.cards?.length) {
+      @for (card of list.cards; track card.id) {
+        <app-board-card cdkDrag [card]="card" (selected)="cardSelected.emit($event)" />
+      }
+    } @else {
+      <p class="text-sm text-base-content/60">Lista nema kartice.</p>
+    }
+  </div>
+
+  <div class="grid gap-2">
+    <input
+      type="text"
+      class="input input-bordered input-sm"
+      placeholder="Nova kartica"
+      [(ngModel)]="cardTitle"
+    />
+    <input
+      type="text"
+      class="input input-bordered input-sm"
+      placeholder="Opis, opciono"
+      [(ngModel)]="cardDescription"
+    />
+    <button type="button" class="btn btn-primary btn-sm" [disabled]="loading" (click)="emitCreateCard()">
+      Dodaj karticu
+    </button>
+  </div>
+</div>

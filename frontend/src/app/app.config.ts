@@ -13,14 +13,21 @@ import { BoardsEffects } from './store/boards/boards.effects';
 import { boardsReducer } from './store/boards/boards.reducer';
 import { NotificationsEffects } from './store/notifications/notifications.effects';
 import { notificationsReducer } from './store/notifications/notifications.reducer';
+import { WorkspacesEffects } from './store/workspaces/workspaces.effects';
+import { workspacesReducer } from './store/workspaces/workspaces.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([jwtInterceptor])),
-    provideStore({ auth: authReducer, boards: boardsReducer, notifications: notificationsReducer }),
-    provideEffects([AuthEffects, BoardsEffects, NotificationsEffects]),
+    provideStore({
+      auth: authReducer,
+      boards: boardsReducer,
+      notifications: notificationsReducer,
+      workspaces: workspacesReducer,
+    }),
+    provideEffects([AuthEffects, BoardsEffects, NotificationsEffects, WorkspacesEffects]),
     provideStoreDevtools({ maxAge: 25, logOnly: false }),
   ]
 };

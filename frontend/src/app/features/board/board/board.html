@@ -1,1 +1,49 @@
-<p>board stranica</p>
+<main class="mx-auto max-w-6xl px-4 py-8">
+  <a routerLink="/home" class="link link-primary mb-4 inline-block">Nazad na home</a>
+
+  @if (loading$ | async) {
+    <p class="text-sm text-base-content/70">Učitavanje boarda...</p>
+  }
+
+  @if (error$ | async; as error) {
+    <div class="alert alert-error mb-4 text-sm">{{ error }}</div>
+  }
+
+  @if (board$ | async; as board) {
+    <header class="mb-6">
+      <h1 class="text-3xl font-semibold">{{ board.title }}</h1>
+      @if (board.description) {
+        <p class="mt-2 text-base-content/70">{{ board.description }}</p>
+      }
+    </header>
+
+    @if (board.lists?.length) {
+      <section class="grid gap-4 md:grid-cols-3">
+        @for (list of board.lists; track list.id) {
+          <div class="rounded-lg border border-base-300 bg-base-100 p-4">
+            <h2 class="mb-3 font-semibold">{{ list.title }}</h2>
+
+            @if (list.cards?.length) {
+              <div class="space-y-2">
+                @for (card of list.cards; track card.id) {
+                  <article class="rounded border border-base-300 bg-base-200 p-3">
+                    <h3 class="font-medium">{{ card.title }}</h3>
+                    @if (card.description) {
+                      <p class="mt-1 text-sm text-base-content/70">{{ card.description }}</p>
+                    }
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-base-content/60">Lista nema kartice.</p>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+      <p class="rounded-lg border border-base-300 bg-base-100 p-4 text-base-content/70">
+        Board je prazan.
+      </p>
+    }
+  }
+</main>

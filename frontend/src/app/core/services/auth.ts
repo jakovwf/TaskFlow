@@ -9,7 +9,7 @@ import { AuthResponse, User } from '../../store/models';
 })
 export class AuthService {
   private readonly tokenKey = 'auth_token';
-  private readonly authApiUrl = this.buildAuthApiUrl(environment.apiUrl);
+  private readonly authApiUrl = `${environment.apiUrl}/auth`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -51,11 +51,5 @@ export class AuthService {
     if (token) {
       localStorage.setItem(this.tokenKey, token);
     }
-  }
-
-  private buildAuthApiUrl(apiUrl: string): string {
-    const normalizedApiUrl = apiUrl.replace(/\/+$/, '');
-
-    return normalizedApiUrl.endsWith('/auth') ? normalizedApiUrl : `${normalizedApiUrl}/auth`;
   }
 }

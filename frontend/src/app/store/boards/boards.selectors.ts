@@ -35,3 +35,5 @@ export const selectSelectedBoard = createSelector(
 );
 
 export const selectBoardsLoading = createSelector(selectBoardsState, (state) => state.loading);
+
+export const selectBoardsError = createSelector(selectBoardsState, (state) => state.error);

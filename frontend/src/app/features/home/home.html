@@ -1,1 +1,108 @@
-<p>home stranica</p>
+<main class="mx-auto max-w-6xl px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-semibold">Home</h1>
+    <p class="mt-2 text-base-content/70">Workspaceovi i boardovi za trenutno prijavljenog korisnika.</p>
+  </div>
+
+  <section class="grid gap-6 lg:grid-cols-2">
+    <div class="rounded-lg border border-base-300 bg-base-100 p-4">
+      <h2 class="mb-4 text-xl font-semibold">Workspaceovi</h2>
+
+      <form class="mb-4 flex gap-2" [formGroup]="workspaceForm" (ngSubmit)="createWorkspace()">
+        <input
+          type="text"
+          formControlName="name"
+          class="input input-bordered flex-1"
+          placeholder="Novi workspace"
+        />
+        <button type="submit" class="btn btn-primary" [disabled]="workspaceForm.invalid">
+          Kreiraj
+        </button>
+      </form>
+
+      @if (workspacesLoading$ | async) {
+        <p class="text-sm text-base-content/70">Učitavanje workspace-ova...</p>
+      }
+
+      @if (workspacesError$ | async; as error) {
+        <div class="alert alert-error mb-4 text-sm">{{ error }}</div>
+      }
+
+      @if (workspaces$ | async; as workspaces) {
+        @if (workspaces.length > 0) {
+          <ul class="space-y-2">
+            @for (workspace of workspaces; track workspace.id) {
+              <li class="rounded border border-base-300 p-3">
+                <p class="font-medium">{{ workspace.name }}</p>
+                <p class="text-xs text-base-content/60">{{ workspace.id }}</p>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="text-sm text-base-content/70">Nema workspace-ova.</p>
+        }
+      }
+    </div>
+
+    <div class="rounded-lg border border-base-300 bg-base-100 p-4">
+      <h2 class="mb-4 text-xl font-semibold">Boardovi</h2>
+
+      <form class="mb-4 grid gap-2" [formGroup]="boardForm" (ngSubmit)="createBoard()">
+        <select class="select select-bordered w-full" formControlName="workspaceId">
+          <option value="">Izaberi workspace</option>
+          @if (workspaces$ | async; as workspaces) {
+            @for (workspace of workspaces; track workspace.id) {
+              <option [value]="workspace.id">{{ workspace.name }}</option>
+            }
+          }
+        </select>
+
+        <input
+          type="text"
+          formControlName="title"
+          class="input input-bordered w-full"
+          placeholder="Naziv boarda"
+        />
+
+        <input
+          type="text"
+          formControlName="description"
+          class="input input-bordered w-full"
+          placeholder="Opis, opciono"
+        />
+
+        <button type="submit" class="btn btn-primary" [disabled]="boardForm.invalid">
+          Kreiraj board
+        </button>
+      </form>
+
+      @if (boardsLoading$ | async) {
+        <p class="text-sm text-base-content/70">Učitavanje boardova...</p>
+      }
+
+      @if (boardsError$ | async; as error) {
+        <div class="alert alert-error mb-4 text-sm">{{ error }}</div>
+      }
+
+      @if (boards$ | async; as boards) {
+        @if (boards.length > 0) {
+          <div class="grid gap-3 sm:grid-cols-2">
+            @for (board of boards; track board.id) {
+              <a
+                [routerLink]="['/b', board.id]"
+                class="block rounded-lg border border-base-300 bg-base-200 p-4 hover:border-primary"
+              >
+                <h3 class="font-semibold">{{ board.title }}</h3>
+                @if (board.description) {
+                  <p class="mt-1 text-sm text-base-content/70">{{ board.description }}</p>
+                }
+              </a>
+            }
+          </div>
+        } @else {
+          <p class="text-sm text-base-content/70">Nema boardova.</p>
+        }
+      }
+    </div>
+  </section>
+</main>

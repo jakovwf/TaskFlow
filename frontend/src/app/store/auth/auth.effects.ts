@@ -81,6 +81,15 @@ export class AuthEffects {
     { dispatch: false },
   );
 
+  readonly loadMeFailureEffect$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(loadMeFailure),
+        tap(() => this.authService.clearToken()),
+      ),
+    { dispatch: false },
+  );
+
   readonly loadMeEffect$ = createEffect(() =>
     this.actions$.pipe(
       ofType(loadMe),

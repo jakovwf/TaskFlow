@@ -3,6 +3,9 @@ import { createReducer, on } from '@ngrx/store';
 import { Board } from '../models';
 import {
   addBoard,
+  createBoard,
+  createBoardFailure,
+  createBoardSuccess,
   loadBoard,
   loadBoardFailure,
   loadBoardSuccess,
@@ -29,7 +32,7 @@ export const initialBoardsState: BoardsState = boardsAdapter.getInitialState({
 
 export const boardsReducer = createReducer(
   initialBoardsState,
-  on(loadMyBoards, loadBoard, (state) => ({ ...state, loading: true, error: null })),
+  on(loadMyBoards, loadBoard, createBoard, (state) => ({ ...state, loading: true, error: null })),
   on(loadMyBoardsSuccess, (state, { boards }) =>
     boardsAdapter.setAll(boards, { ...state, loading: false, error: null }),
   ),
@@ -38,6 +41,7 @@ export const boardsReducer = createReducer(
     loading: false,
     error,
   })),
+  on(createBoardFailure, (state, { error }) => ({ ...state, loading: false, error })),
   on(loadBoardSuccess, (state, { board }) =>
     boardsAdapter.upsertOne(board, {
       ...state,
@@ -45,6 +49,9 @@ export const boardsReducer = createReducer(
       loading: false,
       error: null,
     }),
+  ),
+  on(createBoardSuccess, (state, { board }) =>
+    boardsAdapter.addOne(board, { ...state, loading: false, error: null }),
   ),
   on(addBoard, (state, { board }) => boardsAdapter.addOne(board, state)),
   on(updateBoard, (state, { board }) => boardsAdapter.upsertOne(board, state)),

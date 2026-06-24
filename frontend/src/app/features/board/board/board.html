@@ -66,11 +66,17 @@
 
     <app-card-detail
       [card]="selectedCard"
+      [comments]="selectedCard ? commentsByCardId[selectedCard.id] ?? [] : []"
+      [commentsLoading]="commentsLoading"
+      [commentsError]="commentsError"
       [currentUser]="currentUser$ | async"
       [loading]="loading$ | async"
       (close)="closeCard()"
       (save)="saveCard($event)"
       (delete)="removeCard($event)"
+      (createComment)="createComment($event)"
+      (updateComment)="updateComment($event)"
+      (deleteComment)="deleteComment($event)"
     />
   }
 </main>

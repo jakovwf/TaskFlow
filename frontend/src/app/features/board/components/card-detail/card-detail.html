@@ -52,9 +52,9 @@
           ></textarea>
           <button
             type="button"
-            class="btn btn-primary btn-sm justify-self-start"
-            [disabled]="commentsLoading || !newCommentContent.trim()"
-            (click)="createComment()"
+          class="btn btn-primary btn-sm justify-self-start"
+          [disabled]="commentsLoading || !newCommentContent.trim()"
+          (click)="emitCreateComment()"
           >
             Dodaj komentar
           </button>
@@ -79,7 +79,7 @@
                       <button type="button" class="btn btn-ghost btn-xs" (click)="startEditComment(comment)">
                         Izmeni
                       </button>
-                      <button type="button" class="btn btn-error btn-xs" (click)="deleteComment(comment.id)">
+                      <button type="button" class="btn btn-error btn-xs" (click)="emitDeleteComment(comment.id)">
                         Obriši
                       </button>
                     </div>
@@ -98,7 +98,7 @@
                         type="button"
                         class="btn btn-primary btn-xs"
                         [disabled]="commentsLoading || !editCommentContent.trim()"
-                        (click)="updateComment(comment.id)"
+                        (click)="emitUpdateComment(comment.id)"
                       >
                         Sačuvaj
                       </button>

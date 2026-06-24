@@ -1,8 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { take } from 'rxjs';
-import { CommentService } from '../../../../core/services/comment';
 import { Card, CardComment, User } from '../../../../store/models';
 
 @Component({
@@ -12,24 +10,25 @@ import { Card, CardComment, User } from '../../../../store/models';
   styleUrl: './card-detail.scss',
 })
 export class CardDetailComponent implements OnChanges {
-  private readonly commentService = inject(CommentService);
   private readonly formBuilder = inject(FormBuilder);
 
   @Input() card: Card | null = null;
+  @Input() comments: CardComment[] = [];
+  @Input() commentsLoading = false;
+  @Input() commentsError: string | null = null;
   @Input() currentUser: User | null = null;
   @Input() loading: boolean | null = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<{ cardId: string; title: string; description?: string }>();
   @Output() delete = new EventEmitter<{ cardId: string; listId: string }>();
+  @Output() createComment = new EventEmitter<{ cardId: string; content: string }>();
+  @Output() updateComment = new EventEmitter<{ cardId: string; commentId: string; content: string }>();
+  @Output() deleteComment = new EventEmitter<{ cardId: string; commentId: string }>();
 
-  comments: CardComment[] = [];
-  commentsLoading = false;
-  commentsError: string | null = null;
   newCommentContent = '';
   editingCommentId: string | null = null;
   editCommentContent = '';
-  private lastLoadedCommentsCardId: string | null = null;
 
   readonly form = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
@@ -38,25 +37,18 @@ export class CardDetailComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if ('card' in changes) {
-      const card = this.card;
-      const cardId = card?.id ?? null;
-
-      if (!card || !cardId) {
-        this.resetCommentsState();
-        this.lastLoadedCommentsCardId = null;
+      if (!this.card) {
+        this.resetCommentEditor();
+        this.newCommentContent = '';
         return;
       }
 
       this.form.setValue({
-        title: card.title,
-        description: card.description ?? '',
+        title: this.card.title,
+        description: this.card.description ?? '',
       });
-
-      if (cardId !== this.lastLoadedCommentsCardId) {
-        this.lastLoadedCommentsCardId = cardId;
-        this.resetCommentsState();
-        this.loadComments(cardId);
-      }
+      this.resetCommentEditor();
+      this.newCommentContent = '';
     }
   }
 
@@ -86,7 +78,7 @@ export class CardDetailComponent implements OnChanges {
     this.delete.emit({ cardId: this.card.id, listId: this.card.listId });
   }
 
-  createComment(): void {
+  emitCreateComment(): void {
     if (!this.card) {
       return;
     }
@@ -97,111 +89,48 @@ export class CardDetailComponent implements OnChanges {
       return;
     }
 
-    this.commentsLoading = true;
-    this.commentsError = null;
-    this.commentService
-      .createComment(this.card.id, content)
-      .pipe(take(1))
-      .subscribe({
-        next: (comment) => {
-          this.comments = [...this.comments, comment];
-          this.newCommentContent = '';
-          this.commentsLoading = false;
-        },
-        error: () => {
-          this.commentsError = 'Komentar nije sacuvan.';
-          this.commentsLoading = false;
-        },
-      });
+    this.createComment.emit({ cardId: this.card.id, content });
+    this.newCommentContent = '';
   }
 
   startEditComment(comment: CardComment): void {
     this.editingCommentId = comment.id;
     this.editCommentContent = comment.content;
-    this.commentsError = null;
   }
 
   cancelEditComment(): void {
     this.resetCommentEditor();
   }
 
-  updateComment(commentId: string): void {
+  emitUpdateComment(commentId: string): void {
+    if (!this.card) {
+      return;
+    }
+
     const content = this.editCommentContent.trim();
 
     if (!content) {
       return;
     }
 
-    this.commentsLoading = true;
-    this.commentsError = null;
-    this.commentService
-      .updateComment(commentId, content)
-      .pipe(take(1))
-      .subscribe({
-        next: (updatedComment) => {
-          this.comments = this.comments.map((comment) =>
-            comment.id === updatedComment.id ? updatedComment : comment,
-          );
-          this.resetCommentEditor();
-          this.commentsLoading = false;
-        },
-        error: () => {
-          this.commentsError = 'Komentar nije izmenjen.';
-          this.commentsLoading = false;
-        },
-      });
+    this.updateComment.emit({ cardId: this.card.id, commentId, content });
+    this.resetCommentEditor();
   }
 
-  deleteComment(commentId: string): void {
-    this.commentsLoading = true;
-    this.commentsError = null;
-    this.commentService
-      .deleteComment(commentId)
-      .pipe(take(1))
-      .subscribe({
-        next: (deletedComment) => {
-          this.comments = this.comments.filter((comment) => comment.id !== deletedComment.id);
-          this.commentsLoading = false;
-        },
-        error: () => {
-          this.commentsError = 'Komentar nije obrisan.';
-          this.commentsLoading = false;
-        },
-      });
+  emitDeleteComment(commentId: string): void {
+    if (!this.card) {
+      return;
+    }
+
+    this.deleteComment.emit({ cardId: this.card.id, commentId });
   }
 
   canEditComment(comment: CardComment): boolean {
     return !!this.currentUser && comment.authorId === this.currentUser.id;
   }
 
-  private loadComments(cardId: string): void {
-    this.commentsLoading = true;
-    this.commentsError = null;
-    this.commentService
-      .getComments(cardId)
-      .pipe(take(1))
-      .subscribe({
-        next: (comments) => {
-          this.comments = comments;
-          this.commentsLoading = false;
-        },
-        error: () => {
-          this.commentsError = 'Komentari nisu ucitani.';
-          this.commentsLoading = false;
-        },
-      });
-  }
-
   private resetCommentEditor(): void {
     this.editingCommentId = null;
     this.editCommentContent = '';
-  }
-
-  private resetCommentsState(): void {
-    this.comments = [];
-    this.newCommentContent = '';
-    this.commentsError = null;
-    this.commentsLoading = false;
-    this.resetCommentEditor();
   }
 }

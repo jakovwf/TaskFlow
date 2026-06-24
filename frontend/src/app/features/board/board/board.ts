@@ -5,7 +5,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { combineLatest, distinctUntilChanged, map } from 'rxjs';
+import { combineLatest, distinctUntilChanged, forkJoin, map, take } from 'rxjs';
+import { CommentService } from '../../../core/services/comment';
 import {
   createCard,
   createList,
@@ -23,7 +24,7 @@ import {
   selectBoardsLoading,
   selectSelectedBoard,
 } from '../../../store/boards/boards.selectors';
-import { BoardList, Card } from '../../../store/models';
+import { Board as BoardModel, BoardList, Card, CardComment } from '../../../store/models';
 import { BoardListComponent } from '../components/board-list/board-list';
 import { CardDetailComponent } from '../components/card-detail/card-detail';
 
@@ -35,6 +36,7 @@ import { CardDetailComponent } from '../components/card-detail/card-detail';
 })
 export class Board {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly commentService = inject(CommentService);
   private readonly route = inject(ActivatedRoute);
   private readonly store = inject(Store);
 
@@ -47,6 +49,11 @@ export class Board {
   });
   readonly currentUser$ = this.store.select(selectCurrentUser);
   selectedCard: Card | null = null;
+  commentsByCardId: Partial<Record<string, CardComment[]>> = {};
+  commentsLoading = false;
+  commentsError: string | null = null;
+  private lastCommentsBoardId: string | null = null;
+  private lastCommentsCardIdsKey = '';
 
   readonly listForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
@@ -64,6 +71,10 @@ export class Board {
           this.store.dispatch(loadBoard({ boardId }));
         }
       });
+
+    this.board$
+      .pipe(takeUntilDestroyed())
+      .subscribe((board) => this.loadCommentsForBoard(board));
   }
 
   createList(boardId: string): void {
@@ -105,6 +116,85 @@ export class Board {
   removeCard(event: { cardId: string; listId: string }): void {
     this.store.dispatch(deleteCard({ cardId: event.cardId }));
     this.closeCard();
+  }
+
+  createComment(event: { cardId: string; content: string }): void {
+    const content = event.content.trim();
+
+    if (!content) {
+      return;
+    }
+
+    this.commentsLoading = true;
+    this.commentsError = null;
+    this.commentService
+      .createComment(event.cardId, content)
+      .pipe(take(1))
+      .subscribe({
+        next: (comment) => {
+          this.commentsByCardId = {
+            ...this.commentsByCardId,
+            [event.cardId]: [...(this.commentsByCardId[event.cardId] ?? []), comment],
+          };
+          this.commentsLoading = false;
+        },
+        error: () => {
+          this.commentsError = 'Komentar nije sacuvan.';
+          this.commentsLoading = false;
+        },
+      });
+  }
+
+  updateComment(event: { cardId: string; commentId: string; content: string }): void {
+    const content = event.content.trim();
+
+    if (!content) {
+      return;
+    }
+
+    this.commentsLoading = true;
+    this.commentsError = null;
+    this.commentService
+      .updateComment(event.commentId, content)
+      .pipe(take(1))
+      .subscribe({
+        next: (updatedComment) => {
+          this.commentsByCardId = {
+            ...this.commentsByCardId,
+            [event.cardId]: (this.commentsByCardId[event.cardId] ?? []).map((comment) =>
+              comment.id === updatedComment.id ? updatedComment : comment,
+            ),
+          };
+          this.commentsLoading = false;
+        },
+        error: () => {
+          this.commentsError = 'Komentar nije izmenjen.';
+          this.commentsLoading = false;
+        },
+      });
+  }
+
+  deleteComment(event: { cardId: string; commentId: string }): void {
+    this.commentsLoading = true;
+    this.commentsError = null;
+    this.commentService
+      .deleteComment(event.commentId)
+      .pipe(take(1))
+      .subscribe({
+        next: (deletedComment) => {
+          this.commentsByCardId = {
+            ...this.commentsByCardId,
+            [event.cardId]: (this.commentsByCardId[event.cardId] ?? []).filter(
+              (comment) => comment.id !== deletedComment.id,
+            ),
+          };
+          this.commentsLoading = false;
+        },
+        error: () => {
+          this.commentsError = 'Komentar nije obrisan.';
+          this.commentsLoading = false;
+        },
+      });
   }
 
   cardDropListIds(lists: BoardList[] | null | undefined): string[] {
@@ -179,5 +269,77 @@ export class Board {
         ],
       }),
     );
+  }
+
+  private loadCommentsForBoard(board: BoardModel | null): void {
+    if (!board) {
+      this.resetBoardComments();
+      return;
+    }
+
+    const cards = this.getBoardCards(board);
+    const cardIdsKey = cards.map((card) => card.id).sort().join('|');
+
+    if (board.id !== this.lastCommentsBoardId) {
+      this.resetBoardComments();
+      this.lastCommentsBoardId = board.id;
+    }
+
+    if (!cards.length) {
+      this.commentsByCardId = {};
+      this.commentsLoading = false;
+      this.commentsError = null;
+      this.lastCommentsCardIdsKey = '';
+      return;
+    }
+
+    if (cardIdsKey === this.lastCommentsCardIdsKey) {
+      return;
+    }
+
+    this.lastCommentsCardIdsKey = cardIdsKey;
+    this.commentsLoading = true;
+    this.commentsError = null;
+
+    forkJoin(
+      cards.map((card) =>
+        this.commentService.getComments(card.id).pipe(
+          take(1),
+          map((comments) => [card.id, comments] as const),
+        ),
+      ),
+    )
+      .subscribe({
+        next: (entries) => {
+          if (board.id !== this.lastCommentsBoardId || cardIdsKey !== this.lastCommentsCardIdsKey) {
+            return;
+          }
+
+          this.commentsByCardId = Object.fromEntries(entries);
+          this.commentsLoading = false;
+        },
+        error: () => {
+          if (board.id !== this.lastCommentsBoardId || cardIdsKey !== this.lastCommentsCardIdsKey) {
+            return;
+          }
+
+          this.commentsByCardId = {};
+          this.lastCommentsCardIdsKey = '';
+          this.commentsError = 'Komentari nisu ucitani.';
+          this.commentsLoading = false;
+        },
+      });
+  }
+
+  private getBoardCards(board: BoardModel): Card[] {
+    return (board.lists ?? []).flatMap((list) => list.cards ?? []);
+  }
+
+  private resetBoardComments(): void {
+    this.commentsByCardId = {};
+    this.commentsLoading = false;
+    this.commentsError = null;
+    this.lastCommentsBoardId = null;
+    this.lastCommentsCardIdsKey = '';
   }
 }

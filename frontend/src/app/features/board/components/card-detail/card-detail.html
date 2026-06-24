@@ -25,5 +25,90 @@
         </button>
       </div>
     </form>
+
+    <section class="mt-6 border-t border-base-300 pt-4">
+      <h3 class="mb-3 text-lg font-semibold">Komentari</h3>
+
+      @if (commentsError) {
+        <div class="alert alert-error mb-3 text-sm">{{ commentsError }}</div>
+      }
+
+      <div class="mb-4 grid gap-2">
+        <textarea
+          class="textarea textarea-bordered"
+          placeholder="Dodaj komentar"
+          [disabled]="commentsLoading"
+          [(ngModel)]="newCommentContent"
+          [ngModelOptions]="{ standalone: true }"
+        ></textarea>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm justify-self-start"
+          [disabled]="commentsLoading || !newCommentContent.trim()"
+          (click)="createComment()"
+        >
+          Dodaj komentar
+        </button>
+      </div>
+
+      @if (commentsLoading) {
+        <p class="text-sm text-base-content/60">Učitavanje komentara...</p>
+      }
+
+      @if (comments.length > 0) {
+        <div class="space-y-3">
+          @for (comment of comments; track comment.id) {
+            <article class="rounded-lg border border-base-300 bg-base-200 p-3">
+              <div class="mb-2 flex items-start justify-between gap-3">
+                <div>
+                  <p class="font-medium">{{ comment.author?.displayName ?? comment.author?.email ?? 'Korisnik' }}</p>
+                  <p class="text-xs text-base-content/60">{{ comment.createdAt | date: 'short' }}</p>
+                </div>
+
+                @if (canEditComment(comment)) {
+                  <div class="flex gap-2">
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="startEditComment(comment)">
+                      Izmeni
+                    </button>
+                    <button type="button" class="btn btn-error btn-xs" (click)="deleteComment(comment.id)">
+                      Obriši
+                    </button>
+                  </div>
+                }
+              </div>
+
+              @if (editingCommentId === comment.id) {
+                <div class="grid gap-2">
+                  <textarea
+                    class="textarea textarea-bordered textarea-sm"
+                    [(ngModel)]="editCommentContent"
+                    [ngModelOptions]="{ standalone: true }"
+                  ></textarea>
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-xs"
+                      [disabled]="commentsLoading || !editCommentContent.trim()"
+                      (click)="updateComment(comment.id)"
+                    >
+                      Sačuvaj
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEditComment()">
+                      Odustani
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <p class="whitespace-pre-wrap text-sm">{{ comment.content }}</p>
+              }
+            </article>
+          }
+        </div>
+      } @else if (!commentsLoading) {
+        <p class="rounded-lg border border-dashed border-base-300 p-3 text-sm text-base-content/60">
+          Nema komentara za ovu karticu.
+        </p>
+      }
+    </section>
   </section>
 }

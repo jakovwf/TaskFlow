@@ -45,6 +45,7 @@ export class Board {
     board: this.board$,
     currentUser: this.store.select(selectCurrentUser),
   });
+  readonly currentUser$ = this.store.select(selectCurrentUser);
   selectedCard: Card | null = null;
 
   readonly listForm = this.formBuilder.nonNullable.group({

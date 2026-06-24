@@ -48,6 +48,16 @@ export interface Card {
   labels?: unknown[];
 }
 
+export interface CardComment {
+  id: string;
+  content: string;
+  cardId: string;
+  authorId: string;
+  createdAt: string;
+  updatedAt: string;
+  author?: User;
+}
+
 export interface BoardList {
   id: string;
   title: string;

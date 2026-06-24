@@ -66,6 +66,7 @@
 
     <app-card-detail
       [card]="selectedCard"
+      [currentUser]="currentUser$ | async"
       [loading]="loading$ | async"
       (close)="closeCard()"
       (save)="saveCard($event)"

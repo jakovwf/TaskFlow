@@ -5,9 +5,15 @@ import {
   createWorkspace,
   createWorkspaceFailure,
   createWorkspaceSuccess,
+  deleteWorkspace,
+  deleteWorkspaceFailure,
+  deleteWorkspaceSuccess,
   loadWorkspaces,
   loadWorkspacesFailure,
   loadWorkspacesSuccess,
+  updateWorkspace,
+  updateWorkspaceFailure,
+  updateWorkspaceSuccess,
 } from './workspaces.actions';
 
 export interface WorkspacesState extends EntityState<Workspace> {
@@ -24,14 +30,24 @@ export const initialWorkspacesState: WorkspacesState = workspacesAdapter.getInit
 
 export const workspacesReducer = createReducer(
   initialWorkspacesState,
-  on(loadWorkspaces, createWorkspace, (state) => ({ ...state, loading: true, error: null })),
+  on(loadWorkspaces, createWorkspace, updateWorkspace, deleteWorkspace, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
   on(loadWorkspacesSuccess, (state, { workspaces }) =>
     workspacesAdapter.setAll(workspaces, { ...state, loading: false, error: null }),
   ),
   on(createWorkspaceSuccess, (state, { workspace }) =>
     workspacesAdapter.addOne(workspace, { ...state, loading: false, error: null }),
   ),
-  on(loadWorkspacesFailure, createWorkspaceFailure, (state, { error }) => ({
+  on(updateWorkspaceSuccess, (state, { workspace }) =>
+    workspacesAdapter.upsertOne(workspace, { ...state, loading: false, error: null }),
+  ),
+  on(deleteWorkspaceSuccess, (state, { workspaceId }) =>
+    workspacesAdapter.removeOne(workspaceId, { ...state, loading: false, error: null }),
+  ),
+  on(loadWorkspacesFailure, createWorkspaceFailure, updateWorkspaceFailure, deleteWorkspaceFailure, (state, { error }) => ({
     ...state,
     loading: false,
     error,

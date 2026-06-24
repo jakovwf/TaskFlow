@@ -10,6 +10,12 @@ export const workspacesActions = createActionGroup({
     'Create Workspace': props<{ name: string }>(),
     'Create Workspace Success': props<{ workspace: Workspace }>(),
     'Create Workspace Failure': props<{ error: string }>(),
+    'Update Workspace': props<{ workspaceId: string; name: string }>(),
+    'Update Workspace Success': props<{ workspace: Workspace }>(),
+    'Update Workspace Failure': props<{ error: string }>(),
+    'Delete Workspace': props<{ workspaceId: string }>(),
+    'Delete Workspace Success': props<{ workspaceId: string }>(),
+    'Delete Workspace Failure': props<{ error: string }>(),
   },
 });
 
@@ -20,4 +26,10 @@ export const {
   createWorkspace,
   createWorkspaceSuccess,
   createWorkspaceFailure,
+  updateWorkspace,
+  updateWorkspaceSuccess,
+  updateWorkspaceFailure,
+  deleteWorkspace,
+  deleteWorkspaceSuccess,
+  deleteWorkspaceFailure,
 } = workspacesActions;

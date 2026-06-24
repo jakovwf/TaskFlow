@@ -11,9 +11,46 @@
 
   @if (board$ | async; as board) {
     <header class="mb-6">
-      <h1 class="text-3xl font-semibold">{{ board.title }}</h1>
-      @if (board.description) {
-        <p class="mt-2 text-base-content/70">{{ board.description }}</p>
+      @if (editingBoardHeader) {
+        <form class="mb-4 grid max-w-2xl gap-3" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit(board.id)">
+          <input
+            type="text"
+            formControlName="title"
+            class="input input-bordered w-full"
+            placeholder="Naziv boarda"
+          />
+          <input
+            type="text"
+            formControlName="description"
+            class="input input-bordered w-full"
+            placeholder="Opis, opciono"
+          />
+          <div class="flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary btn-sm" [disabled]="boardEditForm.invalid || (loading$ | async)">
+              Sacuvaj board
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="cancelBoardEdit()">
+              Odustani
+            </button>
+          </div>
+        </form>
+      } @else {
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div class="min-w-0">
+            <h1 class="text-3xl font-semibold">{{ board.title }}</h1>
+            @if (board.description) {
+              <p class="mt-2 text-base-content/70">{{ board.description }}</p>
+            }
+          </div>
+          <div class="flex shrink-0 flex-wrap gap-2">
+            <button type="button" class="btn btn-outline btn-sm" (click)="startBoardEdit(board)">
+              Izmeni
+            </button>
+            <button type="button" class="btn btn-error btn-sm" (click)="deleteCurrentBoard(board.id)">
+              Obrisi
+            </button>
+          </div>
+        </div>
       }
       @if (boardContext$ | async; as context) {
         @if (context.currentUser) {

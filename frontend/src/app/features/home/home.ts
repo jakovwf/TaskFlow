@@ -3,15 +3,23 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { createBoard, loadMyBoards } from '../../store/boards/boards.actions';
+import {
+  createBoard,
+  deleteBoard,
+  loadMyBoards,
+  updateBoardDetails,
+} from '../../store/boards/boards.actions';
 import {
   selectAllBoards,
   selectBoardsError,
   selectBoardsLoading,
 } from '../../store/boards/boards.selectors';
+import { Board, Workspace } from '../../store/models';
 import {
   createWorkspace,
+  deleteWorkspace,
   loadWorkspaces,
+  updateWorkspace,
 } from '../../store/workspaces/workspaces.actions';
 import {
   selectAllWorkspaces,
@@ -35,13 +43,24 @@ export class Home {
   readonly boardsLoading$ = this.store.select(selectBoardsLoading);
   readonly workspacesError$ = this.store.select(selectWorkspacesError);
   readonly boardsError$ = this.store.select(selectBoardsError);
+  editingWorkspaceId: string | null = null;
+  editingBoardId: string | null = null;
 
   readonly workspaceForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(1)]],
   });
 
+  readonly workspaceEditForm = this.formBuilder.nonNullable.group({
+    name: ['', [Validators.required, Validators.minLength(1)]],
+  });
+
   readonly boardForm = this.formBuilder.nonNullable.group({
     workspaceId: ['', Validators.required],
+    title: ['', [Validators.required, Validators.minLength(1)]],
+    description: [''],
+  });
+
+  readonly boardEditForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
     description: [''],
   });
@@ -57,9 +76,50 @@ export class Home {
       return;
     }
 
-    const { name } = this.workspaceForm.getRawValue();
+    const name = this.workspaceForm.getRawValue().name.trim();
+
+    if (!name) {
+      this.workspaceForm.markAllAsTouched();
+      return;
+    }
+
     this.store.dispatch(createWorkspace({ name }));
     this.workspaceForm.reset();
+  }
+
+  startWorkspaceEdit(workspace: Workspace): void {
+    this.editingWorkspaceId = workspace.id;
+    this.workspaceEditForm.setValue({ name: workspace.name });
+  }
+
+  cancelWorkspaceEdit(): void {
+    this.editingWorkspaceId = null;
+    this.workspaceEditForm.reset();
+  }
+
+  saveWorkspaceEdit(): void {
+    if (!this.editingWorkspaceId || this.workspaceEditForm.invalid) {
+      this.workspaceEditForm.markAllAsTouched();
+      return;
+    }
+
+    const name = this.workspaceEditForm.getRawValue().name.trim();
+
+    if (!name) {
+      this.workspaceEditForm.markAllAsTouched();
+      return;
+    }
+
+    this.store.dispatch(updateWorkspace({ workspaceId: this.editingWorkspaceId, name }));
+    this.cancelWorkspaceEdit();
+  }
+
+  deleteWorkspace(workspaceId: string): void {
+    if (!confirm('Da li ste sigurni da zelite da obrisete workspace?')) {
+      return;
+    }
+
+    this.store.dispatch(deleteWorkspace({ workspaceId }));
   }
 
   createBoard(): void {
@@ -69,13 +129,65 @@ export class Home {
     }
 
     const { workspaceId, title, description } = this.boardForm.getRawValue();
+    const trimmedTitle = title.trim();
+
+    if (!trimmedTitle) {
+      this.boardForm.markAllAsTouched();
+      return;
+    }
+
     this.store.dispatch(
       createBoard({
         workspaceId,
-        title,
+        title: trimmedTitle,
         description: description.trim() || undefined,
       }),
     );
     this.boardForm.patchValue({ title: '', description: '' });
+  }
+
+  startBoardEdit(board: Board): void {
+    this.editingBoardId = board.id;
+    this.boardEditForm.setValue({
+      title: board.title,
+      description: board.description ?? '',
+    });
+  }
+
+  cancelBoardEdit(): void {
+    this.editingBoardId = null;
+    this.boardEditForm.reset();
+  }
+
+  saveBoardEdit(): void {
+    if (!this.editingBoardId || this.boardEditForm.invalid) {
+      this.boardEditForm.markAllAsTouched();
+      return;
+    }
+
+    const { title, description } = this.boardEditForm.getRawValue();
+    const trimmedTitle = title.trim();
+
+    if (!trimmedTitle) {
+      this.boardEditForm.markAllAsTouched();
+      return;
+    }
+
+    this.store.dispatch(
+      updateBoardDetails({
+        boardId: this.editingBoardId,
+        title: trimmedTitle,
+        description: description.trim() || undefined,
+      }),
+    );
+    this.cancelBoardEdit();
+  }
+
+  deleteBoard(boardId: string): void {
+    if (!confirm('Da li ste sigurni da zelite da obrisete board?')) {
+      return;
+    }
+
+    this.store.dispatch(deleteBoard({ boardId }));
   }
 }

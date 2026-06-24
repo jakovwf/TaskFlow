@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { BoardService } from '../../core/services/board';
 import { CardService } from '../../core/services/card';
 import { ListService } from '../../core/services/list';
@@ -17,6 +18,9 @@ import {
   deleteCard,
   deleteCardFailure,
   deleteCardSuccess,
+  deleteBoard,
+  deleteBoardFailure,
+  deleteBoardSuccess,
   deleteList,
   deleteListFailure,
   deleteListSuccess,
@@ -35,6 +39,9 @@ import {
   updateCard,
   updateCardFailure,
   updateCardSuccess,
+  updateBoardDetails,
+  updateBoardDetailsFailure,
+  updateBoardDetailsSuccess,
   updateList,
   updateListFailure,
   updateListSuccess,
@@ -46,6 +53,7 @@ export class BoardsEffects {
   private readonly boardService = inject(BoardService);
   private readonly listService = inject(ListService);
   private readonly cardService = inject(CardService);
+  private readonly router = inject(Router);
 
   readonly loadMyBoards$ = createEffect(() =>
     this.actions$.pipe(
@@ -81,6 +89,39 @@ export class BoardsEffects {
         ),
       ),
     ),
+  );
+
+  readonly updateBoardDetails$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(updateBoardDetails),
+      switchMap(({ boardId, title, description }) =>
+        this.boardService.updateBoard(boardId, { title, description }).pipe(
+          map((board) => updateBoardDetailsSuccess({ board })),
+          catchError((error: unknown) => of(updateBoardDetailsFailure({ error: this.getErrorMessage(error) }))),
+        ),
+      ),
+    ),
+  );
+
+  readonly deleteBoard$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(deleteBoard),
+      switchMap(({ boardId }) =>
+        this.boardService.deleteBoard(boardId).pipe(
+          map(() => deleteBoardSuccess({ boardId })),
+          catchError((error: unknown) => of(deleteBoardFailure({ error: this.getErrorMessage(error) }))),
+        ),
+      ),
+    ),
+  );
+
+  readonly navigateHomeAfterDeleteBoard$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(deleteBoardSuccess),
+        tap(() => void this.router.navigate(['/home'])),
+      ),
+    { dispatch: false },
   );
 
   readonly createList$ = createEffect(() =>

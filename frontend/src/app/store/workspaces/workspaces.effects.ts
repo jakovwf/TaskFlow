@@ -2,13 +2,20 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 import { WorkspaceService } from '../../core/services/workspace';
+import { loadMyBoards } from '../boards/boards.actions';
 import {
   createWorkspace,
   createWorkspaceFailure,
   createWorkspaceSuccess,
+  deleteWorkspace,
+  deleteWorkspaceFailure,
+  deleteWorkspaceSuccess,
   loadWorkspaces,
   loadWorkspacesFailure,
   loadWorkspacesSuccess,
+  updateWorkspace,
+  updateWorkspaceFailure,
+  updateWorkspaceSuccess,
 } from './workspaces.actions';
 
 @Injectable()
@@ -41,6 +48,41 @@ export class WorkspacesEffects {
           ),
         ),
       ),
+    ),
+  );
+
+  readonly updateWorkspace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(updateWorkspace),
+      switchMap(({ workspaceId, name }) =>
+        this.workspaceService.updateWorkspace(workspaceId, { name }).pipe(
+          map((workspace) => updateWorkspaceSuccess({ workspace })),
+          catchError((error: unknown) =>
+            of(updateWorkspaceFailure({ error: this.getErrorMessage(error) })),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  readonly deleteWorkspace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(deleteWorkspace),
+      switchMap(({ workspaceId }) =>
+        this.workspaceService.deleteWorkspace(workspaceId).pipe(
+          map(() => deleteWorkspaceSuccess({ workspaceId })),
+          catchError((error: unknown) =>
+            of(deleteWorkspaceFailure({ error: this.getErrorMessage(error) })),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  readonly reloadBoardsAfterWorkspaceDelete$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(deleteWorkspaceSuccess),
+      map(() => loadMyBoards()),
     ),
   );
 

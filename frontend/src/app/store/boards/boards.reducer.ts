@@ -15,6 +15,9 @@ import {
   deleteCard,
   deleteCardFailure,
   deleteCardSuccess,
+  deleteBoard,
+  deleteBoardFailure,
+  deleteBoardSuccess,
   deleteList,
   deleteListFailure,
   deleteListSuccess,
@@ -32,6 +35,9 @@ import {
   reorderListsFailure,
   reorderListsSuccess,
   updateBoard,
+  updateBoardDetails,
+  updateBoardDetailsFailure,
+  updateBoardDetailsSuccess,
   updateCard,
   updateCardFailure,
   updateCardSuccess,
@@ -60,6 +66,8 @@ export const boardsReducer = createReducer(
     loadMyBoards,
     loadBoard,
     createBoard,
+    updateBoardDetails,
+    deleteBoard,
     createList,
     updateList,
     deleteList,
@@ -77,6 +85,8 @@ export const boardsReducer = createReducer(
     loadMyBoardsFailure,
     loadBoardFailure,
     createBoardFailure,
+    updateBoardDetailsFailure,
+    deleteBoardFailure,
     createListFailure,
     updateListFailure,
     deleteListFailure,
@@ -97,6 +107,17 @@ export const boardsReducer = createReducer(
   ),
   on(createBoardSuccess, (state, { board }) =>
     boardsAdapter.addOne(board, { ...state, loading: false, error: null }),
+  ),
+  on(updateBoardDetailsSuccess, (state, { board }) =>
+    boardsAdapter.upsertOne(board, { ...state, loading: false, error: null }),
+  ),
+  on(deleteBoardSuccess, (state, { boardId }) =>
+    boardsAdapter.removeOne(boardId, {
+      ...state,
+      selectedBoardId: state.selectedBoardId === boardId ? null : state.selectedBoardId,
+      loading: false,
+      error: null,
+    }),
   ),
   on(createListSuccess, (state, { list }) =>
     updateSelectedBoard(state, (board) => ({

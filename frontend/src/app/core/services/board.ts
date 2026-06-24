@@ -10,6 +10,12 @@ export interface CreateBoardData {
   backgroundUrl?: string;
 }
 
+export interface UpdateBoardData {
+  title?: string;
+  description?: string;
+  backgroundUrl?: string;
+}
+
 export interface ReorderListItem {
   id: string;
   position: number;
@@ -39,6 +45,14 @@ export class BoardService {
 
   getBoard(boardId: string): Observable<Board> {
     return this.http.get<Board>(`${this.boardsApiUrl}/${boardId}`);
+  }
+
+  updateBoard(boardId: string, data: UpdateBoardData): Observable<Board> {
+    return this.http.patch<Board>(`${this.boardsApiUrl}/${boardId}`, data);
+  }
+
+  deleteBoard(boardId: string): Observable<Board> {
+    return this.http.delete<Board>(`${this.boardsApiUrl}/${boardId}`);
   }
 
   reorderLists(boardId: string, items: ReorderListItem[]): Observable<Board['lists']> {

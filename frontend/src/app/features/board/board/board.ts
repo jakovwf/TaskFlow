@@ -10,12 +10,14 @@ import { CommentService } from '../../../core/services/comment';
 import {
   createCard,
   createList,
+  deleteBoard,
   deleteCard,
   deleteList,
   loadBoard,
   reorderCards,
   reorderLists,
   updateCard,
+  updateBoardDetails,
   updateList,
 } from '../../../store/boards/boards.actions';
 import { selectCurrentUser } from '../../../store/auth/auth.selectors';
@@ -52,11 +54,17 @@ export class Board {
   commentsByCardId: Partial<Record<string, CardComment[]>> = {};
   commentsLoading = false;
   commentsError: string | null = null;
+  editingBoardHeader = false;
   private lastCommentsBoardId: string | null = null;
   private lastCommentsCardIdsKey = '';
 
   readonly listForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
+  });
+
+  readonly boardEditForm = this.formBuilder.nonNullable.group({
+    title: ['', [Validators.required, Validators.minLength(1)]],
+    description: [''],
   });
 
   constructor() {
@@ -86,6 +94,51 @@ export class Board {
     const { title } = this.listForm.getRawValue();
     this.store.dispatch(createList({ boardId, title }));
     this.listForm.reset();
+  }
+
+  startBoardEdit(board: BoardModel): void {
+    this.editingBoardHeader = true;
+    this.boardEditForm.setValue({
+      title: board.title,
+      description: board.description ?? '',
+    });
+  }
+
+  cancelBoardEdit(): void {
+    this.editingBoardHeader = false;
+    this.boardEditForm.reset();
+  }
+
+  saveBoardEdit(boardId: string): void {
+    if (this.boardEditForm.invalid) {
+      this.boardEditForm.markAllAsTouched();
+      return;
+    }
+
+    const { title, description } = this.boardEditForm.getRawValue();
+    const trimmedTitle = title.trim();
+
+    if (!trimmedTitle) {
+      this.boardEditForm.markAllAsTouched();
+      return;
+    }
+
+    this.store.dispatch(
+      updateBoardDetails({
+        boardId,
+        title: trimmedTitle,
+        description: description.trim() || undefined,
+      }),
+    );
+    this.cancelBoardEdit();
+  }
+
+  deleteCurrentBoard(boardId: string): void {
+    if (!confirm('Da li ste sigurni da zelite da obrisete board?')) {
+      return;
+    }
+
+    this.store.dispatch(deleteBoard({ boardId }));
   }
 
   renameList(event: { listId: string; title: string }): void {

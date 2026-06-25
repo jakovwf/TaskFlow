@@ -1,6 +1,6 @@
 @if (card) {
   <div class="modal modal-open">
-    <div class="modal-box max-h-[90vh] w-11/12 max-w-2xl overflow-y-auto p-5 sm:p-6">
+    <div class="modal-box tf-panel max-h-[90vh] w-11/12 max-w-2xl overflow-y-auto p-5 sm:p-6">
       <button
         type="button"
         class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
@@ -11,7 +11,8 @@
       </button>
 
       <div class="mb-4 pr-8">
-        <h2 class="text-xl font-semibold">Kartica</h2>
+        <p class="tf-kicker">TaskFlow card</p>
+        <h2 class="mt-1 text-xl font-bold">Kartica</h2>
       </div>
 
       <form class="grid gap-3" [formGroup]="form" (ngSubmit)="emitSave()">
@@ -50,7 +51,7 @@
         @if (assignedMembers().length > 0) {
           <div class="mb-4 flex flex-wrap gap-2">
             @for (member of assignedMembers(); track member.userId) {
-              <div class="flex items-center gap-2 rounded-full border border-base-300 bg-base-200 px-2 py-1">
+              <div class="flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-2 py-1 shadow-sm">
                 @if (member.user?.avatarUrl) {
                   <img
                     [src]="member.user?.avatarUrl"
@@ -77,7 +78,7 @@
             }
           </div>
         } @else {
-          <p class="mb-4 rounded-lg border border-dashed border-base-300 p-3 text-sm text-base-content/60">
+          <p class="tf-empty mb-4 p-3 text-sm">
             Kartica nema dodeljene clanove.
           </p>
         }
@@ -135,13 +136,16 @@
         </div>
 
         @if (commentsLoading) {
-          <p class="text-sm text-base-content/60">Učitavanje komentara...</p>
+          <div class="tf-loading text-sm">
+            <span class="loading loading-spinner loading-sm"></span>
+            Ucitavanje komentara...
+          </div>
         }
 
         @if (comments.length > 0) {
           <div class="space-y-3">
             @for (comment of comments; track comment.id) {
-              <article class="rounded-lg border border-base-300 bg-base-200 p-3">
+              <article class="tf-card bg-base-100 p-3">
                 <div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p class="font-medium">{{ comment.author?.displayName ?? comment.author?.email ?? 'Korisnik' }}</p>
@@ -193,7 +197,7 @@
             }
           </div>
         } @else if (!commentsLoading) {
-          <p class="rounded-lg border border-dashed border-base-300 p-3 text-sm text-base-content/60">
+          <p class="tf-empty p-3 text-sm">
             Nema komentara za ovu karticu.
           </p>
         }

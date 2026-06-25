@@ -1,9 +1,9 @@
-<main class="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
-  <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+<main class="tf-page tf-page-narrow">
+  <header class="tf-hero-card mb-5 sm:p-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <p class="text-sm font-semibold uppercase tracking-wide text-primary">Inbox</p>
-        <h1 class="mt-1 text-3xl font-bold tracking-tight">Notifikacije</h1>
+        <p class="tf-kicker">Inbox</p>
+        <h1 class="mt-1 text-3xl font-black tracking-tight">Notifikacije</h1>
         <p class="mt-2 text-base-content/70">Pregled sistemskih obavestenja za tvoj nalog.</p>
       </div>
 
@@ -14,7 +14,7 @@
   </header>
 
   @if (loading$ | async) {
-    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
+    <div class="tf-loading mb-4 text-sm">
       <span class="loading loading-spinner loading-sm"></span>
       Ucitavanje notifikacija...
     </div>
@@ -28,7 +28,7 @@
     @if (notifications.length > 0) {
       <ul class="space-y-3">
         @for (notification of notifications; track notification.id) {
-          <li class="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">
+          <li class="tf-card p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div class="min-w-0">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
@@ -71,7 +71,7 @@
         }
       </ul>
     } @else if (!(loading$ | async) && !(error$ | async)) {
-      <div class="rounded-xl border border-dashed border-base-300 bg-base-100 p-5 text-sm text-base-content/70 shadow-sm">
+      <div class="tf-empty text-sm">
         Nema notifikacija za prikaz.
       </div>
     }

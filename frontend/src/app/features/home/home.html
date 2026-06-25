@@ -1,14 +1,14 @@
-<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-  <div class="mb-6 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
-    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Dashboard</p>
-    <h1 class="mt-1 text-3xl font-bold tracking-tight">Home</h1>
+<main class="tf-page">
+  <div class="tf-hero-card mb-6 sm:p-6">
+    <p class="tf-kicker">TaskFlow dashboard</p>
+    <h1 class="mt-1 text-3xl font-black tracking-tight">Home</h1>
     <p class="mt-2 max-w-2xl text-sm text-base-content/70 sm:text-base">
       Workspaceovi i boardovi za trenutno prijavljenog korisnika.
     </p>
   </div>
 
   <section class="grid items-start gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-    <div class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-5">
       <div>
         <h2 class="text-xl font-semibold">Workspaceovi</h2>
@@ -31,7 +31,7 @@
       </form>
 
       @if (workspacesLoading$ | async) {
-        <div class="flex items-center gap-2 rounded-xl border border-base-300 bg-base-200/60 p-4 text-sm text-base-content/70">
+        <div class="tf-loading text-sm">
           <span class="loading loading-spinner loading-sm"></span>
           Ucitavanje workspace-ova...
         </div>
@@ -45,7 +45,7 @@
         @if (workspaces.length > 0) {
           <ul class="space-y-3">
             @for (workspace of workspaces; track workspace.id) {
-              <li class="rounded-xl border border-base-300 bg-base-100 p-3 shadow-sm transition hover:border-primary/30 hover:shadow-md">
+              <li class="tf-card p-3">
                 @if (editingWorkspaceId === workspace.id) {
                   <form class="grid gap-2 sm:grid-cols-[1fr_auto_auto]" [formGroup]="workspaceEditForm" (ngSubmit)="saveWorkspaceEdit()">
                     <input
@@ -84,7 +84,7 @@
             }
           </ul>
         } @else if (!(workspacesLoading$ | async)) {
-          <div class="rounded-xl border border-dashed border-base-300 bg-base-200/60 p-5 text-sm text-base-content/70">
+          <div class="tf-empty text-sm">
             Nema workspace-ova. Kreiraj prvi workspace da bi mogao da dodas board.
           </div>
         }
@@ -92,7 +92,7 @@
       </div>
     </div>
 
-    <div class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-5">
       <div>
         <h2 class="text-xl font-semibold">Boardovi</h2>
@@ -132,7 +132,7 @@
       </form>
 
       @if (boardsLoading$ | async) {
-        <div class="flex items-center gap-2 rounded-xl border border-base-300 bg-base-200/60 p-4 text-sm text-base-content/70">
+        <div class="tf-loading text-sm">
           <span class="loading loading-spinner loading-sm"></span>
           Ucitavanje boardova...
         </div>
@@ -146,7 +146,7 @@
         @if (boards.length > 0) {
           <div class="grid gap-3 md:grid-cols-2">
             @for (board of boards; track board.id) {
-              <article class="rounded-xl border border-base-300 bg-base-200/70 p-4 shadow-sm transition hover:border-primary/30 hover:bg-base-100 hover:shadow-md">
+              <article class="tf-card p-4">
                 @if (editingBoardId === board.id) {
                   <form class="grid gap-2" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit()">
                     <input
@@ -194,7 +194,7 @@
             }
           </div>
         } @else if (!(boardsLoading$ | async)) {
-          <div class="rounded-xl border border-dashed border-base-300 bg-base-200/60 p-5 text-sm text-base-content/70">
+          <div class="tf-empty text-sm">
             Nema boardova. Izaberi workspace i kreiraj prvi board.
           </div>
         }

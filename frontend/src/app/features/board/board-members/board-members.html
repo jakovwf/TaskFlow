@@ -1,18 +1,18 @@
-<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<main class="tf-page">
   <a [routerLink]="boardId ? ['/b', boardId] : ['/home']" class="btn btn-ghost btn-sm mb-4 px-0 text-primary hover:bg-transparent">
     Nazad na board
   </a>
 
-  <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
-    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Board access</p>
-    <h1 class="mt-1 text-3xl font-bold tracking-tight">Clanovi boarda</h1>
+  <header class="tf-hero-card mb-5 sm:p-6">
+    <p class="tf-kicker">Board access</p>
+    <h1 class="mt-1 text-3xl font-black tracking-tight">Clanovi boarda</h1>
     @if (board) {
       <p class="mt-2 text-base-content/70">{{ board.title }}</p>
     }
   </header>
 
   @if (loading) {
-    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
+    <div class="tf-loading mb-4 text-sm">
       <span class="loading loading-spinner loading-sm"></span>
       Ucitavanje clanova i invite-ova...
     </div>
@@ -27,7 +27,7 @@
   }
 
   <section class="grid items-start gap-6 lg:grid-cols-[1fr_26rem]">
-    <div class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-5">
       <div>
         <h2 class="text-xl font-semibold">Clanovi</h2>
@@ -37,7 +37,7 @@
       @if (members.length > 0) {
         <ul class="space-y-3">
           @for (member of members; track member.id) {
-            <li class="flex flex-col gap-3 rounded-xl border border-base-300 bg-base-100 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <li class="tf-card flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="min-w-0">
                 <p class="truncate font-medium">
                   {{ member.user?.displayName ?? member.user?.email ?? member.userId }}
@@ -79,14 +79,14 @@
           }
         </ul>
       } @else if (!loading) {
-        <div class="rounded-xl border border-dashed border-base-300 bg-base-200/60 p-5 text-sm text-base-content/70">
+        <div class="tf-empty text-sm">
           Nema dodatnih clanova za prikaz.
         </div>
       }
       </div>
     </div>
 
-    <aside class="card border border-base-300 bg-base-100 shadow-sm">
+    <aside class="card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-5">
       <div>
         <h2 class="text-xl font-semibold">Invite</h2>
@@ -119,7 +119,7 @@
         }
 
         @if (userSearchResults.length > 0) {
-          <ul class="overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-sm">
+          <ul class="overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-sm">
             @for (user of userSearchResults; track user.id) {
               <li>
                 <button
@@ -134,7 +134,7 @@
             }
           </ul>
         } @else if (hasSearchedUsers && !userSearchLoading && !userSearchError) {
-          <div class="rounded-xl border border-dashed border-base-300 bg-base-200/60 p-3 text-sm text-base-content/70">
+          <div class="tf-empty p-3 text-sm">
             Nema korisnika za ovu pretragu.
           </div>
         }
@@ -166,7 +166,7 @@
       @if (invites.length > 0) {
         <ul class="space-y-3">
           @for (invite of invites; track invite.id) {
-            <li class="rounded-xl border border-base-300 bg-base-100 p-3 shadow-sm">
+            <li class="tf-card p-3">
               <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div class="min-w-0">
                   <p class="truncate font-medium">{{ invite.invitedEmail }}</p>
@@ -199,7 +199,7 @@
           }
         </ul>
       } @else {
-        <div class="rounded-xl border border-dashed border-base-300 bg-base-200/60 p-4 text-sm text-base-content/70">
+        <div class="tf-empty text-sm">
           Nema pending pozivnica.
         </div>
       }

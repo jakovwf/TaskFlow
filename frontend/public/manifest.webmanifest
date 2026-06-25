@@ -1,6 +1,6 @@
 {
-  "name": "TrelloKlon",
-  "short_name": "TrelloKlon",
+  "name": "TaskFlow",
+  "short_name": "TaskFlow",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

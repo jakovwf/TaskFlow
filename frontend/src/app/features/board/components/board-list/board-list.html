@@ -1,4 +1,4 @@
-<div class="w-[18rem] shrink-0 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-sm sm:w-80">
+<div class="tf-panel w-[18rem] shrink-0 p-3 sm:w-80">
   <div class="mb-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
     <input #listTitle type="text" class="input input-bordered input-sm w-full font-medium" [value]="list.title" />
     <button type="button" class="btn btn-outline btn-sm" [disabled]="loading" (click)="emitRename(listTitle.value)">
@@ -13,7 +13,7 @@
   </div>
 
   <div
-    class="mb-4 min-h-16 space-y-2 rounded-xl bg-base-200/50 p-2"
+    class="mb-4 min-h-16 space-y-2 rounded-lg bg-base-200/60 p-2"
     cdkDropList
     [id]="list.id"
     [cdkDropListData]="list.cards ?? emptyCards"
@@ -25,7 +25,7 @@
         <app-board-card cdkDrag [card]="card" (selected)="cardSelected.emit($event)" />
       }
     } @else {
-      <p class="rounded-lg border border-dashed border-base-300 bg-base-100 p-3 text-sm text-base-content/60">
+      <p class="tf-empty p-3 text-sm">
         Lista nema kartice.
       </p>
     }

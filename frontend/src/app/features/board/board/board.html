@@ -1,10 +1,10 @@
-<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<main class="tf-page">
   <a routerLink="/home" class="btn btn-ghost btn-sm mb-4 px-0 text-primary hover:bg-transparent">
     Nazad na home
   </a>
 
   @if (loading$ | async) {
-    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
+    <div class="tf-loading mb-4 text-sm">
       <span class="loading loading-spinner loading-sm"></span>
       Ucitavanje boarda...
     </div>
@@ -17,13 +17,13 @@
   }
 
   @if (reorderError$ | async) {
-    <div class="mb-4 rounded-xl border border-warning/30 bg-warning/10 p-3 text-sm text-warning-content">
+    <div class="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning-content shadow-sm">
       Promena rasporeda nije sacuvana. Vracen je prethodni redosled.
     </div>
   }
 
   @if (board$ | async; as board) {
-    <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <header class="tf-hero-card mb-5 sm:p-6">
       @if (editingBoardHeader) {
         <form class="mb-4 grid max-w-2xl gap-3" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit(board.id)">
           <input
@@ -53,8 +53,8 @@
       } @else {
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div class="min-w-0">
-            <p class="text-sm font-semibold uppercase tracking-wide text-primary">Board</p>
-            <h1 class="mt-1 text-3xl font-bold tracking-tight">{{ board.title }}</h1>
+            <p class="tf-kicker">TaskFlow board</p>
+            <h1 class="mt-1 text-3xl font-black tracking-tight">{{ board.title }}</h1>
             @if (board.description) {
               <p class="mt-2 max-w-2xl text-base-content/70">{{ board.description }}</p>
             }
@@ -84,7 +84,7 @@
       }
     </header>
 
-    <form class="mb-5 grid gap-2 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-sm sm:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
+    <form class="tf-panel mb-5 grid gap-2 p-3 sm:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
       <input
         type="text"
         formControlName="title"
@@ -122,7 +122,7 @@
         }
       </section>
     } @else {
-      <p class="rounded-xl border border-dashed border-base-300 bg-base-100 p-5 text-sm text-base-content/70 shadow-sm">
+      <p class="tf-empty text-sm">
         Board je prazan. Dodaj prvu listu.
       </p>
     }
@@ -150,7 +150,7 @@
     />
   } @else {
     @if (hasBoardRoute && !(loading$ | async) && !(error$ | async)) {
-      <div class="rounded-xl border border-base-300 bg-base-100 p-4 text-base-content/70">
+      <div class="tf-empty text-sm">
         Board nije pronadjen ili jos nije ucitan.
       </div>
     }

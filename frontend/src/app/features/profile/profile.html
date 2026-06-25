@@ -1,12 +1,12 @@
-<main class="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-  <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
-    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Account</p>
-    <h1 class="mt-1 text-3xl font-bold tracking-tight">Profil</h1>
+<main class="tf-page tf-page-form">
+  <header class="tf-hero-card mb-5 sm:p-6">
+    <p class="tf-kicker">Account</p>
+    <h1 class="mt-1 text-3xl font-black tracking-tight">Profil</h1>
     <p class="mt-2 text-base-content/70">Pregledaj i izmeni osnovne podatke naloga.</p>
   </header>
 
   @if (currentUser$ | async; as user) {
-    <section class="card border border-base-300 bg-base-100 shadow-sm">
+    <section class="card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-6">
         @if (error) {
           <div class="alert alert-error text-sm">{{ error }}</div>
@@ -64,7 +64,7 @@
       </div>
     </section>
   } @else {
-    <div class="flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
+    <div class="tf-loading text-sm">
       <span class="loading loading-spinner loading-sm"></span>
       Ucitavanje profila...
     </div>

@@ -1,16 +1,16 @@
-<main class="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+<main class="tf-page tf-page-narrow">
   <a [routerLink]="boardId ? ['/b', boardId] : ['/home']" class="btn btn-ghost btn-sm mb-4 px-0 text-primary hover:bg-transparent">
     Nazad na board
   </a>
 
-  <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
-    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Board history</p>
-    <h1 class="mt-1 text-3xl font-bold tracking-tight">Activity log</h1>
+  <header class="tf-hero-card mb-5 sm:p-6">
+    <p class="tf-kicker">Board history</p>
+    <h1 class="mt-1 text-3xl font-black tracking-tight">Activity log</h1>
     <p class="mt-2 text-base-content/70">Najnovije aktivnosti na boardu.</p>
   </header>
 
   @if (loading) {
-    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
+    <div class="tf-loading mb-4 text-sm">
       <span class="loading loading-spinner loading-sm"></span>
       Ucitavanje aktivnosti...
     </div>
@@ -23,7 +23,7 @@
   @if (activities.length > 0) {
     <ul class="space-y-3">
       @for (activity of activities; track activity.id) {
-        <li class="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">
+        <li class="tf-card p-4">
           <div class="flex gap-3">
             <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary"></div>
             <div class="min-w-0 flex-1">
@@ -47,7 +47,7 @@
       }
     </ul>
   } @else if (!loading && !error) {
-    <div class="rounded-xl border border-dashed border-base-300 bg-base-100 p-5 text-sm text-base-content/70 shadow-sm">
+    <div class="tf-empty text-sm">
       Nema aktivnosti za ovaj board.
     </div>
   }

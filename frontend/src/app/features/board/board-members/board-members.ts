@@ -3,10 +3,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, take, tap } from 'rxjs';
 import { BoardService } from '../../../core/services/board';
 import { UserService } from '../../../core/services/user';
-import { Board, BoardInvite, BoardMember, User } from '../../../store/models';
+import { selectCurrentUser } from '../../../store/auth/auth.selectors';
+import { Board, BoardInvite, BoardMember, BoardMemberRole, User } from '../../../store/models';
 
 @Component({
   selector: 'app-board-members',
@@ -18,14 +20,18 @@ export class BoardMembers {
   private readonly boardService = inject(BoardService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
+  private readonly store = inject(Store);
   private readonly userService = inject(UserService);
 
   boardId: string | null = null;
   board: Board | null = null;
   members: BoardMember[] = [];
   invites: BoardInvite[] = [];
+  currentUser: User | null = null;
   loading = false;
   inviteSaving = false;
+  memberRoleLoadingUserId: string | null = null;
+  memberRemoveLoadingUserId: string | null = null;
   revokeLoadingInviteId: string | null = null;
   userSearchResults: User[] = [];
   userSearchLoading = false;
@@ -56,6 +62,13 @@ export class BoardMembers {
         }
 
         this.error = 'Board nije pronadjen.';
+      });
+
+    this.store
+      .select(selectCurrentUser)
+      .pipe(takeUntilDestroyed())
+      .subscribe((user) => {
+        this.currentUser = user;
       });
 
     this.userSearchControl.valueChanges
@@ -153,6 +166,62 @@ export class BoardMembers {
       });
   }
 
+  updateMemberRole(member: BoardMember, role: BoardMemberRole): void {
+    if (!this.boardId || member.role === role || !this.canManageMember(member)) {
+      return;
+    }
+
+    this.error = null;
+    this.successMessage = null;
+    this.memberRoleLoadingUserId = member.userId;
+
+    this.boardService
+      .updateBoardMemberRole(this.boardId, member.userId, role)
+      .pipe(take(1))
+      .subscribe({
+        next: (updatedMember) => {
+          this.members = this.members.map((existingMember) =>
+            existingMember.userId === updatedMember.userId ? updatedMember : existingMember,
+          );
+          this.memberRoleLoadingUserId = null;
+          this.successMessage = 'Rola clana je promenjena.';
+        },
+        error: (error: unknown) => {
+          this.error = this.getErrorMessage(error, 'Rola clana nije promenjena.');
+          this.memberRoleLoadingUserId = null;
+        },
+      });
+  }
+
+  removeMember(member: BoardMember): void {
+    if (!this.boardId || !this.canManageMember(member)) {
+      return;
+    }
+
+    if (!confirm('Da li zelite da uklonite ovog clana sa boarda?')) {
+      return;
+    }
+
+    this.error = null;
+    this.successMessage = null;
+    this.memberRemoveLoadingUserId = member.userId;
+
+    this.boardService
+      .removeBoardMember(this.boardId, member.userId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.members = this.members.filter((existingMember) => existingMember.userId !== member.userId);
+          this.memberRemoveLoadingUserId = null;
+          this.successMessage = 'Clan je uklonjen sa boarda.';
+        },
+        error: (error: unknown) => {
+          this.error = this.getErrorMessage(error, 'Clan nije uklonjen.');
+          this.memberRemoveLoadingUserId = null;
+        },
+      });
+  }
+
   async copyInviteLink(invite: BoardInvite): Promise<void> {
     this.error = null;
     this.successMessage = null;
@@ -177,6 +246,18 @@ export class BoardMembers {
     this.userSearchResults = [];
     this.userSearchError = null;
     this.hasSearchedUsers = false;
+  }
+
+  canManageMember(member: BoardMember): boolean {
+    return this.currentUserBoardRole() === 'OWNER' && member.role !== 'OWNER';
+  }
+
+  currentUserBoardRole(): BoardMemberRole | null {
+    if (!this.currentUser) {
+      return null;
+    }
+
+    return this.members.find((member) => member.userId === this.currentUser?.id)?.role ?? null;
   }
 
   private loadBoardMembers(boardId: string): void {

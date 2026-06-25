@@ -41,7 +41,32 @@
                   <p class="text-sm text-base-content/60">{{ member.user?.email }}</p>
                 }
               </div>
-              <span class="badge badge-outline shrink-0">{{ member.role }}</span>
+              <div class="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
+                @if (canManageMember(member)) {
+                  <select
+                    class="select select-bordered select-xs"
+                    [value]="member.role"
+                    [disabled]="memberRoleLoadingUserId === member.userId || memberRemoveLoadingUserId === member.userId"
+                    (change)="updateMemberRole(member, $any($event.target).value)"
+                  >
+                    <option value="MEMBER">MEMBER</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                  <button
+                    type="button"
+                    class="btn btn-error btn-xs"
+                    [disabled]="memberRoleLoadingUserId === member.userId || memberRemoveLoadingUserId === member.userId"
+                    (click)="removeMember(member)"
+                  >
+                    @if (memberRemoveLoadingUserId === member.userId) {
+                      <span class="loading loading-spinner loading-xs"></span>
+                    }
+                    Remove
+                  </button>
+                } @else {
+                  <span class="badge badge-outline">{{ member.role }}</span>
+                }
+              </div>
             </li>
           }
         </ul>

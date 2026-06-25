@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -148,7 +149,15 @@ export class BoardsService {
     userId: string,
     updateBoardMemberDto: UpdateBoardMemberDto,
   ) {
-    await this.requireBoardMember(boardId, userId);
+    const member = await this.requireBoardMember(boardId, userId);
+
+    if (member.role === BoardMemberRole.OWNER) {
+      throw new BadRequestException('Owner role cannot be changed');
+    }
+
+    if (updateBoardMemberDto.role === BoardMemberRole.OWNER) {
+      throw new BadRequestException('Owner role cannot be assigned here');
+    }
 
     return this.prisma.boardMember.update({
       where: {
@@ -169,7 +178,11 @@ export class BoardsService {
   }
 
   async removeMember(boardId: string, userId: string) {
-    await this.requireBoardMember(boardId, userId);
+    const member = await this.requireBoardMember(boardId, userId);
+
+    if (member.role === BoardMemberRole.OWNER) {
+      throw new BadRequestException('Owner cannot be removed from the board');
+    }
 
     return this.prisma.boardMember.delete({
       where: {
@@ -227,6 +240,8 @@ export class BoardsService {
     if (!member) {
       throw new NotFoundException('Board member not found');
     }
+
+    return member;
   }
 
   private readonly safeUserSelect = {

@@ -111,7 +111,7 @@ export class BoardsController {
     return this.boardsService.updateMember(id, userId, updateBoardMemberDto);
   }
 
-  @Roles(BoardMemberRole.OWNER, BoardMemberRole.ADMIN)
+  @Roles(BoardMemberRole.OWNER)
   @UseGuards(BoardRoleGuard)
   @Delete('boards/:id/members/:userId')
   removeMember(@Param('id') id: string, @Param('userId') userId: string) {

@@ -3,9 +3,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { distinctUntilChanged, forkJoin, map, take } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, take, tap } from 'rxjs';
 import { BoardService } from '../../../core/services/board';
-import { Board, BoardInvite, BoardMember } from '../../../store/models';
+import { UserService } from '../../../core/services/user';
+import { Board, BoardInvite, BoardMember, User } from '../../../store/models';
 
 @Component({
   selector: 'app-board-members',
@@ -17,6 +18,7 @@ export class BoardMembers {
   private readonly boardService = inject(BoardService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
+  private readonly userService = inject(UserService);
 
   boardId: string | null = null;
   board: Board | null = null;
@@ -25,12 +27,18 @@ export class BoardMembers {
   loading = false;
   inviteSaving = false;
   revokeLoadingInviteId: string | null = null;
+  userSearchResults: User[] = [];
+  userSearchLoading = false;
+  userSearchError: string | null = null;
+  hasSearchedUsers = false;
   error: string | null = null;
   successMessage: string | null = null;
 
   readonly inviteForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
   });
+
+  readonly userSearchControl = this.formBuilder.nonNullable.control('');
 
   constructor() {
     this.route.paramMap
@@ -48,6 +56,41 @@ export class BoardMembers {
         }
 
         this.error = 'Board nije pronadjen.';
+      });
+
+    this.userSearchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        map((query) => query.trim()),
+        distinctUntilChanged(),
+        tap((query) => {
+          this.userSearchError = null;
+          this.hasSearchedUsers = query.length >= 2;
+
+          if (query.length < 2) {
+            this.userSearchResults = [];
+            this.userSearchLoading = false;
+          }
+        }),
+        switchMap((query) => {
+          if (query.length < 2) {
+            return of([]);
+          }
+
+          this.userSearchLoading = true;
+
+          return this.userService.searchUsers(query).pipe(
+            catchError(() => {
+              this.userSearchError = 'Pretraga korisnika nije uspela.';
+              return of([]);
+            }),
+          );
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((users) => {
+        this.userSearchResults = users;
+        this.userSearchLoading = false;
       });
   }
 
@@ -126,6 +169,14 @@ export class BoardMembers {
 
   getInviteLink(invite: BoardInvite): string {
     return `${window.location.origin}/invite/${invite.token}`;
+  }
+
+  selectUserForInvite(user: User): void {
+    this.inviteForm.patchValue({ email: user.email });
+    this.userSearchControl.setValue(user.displayName || user.email, { emitEvent: false });
+    this.userSearchResults = [];
+    this.userSearchError = null;
+    this.hasSearchedUsers = false;
   }
 
   private loadBoardMembers(boardId: string): void {

@@ -58,6 +58,51 @@
       <form class="mb-6 grid gap-3" [formGroup]="inviteForm" (ngSubmit)="createInvite()">
         <label class="form-control w-full">
           <div class="label">
+            <span class="label-text">Pretrazi korisnika</span>
+          </div>
+          <input
+            type="text"
+            [formControl]="userSearchControl"
+            class="input input-bordered w-full"
+            placeholder="Email ili ime korisnika"
+            autocomplete="off"
+          />
+        </label>
+
+        @if (userSearchLoading) {
+          <div class="flex items-center gap-2 text-sm text-base-content/70">
+            <span class="loading loading-spinner loading-sm"></span>
+            Pretraga korisnika...
+          </div>
+        }
+
+        @if (userSearchError) {
+          <div class="alert alert-error text-sm">{{ userSearchError }}</div>
+        }
+
+        @if (userSearchResults.length > 0) {
+          <ul class="rounded-xl border border-base-300 bg-base-100">
+            @for (user of userSearchResults; track user.id) {
+              <li>
+                <button
+                  type="button"
+                  class="flex w-full flex-col items-start gap-1 px-3 py-2 text-left hover:bg-base-200"
+                  (click)="selectUserForInvite(user)"
+                >
+                  <span class="font-medium">{{ user.displayName }}</span>
+                  <span class="text-xs text-base-content/60">{{ user.email }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        } @else if (hasSearchedUsers && !userSearchLoading && !userSearchError) {
+          <div class="rounded-xl border border-base-300 bg-base-100 p-3 text-sm text-base-content/70">
+            Nema korisnika za ovu pretragu.
+          </div>
+        }
+
+        <label class="form-control w-full">
+          <div class="label">
             <span class="label-text">Email korisnika</span>
           </div>
           <input

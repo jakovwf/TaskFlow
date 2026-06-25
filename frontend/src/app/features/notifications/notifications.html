@@ -32,7 +32,7 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div class="min-w-0">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <span class="badge badge-outline">{{ notification.type }}</span>
+                  <span class="badge badge-outline">{{ notificationLabel(notification) }}</span>
                   @if (notification.isRead) {
                     <span class="badge badge-ghost">Procitano</span>
                   } @else {
@@ -47,11 +47,25 @@
                 }
               </div>
 
-              @if (!notification.isRead) {
-                <button type="button" class="btn btn-outline btn-xs shrink-0" [disabled]="loading$ | async" (click)="markAsRead(notification.id)">
-                  Oznaci procitano
-                </button>
-              }
+              <div class="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-end">
+                @if (inviteLink(notification); as link) {
+                  <a
+                    [routerLink]="link"
+                    class="btn btn-primary btn-xs"
+                    (click)="openInvite(notification)"
+                  >
+                    Otvori pozivnicu
+                  </a>
+                } @else if (notification.type === 'BOARD_INVITE') {
+                  <p class="text-xs text-base-content/60">Invite link nije dostupan.</p>
+                }
+
+                @if (!notification.isRead) {
+                  <button type="button" class="btn btn-outline btn-xs" [disabled]="loading$ | async" (click)="markAsRead(notification.id)">
+                    Oznaci procitano
+                  </button>
+                }
+              </div>
             </div>
           </li>
         }

@@ -1,5 +1,6 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import {
   loadNotifications,
@@ -12,10 +13,11 @@ import {
   selectNotificationsLoading,
   selectUnreadCount,
 } from '../../store/notifications/notifications.selectors';
+import { Notification } from '../../store/models';
 
 @Component({
   selector: 'app-notifications',
-  imports: [AsyncPipe, DatePipe],
+  imports: [AsyncPipe, DatePipe, RouterLink],
   templateUrl: './notifications.html',
   styleUrl: './notifications.scss',
 })
@@ -37,5 +39,36 @@ export class Notifications {
 
   markAllAsRead(): void {
     this.store.dispatch(markAllAsRead());
+  }
+
+  notificationLabel(notification: Notification): string {
+    switch (notification.type) {
+      case 'BOARD_INVITE':
+        return 'Pozivnica';
+      case 'CARD_ASSIGNED':
+        return 'Kartica';
+      case 'CARD_MOVED':
+        return 'Kartica';
+      case 'COMMENT_ADDED':
+        return 'Komentar';
+      case 'MEMBER_JOINED':
+        return 'Clan';
+      case 'BOARD_UPDATED':
+        return 'Board';
+      default:
+        return 'Obavestenje';
+    }
+  }
+
+  inviteLink(notification: Notification): string | null {
+    const token = notification.relatedInvite?.token;
+
+    return notification.type === 'BOARD_INVITE' && token ? `/invite/${token}` : null;
+  }
+
+  openInvite(notification: Notification): void {
+    if (!notification.isRead) {
+      this.markAsRead(notification.id);
+    }
   }
 }

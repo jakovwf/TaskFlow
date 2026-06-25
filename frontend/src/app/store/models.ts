@@ -144,7 +144,10 @@ export interface Notification {
   relatedInviteId?: string | null;
   createdAt?: string;
   relatedCard?: unknown;
-  relatedInvite?: unknown;
+  relatedInvite?: {
+    id: string;
+    token: string;
+  } | null;
 }
 
 export interface AuthResponse {

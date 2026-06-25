@@ -19,13 +19,20 @@
       <p class="mb-2 text-xs font-semibold uppercase text-base-content/60">Navigacija</p>
       <ul class="menu rounded-box border border-base-300 bg-base-200/70 text-base">
         <li><a routerLink="/home" (click)="closeSidebar()">Dashboard</a></li>
-        <li><a routerLink="/home" (click)="closeSidebar()">Boardovi</a></li>
         <li><a routerLink="/profile" (click)="closeSidebar()">Profil</a></li>
-        <li><a routerLink="/notifications" (click)="closeSidebar()">Notifikacije</a></li>
+        <li>
+          <a routerLink="/notifications" (click)="closeSidebar()">
+            <span class="flex items-center gap-2">
+              <span class="text-lg leading-none">&#128276;</span>
+              Notifikacije
+            </span>
+            <span class="badge badge-primary badge-sm">{{ unreadCount$ | async }}</span>
+          </a>
+        </li>
       </ul>
     </div>
 
-    <div class="mt-auto pt-6 lg:hidden">
+    <div class="mt-auto grid gap-2 pt-6">
       <button type="button" class="btn btn-outline w-full" (click)="logout()">Logout</button>
     </div>
   </nav>
@@ -72,6 +79,5 @@
         <span class="text-xl leading-none">&#128276;</span>
       </div>
     </a>
-    <button type="button" class="btn btn-outline btn-sm ml-2 hidden sm:inline-flex" (click)="logout()">Logout</button>
   </div>
 </header>

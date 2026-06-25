@@ -15,6 +15,7 @@ import {
 export interface NotificationsState extends EntityState<Notification> {
   unreadCount: number;
   loading: boolean;
+  error: string | null;
 }
 
 export const notificationsAdapter = createEntityAdapter<Notification>({
@@ -24,30 +25,37 @@ export const notificationsAdapter = createEntityAdapter<Notification>({
 export const initialNotificationsState: NotificationsState = notificationsAdapter.getInitialState({
   unreadCount: 0,
   loading: false,
+  error: null,
 });
 
 export const notificationsReducer = createReducer(
   initialNotificationsState,
-  on(loadNotifications, markAsRead, markAllAsRead, (state) => ({ ...state, loading: true })),
+  on(loadNotifications, markAsRead, markAllAsRead, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
   on(loadNotificationsSuccess, (state, { notifications }) =>
     notificationsAdapter.setAll(notifications, {
       ...state,
       unreadCount: notifications.filter((notification) => !notification.isRead).length,
       loading: false,
+      error: null,
     }),
   ),
-  on(loadNotificationsFailure, (state) => ({ ...state, loading: false })),
+  on(loadNotificationsFailure, (state, { error }) => ({ ...state, loading: false, error })),
   on(markAsReadSuccess, (state, { notification }) =>
     notificationsAdapter.upsertOne(notification, {
       ...state,
       unreadCount: Math.max(0, state.unreadCount - (notification.isRead ? 1 : 0)),
       loading: false,
+      error: null,
     }),
   ),
   on(markAllAsReadSuccess, (state) =>
     notificationsAdapter.updateMany(
       state.ids.map((id) => ({ id: String(id), changes: { isRead: true } })),
-      { ...state, unreadCount: 0, loading: false },
+      { ...state, unreadCount: 0, loading: false, error: null },
     ),
   ),
   on(addNotification, (state, { notification }) =>

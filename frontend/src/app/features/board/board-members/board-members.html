@@ -42,8 +42,8 @@
                 <p class="truncate font-medium">
                   {{ member.user?.displayName ?? member.user?.email ?? member.userId }}
                 </p>
-                @if (member.user?.email) {
-                  <p class="text-sm text-base-content/60">{{ member.user?.email }}</p>
+                @if (member.user?.email; as email) {
+                  <p class="text-sm text-base-content/60">{{ email }}</p>
                 }
               </div>
               <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">

@@ -26,7 +26,7 @@ export class NotificationsEffects {
       switchMap(() =>
         this.http.get<Notification[]>(this.notificationsApiUrl).pipe(
           map((notifications) => loadNotificationsSuccess({ notifications })),
-          catchError(() => of(loadNotificationsFailure())),
+          catchError((error: unknown) => of(loadNotificationsFailure({ error: this.getErrorMessage(error) }))),
         ),
       ),
     ),
@@ -38,7 +38,7 @@ export class NotificationsEffects {
       switchMap(({ id }) =>
         this.http.patch<Notification>(`${this.notificationsApiUrl}/${id}/read`, {}).pipe(
           map((notification) => markAsReadSuccess({ notification })),
-          catchError(() => of(loadNotificationsFailure())),
+          catchError((error: unknown) => of(loadNotificationsFailure({ error: this.getErrorMessage(error) }))),
         ),
       ),
     ),
@@ -50,9 +50,23 @@ export class NotificationsEffects {
       switchMap(() =>
         this.http.patch(`${this.notificationsApiUrl}/read-all`, {}).pipe(
           map(() => markAllAsReadSuccess()),
-          catchError(() => of(loadNotificationsFailure())),
+          catchError((error: unknown) => of(loadNotificationsFailure({ error: this.getErrorMessage(error) }))),
         ),
       ),
     ),
   );
+
+  private getErrorMessage(error: unknown): string {
+    if (typeof error === 'object' && error !== null && 'error' in error) {
+      const httpError = error as { error?: { message?: string } | string; message?: string };
+
+      if (typeof httpError.error === 'string') {
+        return httpError.error;
+      }
+
+      return httpError.error?.message ?? httpError.message ?? 'Notifikacije nisu ucitane.';
+    }
+
+    return 'Notifikacije nisu ucitane.';
+  }
 }

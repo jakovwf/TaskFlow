@@ -6,7 +6,7 @@ export const notificationsActions = createActionGroup({
   events: {
     'Load Notifications': emptyProps(),
     'Load Notifications Success': props<{ notifications: Notification[] }>(),
-    'Load Notifications Failure': emptyProps(),
+    'Load Notifications Failure': props<{ error: string }>(),
     'Mark As Read': props<{ id: string }>(),
     'Mark As Read Success': props<{ notification: Notification }>(),
     'Mark All As Read': emptyProps(),

@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { logout } from '../../../store/auth/auth.actions';
+import { loadNotifications } from '../../../store/notifications/notifications.actions';
 import { selectUnreadCount } from '../../../store/notifications/notifications.selectors';
 
 @Component({
@@ -19,6 +20,10 @@ export class NavbarComponent {
   private readonly store = inject(Store);
 
   readonly unreadCount$ = this.store.select(selectUnreadCount);
+
+  constructor() {
+    this.store.dispatch(loadNotifications());
+  }
 
   logout(): void {
     this.closeSidebar();

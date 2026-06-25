@@ -1,1 +1,72 @@
-<p>profile stranica</p>
+<main class="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+  <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Account</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight">Profil</h1>
+    <p class="mt-2 text-base-content/70">Pregledaj i izmeni osnovne podatke naloga.</p>
+  </header>
+
+  @if (currentUser$ | async; as user) {
+    <section class="card border border-base-300 bg-base-100 shadow-sm">
+      <div class="card-body gap-4 p-4 sm:p-6">
+        @if (error) {
+          <div class="alert alert-error text-sm">{{ error }}</div>
+        }
+
+        @if (successMessage) {
+          <div class="alert alert-success text-sm">{{ successMessage }}</div>
+        }
+
+        <form class="grid gap-4" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <label class="form-control w-full">
+            <div class="label">
+              <span class="label-text">Email</span>
+            </div>
+            <input type="email" class="input input-bordered w-full" [value]="user.email" readonly />
+          </label>
+
+          <label class="form-control w-full">
+            <div class="label">
+              <span class="label-text">Ime za prikaz</span>
+            </div>
+            <input
+              type="text"
+              class="input input-bordered w-full"
+              formControlName="displayName"
+              placeholder="Tvoje ime"
+            />
+          </label>
+
+          <label class="form-control w-full">
+            <div class="label">
+              <span class="label-text">Avatar URL</span>
+              <span class="label-text-alt">Opciono</span>
+            </div>
+            <input
+              type="url"
+              class="input input-bordered w-full"
+              formControlName="avatarUrl"
+              placeholder="https://..."
+            />
+          </label>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-sm text-base-content/60">
+              ID korisnika: {{ user.id }}
+            </p>
+            <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || loading">
+              @if (loading) {
+                <span class="loading loading-spinner loading-sm"></span>
+              }
+              Sacuvaj profil
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  } @else {
+    <div class="flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
+      <span class="loading loading-spinner loading-sm"></span>
+      Ucitavanje profila...
+    </div>
+  }
+</main>

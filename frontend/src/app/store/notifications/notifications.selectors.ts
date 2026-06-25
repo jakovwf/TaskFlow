@@ -21,3 +21,8 @@ export const selectNotificationsLoading = createSelector(
   selectNotificationsState,
   (state) => state.loading,
 );
+
+export const selectNotificationsError = createSelector(
+  selectNotificationsState,
+  (state) => state.error,
+);

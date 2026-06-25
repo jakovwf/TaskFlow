@@ -289,9 +289,21 @@ export class BoardMembers {
     forkJoin({
       board: this.boardService.getBoard(boardId),
       members: this.boardService.getBoardMembers(boardId),
-      invites: this.boardService.getBoardInvites(boardId),
     })
       .pipe(
+        switchMap(({ board, members }) => {
+          const currentUserRole =
+            members.find((member) => member.userId === this.currentUser?.id)?.role ?? null;
+
+          if (currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN') {
+            return of({ board, members, invites: [] as BoardInvite[] });
+          }
+
+          return this.boardService.getBoardInvites(boardId).pipe(
+            catchError(() => of([] as BoardInvite[])),
+            map((invites) => ({ board, members, invites })),
+          );
+        }),
         take(1),
         finalize(() => {
           if (this.boardId === boardId) {

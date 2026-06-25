@@ -57,6 +57,9 @@
                     <option value="MEMBER">MEMBER</option>
                     <option value="ADMIN">ADMIN</option>
                   </select>
+                  @if (memberRoleLoadingUserId === member.userId) {
+                    <span class="loading loading-spinner loading-xs"></span>
+                  }
                   <button
                     type="button"
                     class="btn btn-error btn-outline btn-sm"

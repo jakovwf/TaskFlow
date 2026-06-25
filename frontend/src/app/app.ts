@@ -19,17 +19,12 @@ export class App {
   private readonly store = inject(Store);
   private readonly publicPaths = new Set(['/', '/login', '/register']);
   private readonly currentPath = signal(this.router.url.split('?')[0]);
-  protected readonly isSidebarOpen = signal(true);
 
   protected readonly showNavbar = computed(() => {
     const path = this.currentPath();
 
     return this.authService.isLoggedIn() && !this.publicPaths.has(path);
   });
-
-  protected toggleSidebar(): void {
-    this.isSidebarOpen.update((isOpen) => !isOpen);
-  }
 
   constructor() {
     if (this.authService.getToken()) {

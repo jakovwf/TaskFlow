@@ -1,12 +1,10 @@
 @if (showNavbar()) {
   <div class="min-h-screen bg-base-200">
-    <div class="flex min-h-screen">
-      <app-navbar [isSidebarOpen]="isSidebarOpen()" (sidebarToggle)="toggleSidebar()" />
+    <app-navbar />
 
-      <main class="min-w-0 flex-1 p-4 pt-20 transition-all duration-300">
-        <router-outlet />
-      </main>
-    </div>
+    <main class="min-w-0 p-4 pb-28 pt-20 md:pb-32">
+      <router-outlet />
+    </main>
   </div>
 } @else {
   <main class="min-h-screen bg-base-200">

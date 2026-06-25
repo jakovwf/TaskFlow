@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { distinctUntilChanged, map, take } from 'rxjs';
+import { distinctUntilChanged, finalize, map, take } from 'rxjs';
 import { BoardService } from '../../../core/services/board';
 import { BoardActivityItem } from '../../../store/models';
 
@@ -90,15 +90,18 @@ export class BoardActivity {
 
     this.boardService
       .getBoardActivity(boardId)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.loading = false;
+        }),
+      )
       .subscribe({
         next: (activities) => {
           this.activities = activities;
-          this.loading = false;
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error);
-          this.loading = false;
         },
       });
   }

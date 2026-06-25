@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, take, tap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, forkJoin, map, of, switchMap, take, tap } from 'rxjs';
 import { BoardService } from '../../../core/services/board';
 import { UserService } from '../../../core/services/user';
 import { selectCurrentUser } from '../../../store/auth/auth.selectors';
@@ -97,13 +97,15 @@ export class BoardMembers {
               this.userSearchError = 'Pretraga korisnika nije uspela.';
               return of([]);
             }),
+            finalize(() => {
+              this.userSearchLoading = false;
+            }),
           );
         }),
         takeUntilDestroyed(),
       )
       .subscribe((users) => {
         this.userSearchResults = users;
-        this.userSearchLoading = false;
       });
   }
 
@@ -126,17 +128,20 @@ export class BoardMembers {
 
     this.boardService
       .createBoardInvite(this.boardId, { inviteeEmail })
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.inviteSaving = false;
+        }),
+      )
       .subscribe({
         next: (invite) => {
           this.invites = [invite, ...this.invites];
           this.inviteForm.reset();
-          this.inviteSaving = false;
           this.successMessage = 'Invite je poslat i dodat u pending listu.';
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Invite nije poslat.');
-          this.inviteSaving = false;
         },
       });
   }
@@ -152,16 +157,19 @@ export class BoardMembers {
 
     this.boardService
       .deleteBoardInvite(this.boardId, inviteId)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.revokeLoadingInviteId = null;
+        }),
+      )
       .subscribe({
         next: () => {
           this.invites = this.invites.filter((invite) => invite.id !== inviteId);
-          this.revokeLoadingInviteId = null;
           this.successMessage = 'Invite je povucen.';
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Invite nije povucen.');
-          this.revokeLoadingInviteId = null;
         },
       });
   }
@@ -177,18 +185,21 @@ export class BoardMembers {
 
     this.boardService
       .updateBoardMemberRole(this.boardId, member.userId, role)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.memberRoleLoadingUserId = null;
+        }),
+      )
       .subscribe({
         next: (updatedMember) => {
           this.members = this.members.map((existingMember) =>
             existingMember.userId === updatedMember.userId ? updatedMember : existingMember,
           );
-          this.memberRoleLoadingUserId = null;
           this.successMessage = 'Rola clana je promenjena.';
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Rola clana nije promenjena.');
-          this.memberRoleLoadingUserId = null;
         },
       });
   }
@@ -208,16 +219,19 @@ export class BoardMembers {
 
     this.boardService
       .removeBoardMember(this.boardId, member.userId)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.memberRemoveLoadingUserId = null;
+        }),
+      )
       .subscribe({
         next: () => {
           this.members = this.members.filter((existingMember) => existingMember.userId !== member.userId);
-          this.memberRemoveLoadingUserId = null;
           this.successMessage = 'Clan je uklonjen sa boarda.';
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Clan nije uklonjen.');
-          this.memberRemoveLoadingUserId = null;
         },
       });
   }
@@ -270,17 +284,20 @@ export class BoardMembers {
       members: this.boardService.getBoardMembers(boardId),
       invites: this.boardService.getBoardInvites(boardId),
     })
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.loading = false;
+        }),
+      )
       .subscribe({
         next: ({ board, members, invites }) => {
           this.board = board;
           this.members = members;
           this.invites = invites.filter((invite) => invite.status === 'PENDING');
-          this.loading = false;
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Clanovi boarda nisu ucitani.');
-          this.loading = false;
         },
       });
   }

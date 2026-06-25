@@ -3,7 +3,7 @@ import { Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { distinctUntilChanged, map, take } from 'rxjs';
+import { distinctUntilChanged, finalize, map, take } from 'rxjs';
 import { AuthService } from '../../core/services/auth';
 import { InviteService } from '../../core/services/invite';
 import { loadMyBoards } from '../../store/boards/boards.actions';
@@ -64,13 +64,17 @@ export class Invite {
 
     this.inviteService
       .acceptInvite(this.token)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.actionLoading = false;
+        }),
+      )
       .subscribe({
         next: (response) => {
           const boardId = response.invite.board?.id ?? this.invite?.board?.id;
 
           this.store.dispatch(loadMyBoards());
-          this.actionLoading = false;
           this.successMessage = 'Invite je prihvacen.';
           void this.router.navigate(boardId ? ['/b', boardId] : ['/home']);
         },
@@ -94,10 +98,14 @@ export class Invite {
 
     this.inviteService
       .declineInvite(this.token)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.actionLoading = false;
+        }),
+      )
       .subscribe({
         next: () => {
-          this.actionLoading = false;
           this.successMessage = 'Invite je odbijen.';
           void this.router.navigate(['/home']);
         },
@@ -112,15 +120,18 @@ export class Invite {
 
     this.inviteService
       .getInvite(token)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.loading = false;
+        }),
+      )
       .subscribe({
         next: (invite) => {
           this.invite = invite;
-          this.loading = false;
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error) ?? 'Invite nije pronadjen ili vise nije aktivan.';
-          this.loading = false;
         },
       });
   }
@@ -131,8 +142,6 @@ export class Invite {
   }
 
   private handleInviteActionError(error: unknown, fallbackMessage: string): void {
-    this.actionLoading = false;
-
     if (error instanceof HttpErrorResponse && error.status === 401) {
       this.redirectToLogin();
       return;

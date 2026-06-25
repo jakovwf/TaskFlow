@@ -17,6 +17,8 @@ export class CardDetailComponent implements OnChanges {
   @Input() commentsLoading = false;
   @Input() commentSaving = false;
   @Input() commentsError: string | null = null;
+  @Input() cardTitleSaving = false;
+  @Input() cardTitleError: string | null = null;
   @Input() boardMembers: BoardMember[] = [];
   @Input() canManageMembers = false;
   @Input() memberAssignmentSaving = false;
@@ -25,6 +27,7 @@ export class CardDetailComponent implements OnChanges {
   @Input() loading: boolean | null = false;
 
   @Output() close = new EventEmitter<void>();
+  @Output() saveTitle = new EventEmitter<{ cardId: string; title: string }>();
   @Output() save = new EventEmitter<{ cardId: string; title: string; description?: string }>();
   @Output() delete = new EventEmitter<{ cardId: string; listId: string }>();
   @Output() assignMember = new EventEmitter<{ cardId: string; userId: string }>();
@@ -60,6 +63,10 @@ export class CardDetailComponent implements OnChanges {
       this.newCommentContent = '';
       this.selectedMemberId = '';
     }
+
+    if ('cardTitleError' in changes && this.cardTitleError && this.card) {
+      this.form.controls.title.setValue(this.card.title);
+    }
   }
 
   emitClose(): void {
@@ -78,6 +85,52 @@ export class CardDetailComponent implements OnChanges {
       title,
       description: description.trim() || undefined,
     });
+  }
+
+  commitTitle(): void {
+    if (!this.card || this.cardTitleSaving) {
+      return;
+    }
+
+    const title = this.form.controls.title.value.trim();
+
+    if (!title) {
+      this.form.controls.title.setValue(this.card.title);
+      return;
+    }
+
+    if (title === this.card.title) {
+      this.form.controls.title.setValue(this.card.title);
+      return;
+    }
+
+    this.saveTitle.emit({
+      cardId: this.card.id,
+      title,
+    });
+  }
+
+  cancelTitle(): void {
+    if (!this.card) {
+      return;
+    }
+
+    this.form.controls.title.setValue(this.card.title);
+  }
+
+  handleTitleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.commitTitle();
+      (event.target as HTMLInputElement | null)?.blur();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelTitle();
+      (event.target as HTMLInputElement | null)?.blur();
+    }
   }
 
   emitDelete(): void {

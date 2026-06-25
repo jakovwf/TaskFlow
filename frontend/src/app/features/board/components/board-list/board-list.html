@@ -1,12 +1,23 @@
 <div class="tf-panel w-[18rem] shrink-0 p-3 sm:w-80">
-  <div class="mb-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-    <input #listTitle type="text" class="input input-bordered input-sm w-full font-medium" [value]="list.title" />
-    <button type="button" class="btn btn-outline btn-sm" [disabled]="loading" (click)="emitRename(listTitle.value)">
-      @if (loading) {
-        <span class="loading loading-spinner loading-xs"></span>
-      }
-      Sacuvaj
-    </button>
+  <div class="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+    <div class="min-w-0">
+      <input
+        type="text"
+        class="input input-bordered input-sm w-full bg-base-100/80 font-semibold transition focus:border-primary focus:bg-base-100"
+        aria-label="Naziv liste"
+        [(ngModel)]="editableListTitle"
+        [disabled]="renaming"
+        (blur)="commitListTitle()"
+        (keydown)="handleListTitleKeydown($event)"
+      />
+      <div class="mt-1 min-h-4 text-xs">
+        @if (renaming) {
+          <span class="text-base-content/50">Cuvanje...</span>
+        } @else if (renameError) {
+          <span class="text-error">{{ renameError }}</span>
+        }
+      </div>
+    </div>
     <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading" (click)="emitDelete()">
       Obrisi
     </button>

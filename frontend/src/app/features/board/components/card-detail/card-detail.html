@@ -1,6 +1,6 @@
 @if (card) {
-  <div class="modal modal-open">
-    <div class="modal-box tf-panel max-h-[90vh] w-11/12 max-w-2xl overflow-y-auto p-5 sm:p-6">
+  <div class="modal modal-open items-start overflow-y-auto p-3 sm:items-center sm:p-6">
+    <div class="modal-box tf-panel max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl overflow-y-auto overscroll-contain p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-h-[calc(100dvh-3rem)] sm:p-6">
       <button
         type="button"
         class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
@@ -18,7 +18,23 @@
       <form class="grid gap-3" [formGroup]="form" (ngSubmit)="emitSave()">
         <label class="form-control">
           <span class="label-text mb-1">Naslov</span>
-          <input type="text" formControlName="title" class="input input-bordered" />
+          <input
+            type="text"
+            formControlName="title"
+            class="input input-bordered bg-base-100/80 font-semibold focus:border-primary focus:bg-base-100"
+            [disabled]="cardTitleSaving"
+            (blur)="commitTitle()"
+            (keydown)="handleTitleKeydown($event)"
+          />
+          <span class="mt-1 min-h-4 text-xs">
+            @if (cardTitleSaving) {
+              <span class="text-base-content/50">Cuvanje...</span>
+            } @else if (cardTitleError) {
+              <span class="text-error">{{ cardTitleError }}</span>
+            } @else {
+              <span class="text-base-content/40">Enter ili klik van polja cuva naslov.</span>
+            }
+          </span>
         </label>
 
         <label class="form-control">
@@ -28,10 +44,10 @@
 
         <div class="flex flex-col gap-2 sm:flex-row">
           <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
-            Sačuvaj karticu
+            Sacuvaj opis
           </button>
           <button type="button" class="btn btn-error" [disabled]="loading" (click)="emitDelete()">
-            Obriši karticu
+            Obrisi karticu
           </button>
         </div>
       </form>

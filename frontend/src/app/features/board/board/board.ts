@@ -9,6 +9,7 @@ import { Store } from '@ngrx/store';
 import { combineLatest, distinctUntilChanged, finalize, map, take } from 'rxjs';
 import { CommentService } from '../../../core/services/comment';
 import { CardService } from '../../../core/services/card';
+import { ListService } from '../../../core/services/list';
 import {
   createCard,
   createList,
@@ -21,7 +22,7 @@ import {
   updateCard,
   updateCardSuccess,
   updateBoardDetails,
-  updateList,
+  updateListSuccess,
 } from '../../../store/boards/boards.actions';
 import { selectCurrentUser } from '../../../store/auth/auth.selectors';
 import {
@@ -45,6 +46,7 @@ export class Board {
   private readonly cardService = inject(CardService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly commentService = inject(CommentService);
+  private readonly listService = inject(ListService);
   private readonly route = inject(ActivatedRoute);
   private readonly store = inject(Store);
 
@@ -63,8 +65,12 @@ export class Board {
   commentsLoading = false;
   commentSaving = false;
   commentsError: string | null = null;
+  cardTitleSaving = false;
+  cardTitleError: string | null = null;
   memberAssignmentSaving = false;
   memberAssignmentError: string | null = null;
+  renamingListId: string | null = null;
+  listRenameErrors: Record<string, string | null> = {};
   editingBoardHeader = false;
   hasBoardRoute = false;
   private lastCommentsBoardId: string | null = null;
@@ -168,7 +174,39 @@ export class Board {
   }
 
   renameList(event: { listId: string; title: string }): void {
-    this.store.dispatch(updateList(event));
+    if (this.renamingListId) {
+      return;
+    }
+
+    this.renamingListId = event.listId;
+    this.listRenameErrors = {
+      ...this.listRenameErrors,
+      [event.listId]: null,
+    };
+    this.cdr.markForCheck();
+
+    this.listService
+      .updateList(event.listId, { title: event.title })
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.renamingListId = null;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (list) => {
+          this.store.dispatch(updateListSuccess({ list }));
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.listRenameErrors = {
+            ...this.listRenameErrors,
+            [event.listId]: 'Naziv liste nije sacuvan.',
+          };
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   removeList(listId: string): void {
@@ -181,6 +219,8 @@ export class Board {
 
   openCard(card: Card): void {
     this.selectedCard = card;
+    this.cardTitleSaving = false;
+    this.cardTitleError = null;
     this.memberAssignmentError = null;
     this.memberAssignmentSaving = false;
     this.loadComments(card.id);
@@ -192,6 +232,8 @@ export class Board {
     this.activeCommentsLoadCardId = null;
     this.commentsLoading = false;
     this.commentsError = null;
+    this.cardTitleSaving = false;
+    this.cardTitleError = null;
     this.memberAssignmentSaving = false;
     this.memberAssignmentError = null;
     this.cdr.markForCheck();
@@ -200,6 +242,46 @@ export class Board {
   saveCard(event: { cardId: string; title: string; description?: string }): void {
     this.store.dispatch(updateCard(event));
     this.closeCard();
+  }
+
+  saveCardTitle(event: { cardId: string; title: string }): void {
+    if (!this.selectedCard || this.cardTitleSaving) {
+      return;
+    }
+
+    this.cardTitleError = null;
+    this.cardTitleSaving = true;
+    this.cdr.markForCheck();
+
+    this.cardService
+      .updateCard(event.cardId, { title: event.title })
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.cardTitleSaving = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (card) => {
+          if (!this.selectedCard) {
+            return;
+          }
+
+          const updatedCard = {
+            ...this.selectedCard,
+            ...card,
+          };
+
+          this.selectedCard = updatedCard;
+          this.store.dispatch(updateCardSuccess({ card: updatedCard }));
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.cardTitleError = 'Naziv kartice nije sacuvan.';
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   removeCard(event: { cardId: string; listId: string }): void {

@@ -104,8 +104,8 @@
         class="flex gap-4 overflow-x-auto pb-4"
         cdkDropList
         cdkDropListOrientation="horizontal"
-        [cdkDropListData]="board.lists ?? []"
-        (cdkDropListDropped)="dropList($event, board.id, board.lists ?? [])"
+        [cdkDropListData]="board.lists"
+        (cdkDropListDropped)="dropList($event, board.id, board.lists)"
       >
         @for (list of board.lists; track list.id) {
           <app-board-list

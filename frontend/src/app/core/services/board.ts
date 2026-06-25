@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Board, BoardInvite, BoardMember } from '../../store/models';
+import { Board, BoardActivityItem, BoardInvite, BoardMember } from '../../store/models';
 
 export interface CreateBoardData {
   title: string;
@@ -57,6 +57,10 @@ export class BoardService {
 
   getBoardInvites(boardId: string): Observable<BoardInvite[]> {
     return this.http.get<BoardInvite[]>(`${this.boardsApiUrl}/${boardId}/invites`);
+  }
+
+  getBoardActivity(boardId: string): Observable<BoardActivityItem[]> {
+    return this.http.get<BoardActivityItem[]>(`${this.boardsApiUrl}/${boardId}/activity`);
   }
 
   createBoardInvite(boardId: string, data: CreateBoardInviteData): Observable<BoardInvite> {

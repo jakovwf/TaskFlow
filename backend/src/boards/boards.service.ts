@@ -4,7 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BoardMemberRole } from '@prisma/client';
+import { ActivityType, BoardMemberRole } from '@prisma/client';
+import { ActivityService } from '../activity/activity.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddBoardMemberDto } from './dto/add-board-member.dto';
 import { CreateBoardDto } from './dto/create-board.dto';
@@ -13,7 +14,10 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Injectable()
 export class BoardsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityService: ActivityService,
+  ) {}
 
   findAllForUser(userId: string) {
     return this.prisma.board.findMany({
@@ -66,12 +70,21 @@ export class BoardsService {
     });
   }
 
-  update(id: string, updateBoardDto: UpdateBoardDto) {
-    return this.prisma.board.update({
+  async update(id: string, userId: string, updateBoardDto: UpdateBoardDto) {
+    const board = await this.prisma.board.update({
       where: { id },
       data: updateBoardDto,
       include: this.boardDetailInclude,
     });
+
+    await this.activityService.logActivity({
+      type: ActivityType.BOARD_UPDATED,
+      boardId: board.id,
+      userId,
+      payload: { boardTitle: board.title },
+    });
+
+    return board;
   }
 
   remove(id: string) {

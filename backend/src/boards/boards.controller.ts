@@ -64,8 +64,12 @@ export class BoardsController {
   @Roles(BoardMemberRole.OWNER, BoardMemberRole.ADMIN)
   @UseGuards(BoardRoleGuard)
   @Patch('boards/:id')
-  update(@Param('id') id: string, @Body() updateBoardDto: UpdateBoardDto) {
-    return this.boardsService.update(id, updateBoardDto);
+  update(
+    @Param('id') id: string,
+    @Req() request: AuthenticatedRequest,
+    @Body() updateBoardDto: UpdateBoardDto,
+  ) {
+    return this.boardsService.update(id, request.user.userId, updateBoardDto);
   }
 
   @Roles(BoardMemberRole.OWNER)

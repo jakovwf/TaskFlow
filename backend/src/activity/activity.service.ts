@@ -21,6 +21,7 @@ export class ActivityService {
           select: {
             id: true,
             displayName: true,
+            email: true,
             avatarUrl: true,
           },
         },

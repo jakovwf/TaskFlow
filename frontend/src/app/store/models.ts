@@ -40,6 +40,33 @@ export interface AcceptInviteResponse {
   boardMember: BoardMember;
 }
 
+export type ActivityType =
+  | 'CARD_CREATED'
+  | 'CARD_MOVED'
+  | 'CARD_UPDATED'
+  | 'CARD_DELETED'
+  | 'CARD_ASSIGNED'
+  | 'CARD_UNASSIGNED'
+  | 'COMMENT_ADDED'
+  | 'COMMENT_DELETED'
+  | 'LIST_CREATED'
+  | 'LIST_RENAMED'
+  | 'LIST_DELETED'
+  | 'MEMBER_INVITED'
+  | 'MEMBER_JOINED'
+  | 'MEMBER_REMOVED'
+  | 'BOARD_UPDATED';
+
+export interface BoardActivityItem {
+  id: string;
+  type: ActivityType;
+  payload: Record<string, unknown> | null;
+  boardId: string;
+  userId: string;
+  createdAt: string;
+  user?: User;
+}
+
 export interface WorkspaceMember {
   id: string;
   workspaceId: string;

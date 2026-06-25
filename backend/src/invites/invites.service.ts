@@ -163,7 +163,7 @@ export class InvitesService {
       type: ActivityType.MEMBER_JOINED,
       boardId: invite.boardId,
       userId: currentUser.userId,
-      payload: { userId: currentUser.userId },
+      payload: { email: currentUser.email },
     });
 
     return result;

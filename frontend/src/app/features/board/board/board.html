@@ -54,6 +54,9 @@
             <a [routerLink]="['/b', board.id, 'members']" class="btn btn-secondary btn-sm">
               Members
             </a>
+            <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-secondary btn-sm">
+              Activity
+            </a>
             <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">
               Izmeni
             </button>

@@ -49,7 +49,10 @@ import {
 export interface BoardsState extends EntityState<Board> {
   selectedBoardId: string | null;
   loading: boolean;
+  reordering: boolean;
   error: string | null;
+  reorderError: string | null;
+  reorderBackupBoard: Board | null;
 }
 
 export const boardsAdapter = createEntityAdapter<Board>();
@@ -57,7 +60,10 @@ export const boardsAdapter = createEntityAdapter<Board>();
 export const initialBoardsState: BoardsState = boardsAdapter.getInitialState({
   selectedBoardId: null,
   loading: false,
+  reordering: false,
   error: null,
+  reorderError: null,
+  reorderBackupBoard: null,
 });
 
 export const boardsReducer = createReducer(
@@ -74,8 +80,6 @@ export const boardsReducer = createReducer(
     createCard,
     updateCard,
     deleteCard,
-    reorderLists,
-    reorderCards,
     (state) => ({ ...state, loading: true, error: null }),
   ),
   on(loadMyBoardsSuccess, (state, { boards }) =>
@@ -93,8 +97,6 @@ export const boardsReducer = createReducer(
     createCardFailure,
     updateCardFailure,
     deleteCardFailure,
-    reorderListsFailure,
-    reorderCardsFailure,
     (state, { error }) => ({ ...state, loading: false, error }),
   ),
   on(loadBoardSuccess, (state, { board }) =>
@@ -170,8 +172,20 @@ export const boardsReducer = createReducer(
       ),
     })),
   ),
+  on(reorderLists, (state, { items }) =>
+    startSelectedBoardReorder(state, (board) => ({
+      ...board,
+      lists: applyReorderedListItems(board.lists ?? [], items),
+    })),
+  ),
+  on(reorderCards, (state, { items }) =>
+    startSelectedBoardReorder(state, (board) => ({
+      ...board,
+      lists: applyReorderedCardItems(board.lists ?? [], items),
+    })),
+  ),
   on(reorderListsSuccess, (state, { lists }) =>
-    updateSelectedBoard(state, (board) => ({
+    finishSelectedBoardReorder(state, (board) => ({
       ...board,
       lists: lists
         .map((list) => ({
@@ -182,11 +196,23 @@ export const boardsReducer = createReducer(
     })),
   ),
   on(reorderCardsSuccess, (state, { cards }) =>
-    updateSelectedBoard(state, (board) => ({
+    finishSelectedBoardReorder(state, (board) => ({
       ...board,
       lists: mergeReorderedCards(board.lists ?? [], cards).sort(sortByPosition),
     })),
   ),
+  on(reorderListsFailure, reorderCardsFailure, (state, { error }) => {
+    const nextState = {
+      ...state,
+      reordering: false,
+      reorderError: error,
+      reorderBackupBoard: null,
+    };
+
+    return state.reorderBackupBoard
+      ? boardsAdapter.upsertOne(state.reorderBackupBoard, nextState)
+      : nextState;
+  }),
   on(addBoard, (state, { board }) => boardsAdapter.addOne(board, state)),
   on(updateBoard, (state, { board }) => boardsAdapter.upsertOne(board, state)),
   on(removeBoard, (state, { boardId }) => boardsAdapter.removeOne(boardId, state)),
@@ -210,8 +236,88 @@ function updateSelectedBoard(state: BoardsState, update: (board: Board) => Board
   });
 }
 
+function startSelectedBoardReorder(state: BoardsState, update: (board: Board) => Board): BoardsState {
+  const reorderState = {
+    ...state,
+    reordering: true,
+    reorderError: null,
+  };
+
+  if (!state.selectedBoardId) {
+    return reorderState;
+  }
+
+  const selectedBoard = state.entities[state.selectedBoardId];
+
+  if (!selectedBoard) {
+    return reorderState;
+  }
+
+  return boardsAdapter.upsertOne(update(selectedBoard), {
+    ...reorderState,
+    reorderBackupBoard: state.reorderBackupBoard ?? selectedBoard,
+  });
+}
+
+function finishSelectedBoardReorder(state: BoardsState, update: (board: Board) => Board): BoardsState {
+  const reorderState = {
+    ...state,
+    reordering: false,
+    reorderError: null,
+    reorderBackupBoard: null,
+  };
+
+  if (!state.selectedBoardId) {
+    return reorderState;
+  }
+
+  const selectedBoard = state.entities[state.selectedBoardId];
+
+  if (!selectedBoard) {
+    return reorderState;
+  }
+
+  return boardsAdapter.upsertOne(update(selectedBoard), reorderState);
+}
+
 function sortByPosition<T extends BoardList | Card>(a: T, b: T): number {
   return a.position - b.position;
+}
+
+function applyReorderedListItems(
+  lists: BoardList[],
+  items: { id: string; position: number }[],
+): BoardList[] {
+  const positionsByListId = new Map(items.map((item) => [item.id, item.position]));
+
+  return lists
+    .map((list) =>
+      positionsByListId.has(list.id)
+        ? { ...list, position: positionsByListId.get(list.id) ?? list.position }
+        : list,
+    )
+    .sort(sortByPosition);
+}
+
+function applyReorderedCardItems(
+  lists: BoardList[],
+  items: { id: string; listId: string; position: number }[],
+): BoardList[] {
+  const itemsByCardId = new Map(items.map((item) => [item.id, item]));
+  const cards = lists.flatMap((list) =>
+    (list.cards ?? []).map((card) => {
+      const reorderedItem = itemsByCardId.get(card.id);
+
+      return reorderedItem
+        ? { ...card, listId: reorderedItem.listId, position: reorderedItem.position }
+        : card;
+    }),
+  );
+
+  return lists.map((list) => ({
+    ...list,
+    cards: cards.filter((card) => card.listId === list.id).sort(sortByPosition),
+  }));
 }
 
 function mergeReorderedCards(lists: BoardList[], reorderedCards: Card[]): BoardList[] {

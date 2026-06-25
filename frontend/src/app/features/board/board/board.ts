@@ -24,6 +24,7 @@ import { selectCurrentUser } from '../../../store/auth/auth.selectors';
 import {
   selectBoardsError,
   selectBoardsLoading,
+  selectBoardsReorderError,
   selectSelectedBoard,
 } from '../../../store/boards/boards.selectors';
 import { Board as BoardModel, BoardList, Card, CardComment } from '../../../store/models';
@@ -46,6 +47,7 @@ export class Board {
   readonly board$ = this.store.select(selectSelectedBoard);
   readonly loading$ = this.store.select(selectBoardsLoading);
   readonly error$ = this.store.select(selectBoardsError);
+  readonly reorderError$ = this.store.select(selectBoardsReorderError);
   readonly boardContext$ = combineLatest({
     board: this.board$,
     currentUser: this.store.select(selectCurrentUser),

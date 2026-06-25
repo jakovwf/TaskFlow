@@ -36,4 +36,8 @@ export const selectSelectedBoard = createSelector(
 
 export const selectBoardsLoading = createSelector(selectBoardsState, (state) => state.loading);
 
+export const selectBoardsReordering = createSelector(selectBoardsState, (state) => state.reordering);
+
 export const selectBoardsError = createSelector(selectBoardsState, (state) => state.error);
+
+export const selectBoardsReorderError = createSelector(selectBoardsState, (state) => state.reorderError);

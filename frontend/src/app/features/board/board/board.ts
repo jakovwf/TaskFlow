@@ -1,5 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -7,6 +8,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { combineLatest, distinctUntilChanged, finalize, map, take } from 'rxjs';
 import { CommentService } from '../../../core/services/comment';
+import { CardService } from '../../../core/services/card';
 import {
   createCard,
   createList,
@@ -17,6 +19,7 @@ import {
   reorderCards,
   reorderLists,
   updateCard,
+  updateCardSuccess,
   updateBoardDetails,
   updateList,
 } from '../../../store/boards/boards.actions';
@@ -27,7 +30,7 @@ import {
   selectBoardsReorderError,
   selectSelectedBoard,
 } from '../../../store/boards/boards.selectors';
-import { Board as BoardModel, BoardList, Card, CardComment } from '../../../store/models';
+import { Board as BoardModel, BoardList, Card, CardComment, CardMember, User } from '../../../store/models';
 import { BoardListComponent } from '../components/board-list/board-list';
 import { CardDetailComponent } from '../components/card-detail/card-detail';
 
@@ -39,6 +42,7 @@ import { CardDetailComponent } from '../components/card-detail/card-detail';
 })
 export class Board {
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly cardService = inject(CardService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly commentService = inject(CommentService);
   private readonly route = inject(ActivatedRoute);
@@ -53,11 +57,14 @@ export class Board {
     currentUser: this.store.select(selectCurrentUser),
   });
   readonly currentUser$ = this.store.select(selectCurrentUser);
+  currentUser: User | null = null;
   selectedCard: Card | null = null;
   commentsByCardId: Partial<Record<string, CardComment[]>> = {};
   commentsLoading = false;
   commentSaving = false;
   commentsError: string | null = null;
+  memberAssignmentSaving = false;
+  memberAssignmentError: string | null = null;
   editingBoardHeader = false;
   hasBoardRoute = false;
   private lastCommentsBoardId: string | null = null;
@@ -74,6 +81,13 @@ export class Board {
   });
 
   constructor() {
+    this.currentUser$
+      .pipe(takeUntilDestroyed())
+      .subscribe((user) => {
+        this.currentUser = user;
+        this.cdr.markForCheck();
+      });
+
     this.route.paramMap
       .pipe(
         map((params) => params.get('boardId')),
@@ -167,6 +181,8 @@ export class Board {
 
   openCard(card: Card): void {
     this.selectedCard = card;
+    this.memberAssignmentError = null;
+    this.memberAssignmentSaving = false;
     this.loadComments(card.id);
     this.cdr.markForCheck();
   }
@@ -176,6 +192,8 @@ export class Board {
     this.activeCommentsLoadCardId = null;
     this.commentsLoading = false;
     this.commentsError = null;
+    this.memberAssignmentSaving = false;
+    this.memberAssignmentError = null;
     this.cdr.markForCheck();
   }
 
@@ -291,6 +309,78 @@ export class Board {
           this.cdr.markForCheck();
         },
       });
+  }
+
+  assignCardMember(event: { cardId: string; userId: string }): void {
+    if (!this.selectedCard || this.memberAssignmentSaving) {
+      return;
+    }
+
+    this.memberAssignmentError = null;
+    this.memberAssignmentSaving = true;
+    this.cardService
+      .assignCardMember(event.cardId, event.userId)
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.memberAssignmentSaving = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (cardMember) => {
+          const members = this.selectedCard?.members ?? [];
+
+          if (!members.some((member) => member.userId === cardMember.userId)) {
+            this.applySelectedCardMembers([...members, cardMember]);
+          }
+
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.memberAssignmentError = this.getMemberAssignmentError(error, 'Clan nije dodeljen kartici.');
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  unassignCardMember(event: { cardId: string; userId: string }): void {
+    if (!this.selectedCard || this.memberAssignmentSaving) {
+      return;
+    }
+
+    this.memberAssignmentError = null;
+    this.memberAssignmentSaving = true;
+    this.cardService
+      .unassignCardMember(event.cardId, event.userId)
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.memberAssignmentSaving = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: () => {
+          const members = this.selectedCard?.members ?? [];
+          this.applySelectedCardMembers(members.filter((member) => member.userId !== event.userId));
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.memberAssignmentError = this.getMemberAssignmentError(error, 'Clan nije uklonjen sa kartice.');
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  canManageCardAssignments(board: BoardModel): boolean {
+    if (!this.currentUser) {
+      return false;
+    }
+
+    const role = board.members?.find((member) => member.userId === this.currentUser?.id)?.role;
+
+    return role === 'OWNER' || role === 'ADMIN' || role === 'MEMBER';
   }
 
   cardDropListIds(lists: BoardList[] | null | undefined): string[] {
@@ -427,6 +517,38 @@ export class Board {
     this.activeCommentsLoadCardId = null;
     this.commentsMutationVersion++;
     this.cdr.markForCheck();
+  }
+
+  private applySelectedCardMembers(members: CardMember[]): void {
+    if (!this.selectedCard) {
+      return;
+    }
+
+    const updatedCard = {
+      ...this.selectedCard,
+      members,
+    };
+
+    this.selectedCard = updatedCard;
+    this.store.dispatch(updateCardSuccess({ card: updatedCard }));
+  }
+
+  private getMemberAssignmentError(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 400) {
+        return 'Samo clan boarda moze biti dodeljen kartici.';
+      }
+
+      if (error.status === 403) {
+        return 'Nemas dozvolu da menjas clanove kartice.';
+      }
+
+      if (error.status === 409) {
+        return 'Clan je vec dodeljen ovoj kartici.';
+      }
+    }
+
+    return fallback;
   }
 
   private mergeLoadedCommentsForCard(cardId: string, loadedComments: CardComment[]): CardComment[] {

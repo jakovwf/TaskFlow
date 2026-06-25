@@ -105,7 +105,11 @@ export class CardsController {
     );
   }
 
-  @Roles(BoardMemberRole.OWNER, BoardMemberRole.ADMIN)
+  @Roles(
+    BoardMemberRole.OWNER,
+    BoardMemberRole.ADMIN,
+    BoardMemberRole.MEMBER,
+  )
   @UseGuards(CardBoardRoleGuard)
   @Post('cards/:id/members')
   assignMember(
@@ -120,7 +124,11 @@ export class CardsController {
     );
   }
 
-  @Roles(BoardMemberRole.OWNER, BoardMemberRole.ADMIN)
+  @Roles(
+    BoardMemberRole.OWNER,
+    BoardMemberRole.ADMIN,
+    BoardMemberRole.MEMBER,
+  )
   @UseGuards(CardBoardRoleGuard)
   @Delete('cards/:id/members/:userId')
   unassignMember(

@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Card, CardComment, User } from '../../../../store/models';
+import { BoardMember, Card, CardComment, CardMember, User } from '../../../../store/models';
 
 @Component({
   selector: 'app-card-detail',
@@ -17,12 +17,18 @@ export class CardDetailComponent implements OnChanges {
   @Input() commentsLoading = false;
   @Input() commentSaving = false;
   @Input() commentsError: string | null = null;
+  @Input() boardMembers: BoardMember[] = [];
+  @Input() canManageMembers = false;
+  @Input() memberAssignmentSaving = false;
+  @Input() memberAssignmentError: string | null = null;
   @Input() currentUser: User | null = null;
   @Input() loading: boolean | null = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<{ cardId: string; title: string; description?: string }>();
   @Output() delete = new EventEmitter<{ cardId: string; listId: string }>();
+  @Output() assignMember = new EventEmitter<{ cardId: string; userId: string }>();
+  @Output() unassignMember = new EventEmitter<{ cardId: string; userId: string }>();
   @Output() createComment = new EventEmitter<{ cardId: string; content: string }>();
   @Output() updateComment = new EventEmitter<{ cardId: string; commentId: string; content: string }>();
   @Output() deleteComment = new EventEmitter<{ cardId: string; commentId: string }>();
@@ -30,6 +36,7 @@ export class CardDetailComponent implements OnChanges {
   newCommentContent = '';
   editingCommentId: string | null = null;
   editCommentContent = '';
+  selectedMemberId = '';
 
   readonly form = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
@@ -41,6 +48,7 @@ export class CardDetailComponent implements OnChanges {
       if (!this.card) {
         this.resetCommentEditor();
         this.newCommentContent = '';
+        this.selectedMemberId = '';
         return;
       }
 
@@ -50,6 +58,7 @@ export class CardDetailComponent implements OnChanges {
       });
       this.resetCommentEditor();
       this.newCommentContent = '';
+      this.selectedMemberId = '';
     }
   }
 
@@ -77,6 +86,29 @@ export class CardDetailComponent implements OnChanges {
     }
 
     this.delete.emit({ cardId: this.card.id, listId: this.card.listId });
+  }
+
+  emitAssignMember(): void {
+    if (!this.card || !this.selectedMemberId || this.memberAssignmentSaving) {
+      return;
+    }
+
+    this.assignMember.emit({
+      cardId: this.card.id,
+      userId: this.selectedMemberId,
+    });
+    this.selectedMemberId = '';
+  }
+
+  emitUnassignMember(userId: string): void {
+    if (!this.card || this.memberAssignmentSaving) {
+      return;
+    }
+
+    this.unassignMember.emit({
+      cardId: this.card.id,
+      userId,
+    });
   }
 
   emitCreateComment(): void {
@@ -128,6 +160,24 @@ export class CardDetailComponent implements OnChanges {
 
   canEditComment(comment: CardComment): boolean {
     return !!this.currentUser && comment.authorId === this.currentUser.id;
+  }
+
+  assignedMembers(): CardMember[] {
+    return this.card?.members ?? [];
+  }
+
+  availableBoardMembers(): BoardMember[] {
+    const assignedUserIds = new Set(this.assignedMembers().map((member) => member.userId));
+
+    return this.boardMembers.filter((member) => !assignedUserIds.has(member.userId));
+  }
+
+  displayUser(user: User | undefined | null): string {
+    return user?.displayName || user?.email || 'Korisnik';
+  }
+
+  userInitial(user: User | undefined | null): string {
+    return this.displayUser(user).slice(0, 1).toUpperCase();
   }
 
   private resetCommentEditor(): void {

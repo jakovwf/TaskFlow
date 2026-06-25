@@ -274,7 +274,17 @@ export class BoardsService {
     },
     lists: {
       include: {
-        cards: true,
+        cards: {
+          include: {
+            members: {
+              include: {
+                user: {
+                  select: this.safeUserSelect,
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: {
         position: 'asc' as const,

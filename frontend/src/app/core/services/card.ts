@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Card } from '../../store/models';
+import { Card, CardMember } from '../../store/models';
 
 export interface CreateCardData {
   title: string;
@@ -34,5 +34,13 @@ export class CardService {
 
   deleteCard(cardId: string): Observable<Card> {
     return this.http.delete<Card>(`${environment.apiUrl}/cards/${cardId}`);
+  }
+
+  assignCardMember(cardId: string, userId: string): Observable<CardMember> {
+    return this.http.post<CardMember>(`${environment.apiUrl}/cards/${cardId}/members`, { userId });
+  }
+
+  unassignCardMember(cardId: string, userId: string): Observable<CardMember> {
+    return this.http.delete<CardMember>(`${environment.apiUrl}/cards/${cardId}/members/${userId}`);
   }
 }

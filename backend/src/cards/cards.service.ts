@@ -204,9 +204,11 @@ export class CardsService {
     userId: string,
     assignCardMemberDto: AssignCardMemberDto,
   ) {
-    await this.requireUserExists(assignCardMemberDto.userId);
-
     const card = await this.getCardActivityContext(cardId);
+    const assignedBoardMember = await this.requireBoardMember(
+      card.list.boardId,
+      assignCardMemberDto.userId,
+    );
     const assigner = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { displayName: true },
@@ -244,23 +246,35 @@ export class CardsService {
       payload: {
         cardTitle: card.title,
         assignedUserId: assignCardMemberDto.userId,
+        assignedUserEmail: assignedBoardMember.user.email,
+        assignedUserDisplayName: assignedBoardMember.user.displayName,
       },
     });
 
-    await this.notificationsService.createNotification({
-      userId: assignCardMemberDto.userId,
-      type: NotificationType.CARD_ASSIGNED,
-      message: `${assigner?.displayName ?? 'Neko'} vam je dodelio zadatak: ${card.title}`,
-      relatedBoardId: card.list.boardId,
-      relatedCardId: cardId,
-    });
+    if (assignCardMemberDto.userId !== userId) {
+      await this.notificationsService.createNotification({
+        userId: assignCardMemberDto.userId,
+        type: NotificationType.CARD_ASSIGNED,
+        message: `${assigner?.displayName ?? 'Neko'} vam je dodelio zadatak: ${card.title}`,
+        relatedBoardId: card.list.boardId,
+        relatedCardId: cardId,
+      });
+    }
 
     return cardMember;
   }
 
   async unassignMember(cardId: string, removedUserId: string, userId: string) {
-    await this.requireCardMember(cardId, removedUserId);
     const card = await this.getCardActivityContext(cardId);
+    const existingCardMember = await this.findCardMember(cardId, removedUserId);
+
+    if (!existingCardMember) {
+      return {
+        cardId,
+        userId: removedUserId,
+        alreadyRemoved: true,
+      };
+    }
 
     const cardMember = await this.prisma.cardMember.delete({
       where: {
@@ -283,6 +297,8 @@ export class CardsService {
       payload: {
         cardTitle: card.title,
         removedUserId,
+        removedUserEmail: cardMember.user.email,
+        removedUserDisplayName: cardMember.user.displayName,
       },
     });
 
@@ -332,17 +348,6 @@ export class CardsService {
     });
   }
 
-  private async requireUserExists(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-  }
-
   private async requireLabelExists(labelId: string) {
     const label = await this.prisma.label.findUnique({
       where: { id: labelId },
@@ -354,19 +359,20 @@ export class CardsService {
     }
   }
 
-  private async requireCardMember(cardId: string, userId: string) {
-    const member = await this.prisma.cardMember.findUnique({
+  private findCardMember(cardId: string, userId: string) {
+    return this.prisma.cardMember.findUnique({
       where: {
         cardId_userId: {
           cardId,
           userId,
         },
       },
+      include: {
+        user: {
+          select: this.safeUserSelect,
+        },
+      },
     });
-
-    if (!member) {
-      throw new NotFoundException('Card member not found');
-    }
   }
 
   private async requireCardLabel(cardId: string, labelId: string) {
@@ -400,6 +406,28 @@ export class CardsService {
     }
 
     return card;
+  }
+
+  private async requireBoardMember(boardId: string, userId: string) {
+    const member = await this.prisma.boardMember.findUnique({
+      where: {
+        boardId_userId: {
+          boardId,
+          userId,
+        },
+      },
+      include: {
+        user: {
+          select: this.safeUserSelect,
+        },
+      },
+    });
+
+    if (!member) {
+      throw new BadRequestException('Assigned user must be a board member');
+    }
+
+    return member;
   }
 
   private readonly safeUserSelect = {

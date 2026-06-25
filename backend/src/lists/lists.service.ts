@@ -114,6 +114,22 @@ export class ListsService {
   }
 
   private readonly listInclude = {
-    cards: true,
+    cards: {
+      include: {
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                displayName: true,
+                avatarUrl: true,
+                createdAt: true,
+              },
+            },
+          },
+        },
+      },
+    },
   };
 }

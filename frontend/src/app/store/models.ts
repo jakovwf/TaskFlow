@@ -14,6 +14,13 @@ export interface BoardMember {
   user?: User;
 }
 
+export interface CardMember {
+  id: string;
+  cardId: string;
+  userId: string;
+  user?: User;
+}
+
 export type BoardMemberRole = BoardMember['role'];
 export type InviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
 
@@ -97,7 +104,7 @@ export interface Card {
     title: string;
     boardId: string;
   };
-  members?: unknown[];
+  members?: CardMember[];
   labels?: unknown[];
 }
 

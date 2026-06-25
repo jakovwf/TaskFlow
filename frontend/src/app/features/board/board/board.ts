@@ -58,6 +58,7 @@ export class Board {
   hasBoardRoute = false;
   private lastCommentsBoardId: string | null = null;
   private lastCommentsCardIdsKey = '';
+  private commentsMutationVersion = 0;
 
   readonly listForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
@@ -183,20 +184,15 @@ export class Board {
       return;
     }
 
-    this.commentsLoading = true;
     this.commentsError = null;
     this.commentService
       .createComment(event.cardId, content)
-      .pipe(
-        take(1),
-        finalize(() => {
-          this.commentsLoading = false;
-        }),
-      )
+      .pipe(take(1))
       .subscribe({
         next: (comment) => {
           const currentComments = this.getCommentsForCard(event.cardId);
 
+          this.commentsMutationVersion++;
           this.commentsByCardId = {
             ...this.commentsByCardId,
             [event.cardId]: [...currentComments, comment],
@@ -215,20 +211,15 @@ export class Board {
       return;
     }
 
-    this.commentsLoading = true;
     this.commentsError = null;
     this.commentService
       .updateComment(event.commentId, content)
-      .pipe(
-        take(1),
-        finalize(() => {
-          this.commentsLoading = false;
-        }),
-      )
+      .pipe(take(1))
       .subscribe({
         next: (updatedComment) => {
           const currentComments = this.getCommentsForCard(event.cardId);
 
+          this.commentsMutationVersion++;
           this.commentsByCardId = {
             ...this.commentsByCardId,
             [event.cardId]: currentComments.map((comment) =>
@@ -243,20 +234,15 @@ export class Board {
   }
 
   deleteComment(event: { cardId: string; commentId: string }): void {
-    this.commentsLoading = true;
     this.commentsError = null;
     this.commentService
       .deleteComment(event.commentId)
-      .pipe(
-        take(1),
-        finalize(() => {
-          this.commentsLoading = false;
-        }),
-      )
+      .pipe(take(1))
       .subscribe({
         next: (deletedComment) => {
           const currentComments = this.getCommentsForCard(event.cardId);
 
+          this.commentsMutationVersion++;
           this.commentsByCardId = {
             ...this.commentsByCardId,
             [event.cardId]: currentComments.filter((comment) => comment.id !== deletedComment.id),
@@ -371,6 +357,7 @@ export class Board {
     this.lastCommentsCardIdsKey = cardIdsKey;
     this.commentsLoading = true;
     this.commentsError = null;
+    const loadMutationVersion = this.commentsMutationVersion;
 
     forkJoin(
       cards.map((card) =>
@@ -397,7 +384,10 @@ export class Board {
             return;
           }
 
-          this.commentsByCardId = Object.fromEntries(entries);
+          this.commentsByCardId =
+            loadMutationVersion === this.commentsMutationVersion
+              ? Object.fromEntries(entries)
+              : this.mergeLoadedComments(entries);
         },
         error: () => {
           if (board.id !== this.lastCommentsBoardId || cardIdsKey !== this.lastCommentsCardIdsKey) {
@@ -425,5 +415,30 @@ export class Board {
     this.commentsError = null;
     this.lastCommentsBoardId = null;
     this.lastCommentsCardIdsKey = '';
+    this.commentsMutationVersion++;
+  }
+
+  private mergeLoadedComments(entries: readonly (readonly [string, CardComment[]])[]): Partial<Record<string, CardComment[]>> {
+    const loadedCommentsByCardId = Object.fromEntries(entries);
+    const nextCommentsByCardId: Partial<Record<string, CardComment[]>> = {
+      ...this.commentsByCardId,
+    };
+
+    for (const [cardId, loadedComments] of entries) {
+      const currentComments = this.commentsByCardId[cardId] ?? [];
+      const loadedCommentIds = new Set(loadedComments.map((comment) => comment.id));
+      const localOnlyComments = currentComments.filter((comment) => !loadedCommentIds.has(comment.id));
+      const currentCommentsById = new Map(currentComments.map((comment) => [comment.id, comment]));
+
+      nextCommentsByCardId[cardId] = [
+        ...loadedComments.map((comment) => currentCommentsById.get(comment.id) ?? comment),
+        ...localOnlyComments,
+      ];
+    }
+
+    return {
+      ...loadedCommentsByCardId,
+      ...nextCommentsByCardId,
+    };
   }
 }

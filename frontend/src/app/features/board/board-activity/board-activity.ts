@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { distinctUntilChanged, finalize, map, take } from 'rxjs';
@@ -15,6 +15,7 @@ import { BoardActivityItem } from '../../../store/models';
 })
 export class BoardActivity {
   private readonly boardService = inject(BoardService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
 
   boardId: string | null = null;
@@ -40,6 +41,7 @@ export class BoardActivity {
         this.loading = false;
         this.activities = [];
         this.error = 'Board nije pronadjen.';
+        this.cdr.markForCheck();
       });
   }
 
@@ -90,6 +92,7 @@ export class BoardActivity {
     this.loading = true;
     this.error = null;
     this.activities = [];
+    this.cdr.markForCheck();
 
     this.boardService
       .getBoardActivity(boardId)
@@ -98,6 +101,7 @@ export class BoardActivity {
         finalize(() => {
           if (this.boardId === boardId) {
             this.loading = false;
+            this.cdr.markForCheck();
           }
         }),
       )
@@ -108,6 +112,7 @@ export class BoardActivity {
           }
 
           this.activities = activities;
+          this.cdr.markForCheck();
         },
         error: (error: unknown) => {
           if (this.boardId !== boardId) {
@@ -115,6 +120,7 @@ export class BoardActivity {
           }
 
           this.error = this.getErrorMessage(error);
+          this.cdr.markForCheck();
         },
       });
   }

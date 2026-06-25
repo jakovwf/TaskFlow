@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -37,6 +37,7 @@ import { CardDetailComponent } from '../components/card-detail/card-detail';
   styleUrl: './board.scss',
 })
 export class Board {
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly formBuilder = inject(FormBuilder);
   private readonly commentService = inject(CommentService);
   private readonly route = inject(ActivatedRoute);
@@ -90,6 +91,7 @@ export class Board {
 
         this.hasBoardRoute = false;
         this.resetBoardComments();
+        this.cdr.markForCheck();
       });
   }
 
@@ -164,6 +166,7 @@ export class Board {
   openCard(card: Card): void {
     this.selectedCard = card;
     this.loadComments(card.id);
+    this.cdr.markForCheck();
   }
 
   closeCard(): void {
@@ -171,6 +174,7 @@ export class Board {
     this.activeCommentsLoadCardId = null;
     this.commentsLoading = false;
     this.commentsError = null;
+    this.cdr.markForCheck();
   }
 
   saveCard(event: { cardId: string; title: string; description?: string }): void {
@@ -198,6 +202,7 @@ export class Board {
         take(1),
         finalize(() => {
           this.commentSaving = false;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
@@ -209,9 +214,11 @@ export class Board {
             ...this.commentsByCardId,
             [event.cardId]: [...currentComments, comment],
           };
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setCommentsError(event.cardId, 'Komentar nije sacuvan.');
+          this.cdr.markForCheck();
         },
       });
   }
@@ -231,6 +238,7 @@ export class Board {
         take(1),
         finalize(() => {
           this.commentSaving = false;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
@@ -244,9 +252,11 @@ export class Board {
               comment.id === updatedComment.id ? updatedComment : comment,
             ),
           };
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setCommentsError(event.cardId, 'Komentar nije izmenjen.');
+          this.cdr.markForCheck();
         },
       });
   }
@@ -260,6 +270,7 @@ export class Board {
         take(1),
         finalize(() => {
           this.commentSaving = false;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
@@ -271,9 +282,11 @@ export class Board {
             ...this.commentsByCardId,
             [event.cardId]: currentComments.filter((comment) => comment.id !== deletedComment.id),
           };
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setCommentsError(event.cardId, 'Komentar nije obrisan.');
+          this.cdr.markForCheck();
         },
       });
   }
@@ -357,6 +370,7 @@ export class Board {
     this.commentsLoading = true;
     this.commentsError = null;
     const loadMutationVersion = this.commentsMutationVersion;
+    this.cdr.markForCheck();
 
     this.commentService
       .getComments(cardId)
@@ -365,6 +379,7 @@ export class Board {
         finalize(() => {
           if (this.activeCommentsLoadCardId === cardId) {
             this.commentsLoading = false;
+            this.cdr.markForCheck();
           }
         }),
       )
@@ -379,6 +394,7 @@ export class Board {
             ...this.commentsByCardId,
             [cardId]: nextComments,
           };
+          this.cdr.markForCheck();
         },
         error: () => {
           if (this.activeCommentsLoadCardId !== cardId && this.selectedCard?.id !== cardId) {
@@ -386,6 +402,7 @@ export class Board {
           }
 
           this.commentsError = 'Komentari nisu ucitani.';
+          this.cdr.markForCheck();
         },
       });
   }
@@ -407,6 +424,7 @@ export class Board {
     this.commentsError = null;
     this.activeCommentsLoadCardId = null;
     this.commentsMutationVersion++;
+    this.cdr.markForCheck();
   }
 
   private mergeLoadedCommentsForCard(cardId: string, loadedComments: CardComment[]): CardComment[] {

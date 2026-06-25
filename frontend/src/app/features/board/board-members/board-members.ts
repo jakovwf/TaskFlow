@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,6 +18,7 @@ import { Board, BoardInvite, BoardMember, BoardMemberRole, User } from '../../..
 })
 export class BoardMembers {
   private readonly boardService = inject(BoardService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly formBuilder = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly store = inject(Store);
@@ -66,6 +67,7 @@ export class BoardMembers {
         this.members = [];
         this.invites = [];
         this.error = 'Board nije pronadjen.';
+        this.cdr.markForCheck();
       });
 
     this.store
@@ -73,6 +75,7 @@ export class BoardMembers {
       .pipe(takeUntilDestroyed())
       .subscribe((user) => {
         this.currentUser = user;
+        this.cdr.markForCheck();
       });
 
     this.userSearchControl.valueChanges
@@ -87,6 +90,7 @@ export class BoardMembers {
           if (query.length < 2) {
             this.userSearchResults = [];
             this.userSearchLoading = false;
+            this.cdr.markForCheck();
           }
         }),
         switchMap((query) => {
@@ -95,14 +99,17 @@ export class BoardMembers {
           }
 
           this.userSearchLoading = true;
+          this.cdr.markForCheck();
 
           return this.userService.searchUsers(query).pipe(
             catchError(() => {
               this.userSearchError = 'Pretraga korisnika nije uspela.';
+              this.cdr.markForCheck();
               return of([]);
             }),
             finalize(() => {
               this.userSearchLoading = false;
+              this.cdr.markForCheck();
             }),
           );
         }),
@@ -110,6 +117,7 @@ export class BoardMembers {
       )
       .subscribe((users) => {
         this.userSearchResults = users;
+        this.cdr.markForCheck();
       });
   }
 
@@ -136,6 +144,7 @@ export class BoardMembers {
         take(1),
         finalize(() => {
           this.inviteSaving = false;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
@@ -143,9 +152,11 @@ export class BoardMembers {
           this.invites = [invite, ...this.invites];
           this.inviteForm.reset();
           this.successMessage = 'Invite je poslat i dodat u pending listu.';
+          this.cdr.markForCheck();
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Invite nije poslat.');
+          this.cdr.markForCheck();
         },
       });
   }
@@ -165,15 +176,18 @@ export class BoardMembers {
         take(1),
         finalize(() => {
           this.revokeLoadingInviteId = null;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
         next: () => {
           this.invites = this.invites.filter((invite) => invite.id !== inviteId);
           this.successMessage = 'Invite je povucen.';
+          this.cdr.markForCheck();
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Invite nije povucen.');
+          this.cdr.markForCheck();
         },
       });
   }
@@ -193,6 +207,7 @@ export class BoardMembers {
         take(1),
         finalize(() => {
           this.memberRoleLoadingUserId = null;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
@@ -201,9 +216,11 @@ export class BoardMembers {
             existingMember.userId === updatedMember.userId ? updatedMember : existingMember,
           );
           this.successMessage = 'Rola clana je promenjena.';
+          this.cdr.markForCheck();
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Rola clana nije promenjena.');
+          this.cdr.markForCheck();
         },
       });
   }
@@ -227,15 +244,18 @@ export class BoardMembers {
         take(1),
         finalize(() => {
           this.memberRemoveLoadingUserId = null;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
         next: () => {
           this.members = this.members.filter((existingMember) => existingMember.userId !== member.userId);
           this.successMessage = 'Clan je uklonjen sa boarda.';
+          this.cdr.markForCheck();
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error, 'Clan nije uklonjen.');
+          this.cdr.markForCheck();
         },
       });
   }
@@ -251,6 +271,8 @@ export class BoardMembers {
       this.successMessage = 'Invite link kopiran.';
     } catch {
       this.error = 'Invite link nije kopiran. Pokusaj ponovo.';
+    } finally {
+      this.cdr.markForCheck();
     }
   }
 
@@ -264,6 +286,7 @@ export class BoardMembers {
     this.userSearchResults = [];
     this.userSearchError = null;
     this.hasSearchedUsers = false;
+    this.cdr.markForCheck();
   }
 
   canManageMember(member: BoardMember): boolean {
@@ -285,6 +308,7 @@ export class BoardMembers {
     this.board = null;
     this.members = [];
     this.invites = [];
+    this.cdr.markForCheck();
 
     forkJoin({
       board: this.boardService.getBoard(boardId),
@@ -308,6 +332,7 @@ export class BoardMembers {
         finalize(() => {
           if (this.boardId === boardId) {
             this.loading = false;
+            this.cdr.markForCheck();
           }
         }),
       )
@@ -320,6 +345,7 @@ export class BoardMembers {
           this.board = board;
           this.members = members;
           this.invites = invites.filter((invite) => invite.status === 'PENDING');
+          this.cdr.markForCheck();
         },
         error: (error: unknown) => {
           if (this.boardId !== boardId) {
@@ -327,6 +353,7 @@ export class BoardMembers {
           }
 
           this.error = this.getErrorMessage(error, 'Clanovi boarda nisu ucitani.');
+          this.cdr.markForCheck();
         },
       });
   }

@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -17,6 +17,7 @@ import { BoardInvite } from '../../store/models';
 })
 export class Invite {
   private readonly authService = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly inviteService = inject(InviteService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -48,6 +49,7 @@ export class Invite {
         this.actionLoading = false;
         this.invite = null;
         this.error = 'Invite link nije ispravan.';
+        this.cdr.markForCheck();
       });
   }
 
@@ -71,6 +73,7 @@ export class Invite {
         take(1),
         finalize(() => {
           this.actionLoading = false;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
@@ -79,6 +82,7 @@ export class Invite {
 
           this.store.dispatch(loadMyBoards());
           this.successMessage = 'Invite je prihvacen.';
+          this.cdr.markForCheck();
           void this.router.navigate(boardId ? ['/b', boardId] : ['/home']);
         },
         error: (error: unknown) => this.handleInviteActionError(error, 'Invite nije prihvacen.'),
@@ -105,11 +109,13 @@ export class Invite {
         take(1),
         finalize(() => {
           this.actionLoading = false;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
         next: () => {
           this.successMessage = 'Invite je odbijen.';
+          this.cdr.markForCheck();
           void this.router.navigate(['/home']);
         },
         error: (error: unknown) => this.handleInviteActionError(error, 'Invite nije odbijen.'),
@@ -121,6 +127,7 @@ export class Invite {
     this.error = null;
     this.successMessage = null;
     this.invite = null;
+    this.cdr.markForCheck();
 
     this.inviteService
       .getInvite(token)
@@ -129,6 +136,7 @@ export class Invite {
         finalize(() => {
           if (this.token === token) {
             this.loading = false;
+            this.cdr.markForCheck();
           }
         }),
       )
@@ -139,6 +147,7 @@ export class Invite {
           }
 
           this.invite = invite;
+          this.cdr.markForCheck();
         },
         error: (error: unknown) => {
           if (this.token !== token) {
@@ -146,6 +155,7 @@ export class Invite {
           }
 
           this.error = this.getErrorMessage(error) ?? 'Invite nije pronadjen ili vise nije aktivan.';
+          this.cdr.markForCheck();
         },
       });
   }
@@ -162,6 +172,7 @@ export class Invite {
     }
 
     this.error = this.getErrorMessage(error) ?? fallbackMessage;
+    this.cdr.markForCheck();
   }
 
   private getErrorMessage(error: unknown): string | null {

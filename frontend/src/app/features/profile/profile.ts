@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -17,6 +17,7 @@ import { User } from '../../store/models';
   styleUrl: './profile.scss',
 })
 export class Profile {
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly formBuilder = inject(FormBuilder);
   private readonly store = inject(Store);
   private readonly userService = inject(UserService);
@@ -44,6 +45,8 @@ export class Profile {
             avatarUrl: user.avatarUrl ?? '',
           });
         }
+
+        this.cdr.markForCheck();
       });
   }
 
@@ -64,6 +67,7 @@ export class Profile {
     this.loading = true;
     this.error = null;
     this.successMessage = null;
+    this.cdr.markForCheck();
 
     this.userService
       .updateUser(this.currentUser.id, {
@@ -74,6 +78,7 @@ export class Profile {
         take(1),
         finalize(() => {
           this.loading = false;
+          this.cdr.markForCheck();
         }),
       )
       .subscribe({
@@ -85,9 +90,11 @@ export class Profile {
           });
           this.successMessage = 'Profil je sacuvan.';
           this.store.dispatch(loadMe());
+          this.cdr.markForCheck();
         },
         error: (error: unknown) => {
           this.error = this.getErrorMessage(error);
+          this.cdr.markForCheck();
         },
       });
   }

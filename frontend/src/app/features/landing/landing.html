@@ -1,1 +1,201 @@
-<p>landing stranica</p>
+<div class="landing-page overflow-hidden bg-base-100 text-base-content">
+  <header class="relative isolate min-h-screen">
+    <div class="landing-grid absolute inset-0 -z-10"></div>
+    <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+      <nav class="landing-fade flex items-center justify-between gap-4" aria-label="Javna navigacija">
+        <a routerLink="/" class="flex items-center gap-3 font-bold" aria-label="TaskFlow pocetna">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-sm font-black text-primary-content shadow-sm">
+            TF
+          </span>
+          <span class="text-lg tracking-tight">TaskFlow</span>
+        </a>
+
+        <div class="flex items-center gap-2">
+          <a routerLink="/login" class="btn btn-ghost btn-sm">Prijavi se</a>
+          <a routerLink="/register" class="btn btn-primary btn-sm shadow-sm">Kreni sada</a>
+        </div>
+      </nav>
+
+      <section class="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(500px,1.08fr)] lg:py-16">
+        <div class="landing-fade max-w-3xl">
+          <p class="mb-4 inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            Timski taskovi, jasniji tok rada
+          </p>
+          <h1 class="max-w-4xl text-4xl font-black leading-tight tracking-tight text-base-content sm:text-5xl lg:text-6xl">
+            Organizuj timski rad bez haosa.
+          </h1>
+          <p class="mt-5 max-w-2xl text-lg leading-8 text-base-content/70">
+            Kreiraj boardove, rasporedi taskove, pozovi clanove i prati napredak kroz jednostavan
+            kolaborativni workspace.
+          </p>
+
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a routerLink="/register" class="btn btn-primary btn-lg shadow-md shadow-primary/20">
+              Kreni sada
+            </a>
+            <a routerLink="/login" class="btn btn-outline btn-lg bg-base-100/80">
+              Prijavi se
+            </a>
+          </div>
+
+          <dl class="mt-9 grid grid-cols-3 gap-3 text-sm">
+            <div class="rounded-lg border border-base-300 bg-base-100/80 p-3 shadow-sm">
+              <dt class="font-bold text-base-content">Boardovi</dt>
+              <dd class="mt-1 text-base-content/60">za svaki projekat</dd>
+            </div>
+            <div class="rounded-lg border border-base-300 bg-base-100/80 p-3 shadow-sm">
+              <dt class="font-bold text-base-content">Invite</dt>
+              <dd class="mt-1 text-base-content/60">za timove</dd>
+            </div>
+            <div class="rounded-lg border border-base-300 bg-base-100/80 p-3 shadow-sm">
+              <dt class="font-bold text-base-content">PWA</dt>
+              <dd class="mt-1 text-base-content/60">za mobilni rad</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="landing-board-wrap landing-float" aria-label="TaskFlow board preview">
+          <div class="board-shell">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-primary">Product sprint</p>
+                <h2 class="text-lg font-bold">TaskFlow board</h2>
+              </div>
+              <div class="flex -space-x-2">
+                <span class="avatar-chip bg-sky-500">MA</span>
+                <span class="avatar-chip bg-emerald-500">JS</span>
+                <span class="avatar-chip bg-violet-500">AK</span>
+              </div>
+            </div>
+
+            <div class="grid gap-3 md:grid-cols-3">
+              <article class="mock-column">
+                <div class="mb-3 flex items-center justify-between">
+                  <h3 class="font-semibold">To do</h3>
+                  <span class="rounded-full bg-base-300 px-2 py-0.5 text-xs font-semibold">3</span>
+                </div>
+                <div class="mock-card">
+                  <span class="label-line bg-sky-400"></span>
+                  <p class="font-medium">Pripremi invite tekst</p>
+                  <div class="mt-3 flex items-center justify-between">
+                    <span class="h-2 w-20 rounded-full bg-base-300"></span>
+                    <span class="mini-avatar bg-sky-500">N</span>
+                  </div>
+                </div>
+                <div class="mock-card">
+                  <span class="label-line bg-amber-400"></span>
+                  <p class="font-medium">Definisi onboarding flow</p>
+                  <div class="mt-3 h-2 w-28 rounded-full bg-base-300"></div>
+                </div>
+              </article>
+
+              <article class="mock-column">
+                <div class="mb-3 flex items-center justify-between">
+                  <h3 class="font-semibold">In progress</h3>
+                  <span class="rounded-full bg-base-300 px-2 py-0.5 text-xs font-semibold">2</span>
+                </div>
+                <div class="mock-card is-active">
+                  <span class="label-line bg-emerald-400"></span>
+                  <p class="font-medium">Dodela kartica clanovima</p>
+                  <div class="mt-3 flex items-center justify-between">
+                    <div class="h-2 w-24 rounded-full bg-emerald-200">
+                      <div class="h-2 w-16 rounded-full bg-emerald-500"></div>
+                    </div>
+                    <span class="mini-avatar bg-emerald-500">J</span>
+                  </div>
+                </div>
+                <div class="mock-card">
+                  <span class="label-line bg-violet-400"></span>
+                  <p class="font-medium">Mobile polish</p>
+                  <div class="mt-3 flex gap-1">
+                    <span class="h-2 w-10 rounded-full bg-base-300"></span>
+                    <span class="h-2 w-10 rounded-full bg-base-300"></span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="mock-column">
+                <div class="mb-3 flex items-center justify-between">
+                  <h3 class="font-semibold">Done</h3>
+                  <span class="rounded-full bg-base-300 px-2 py-0.5 text-xs font-semibold">4</span>
+                </div>
+                <div class="mock-card">
+                  <span class="label-line bg-rose-400"></span>
+                  <p class="font-medium">Notifikacije u aplikaciji</p>
+                  <div class="mt-3 flex items-center justify-between">
+                    <span class="h-2 w-24 rounded-full bg-base-300"></span>
+                    <span class="mini-avatar bg-violet-500">A</span>
+                  </div>
+                </div>
+                <div class="mock-card">
+                  <span class="label-line bg-cyan-400"></span>
+                  <p class="font-medium">PWA manifest</p>
+                  <div class="mt-3 h-2 w-20 rounded-full bg-base-300"></div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </header>
+
+  <section class="bg-base-200/70 py-16 sm:py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="max-w-2xl">
+        <p class="text-sm font-bold uppercase tracking-wide text-primary">Funkcionalnosti</p>
+        <h2 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Sve sto timu treba za uredan rad.</h2>
+        <p class="mt-4 text-base-content/70">
+          TaskFlow spaja boardove, clanove, notifikacije i mobilni rad u jednostavan proizvodni tok.
+        </p>
+      </div>
+
+      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        @for (feature of features; track feature.title) {
+          <article class="feature-card rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-sm font-black" [ngClass]="feature.tone">
+              {{ feature.marker }}
+            </span>
+            <h3 class="mt-4 text-lg font-bold">{{ feature.title }}</h3>
+            <p class="mt-2 text-sm leading-6 text-base-content/70">{{ feature.text }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="py-16 sm:py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+        <div>
+          <p class="text-sm font-bold uppercase tracking-wide text-primary">Kako radi</p>
+          <h2 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Od ideje do zavrsenog taska u tri koraka.</h2>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-3">
+          @for (item of steps; track item.step) {
+            <article class="step-card rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm">
+              <p class="text-sm font-black text-primary">{{ item.step }}</p>
+              <h3 class="mt-3 text-lg font-bold">{{ item.title }}</h3>
+              <p class="mt-2 text-sm leading-6 text-base-content/70">{{ item.text }}</p>
+            </article>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
+    <div class="mx-auto max-w-5xl rounded-lg border border-base-300 bg-base-200 p-6 text-center shadow-sm sm:p-10">
+      <p class="text-sm font-bold uppercase tracking-wide text-primary">Spreman za bolji tok rada?</p>
+      <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Spreman da organizujes projekat?</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-base-content/70">
+        Napravi nalog, otvori prvi board i pretvori listu dogovora u jasan plan rada.
+      </p>
+      <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+        <a routerLink="/register" class="btn btn-primary btn-lg">Napravi nalog</a>
+        <a routerLink="/login" class="btn btn-outline btn-lg bg-base-100">Prijavi se</a>
+      </div>
+    </div>
+  </section>
+</div>

@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { combineLatest, distinctUntilChanged, forkJoin, map, take } from 'rxjs';
+import { catchError, combineLatest, distinctUntilChanged, finalize, forkJoin, map, of, take } from 'rxjs';
 import { CommentService } from '../../../core/services/comment';
 import {
   createCard,
@@ -187,7 +187,12 @@ export class Board {
     this.commentsError = null;
     this.commentService
       .createComment(event.cardId, content)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.commentsLoading = false;
+        }),
+      )
       .subscribe({
         next: (comment) => {
           const currentComments = this.getCommentsForCard(event.cardId);
@@ -196,11 +201,9 @@ export class Board {
             ...this.commentsByCardId,
             [event.cardId]: [...currentComments, comment],
           };
-          this.commentsLoading = false;
         },
         error: () => {
           this.commentsError = 'Komentar nije sacuvan.';
-          this.commentsLoading = false;
         },
       });
   }
@@ -216,7 +219,12 @@ export class Board {
     this.commentsError = null;
     this.commentService
       .updateComment(event.commentId, content)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.commentsLoading = false;
+        }),
+      )
       .subscribe({
         next: (updatedComment) => {
           const currentComments = this.getCommentsForCard(event.cardId);
@@ -227,11 +235,9 @@ export class Board {
               comment.id === updatedComment.id ? updatedComment : comment,
             ),
           };
-          this.commentsLoading = false;
         },
         error: () => {
           this.commentsError = 'Komentar nije izmenjen.';
-          this.commentsLoading = false;
         },
       });
   }
@@ -241,7 +247,12 @@ export class Board {
     this.commentsError = null;
     this.commentService
       .deleteComment(event.commentId)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.commentsLoading = false;
+        }),
+      )
       .subscribe({
         next: (deletedComment) => {
           const currentComments = this.getCommentsForCard(event.cardId);
@@ -250,11 +261,9 @@ export class Board {
             ...this.commentsByCardId,
             [event.cardId]: currentComments.filter((comment) => comment.id !== deletedComment.id),
           };
-          this.commentsLoading = false;
         },
         error: () => {
           this.commentsError = 'Komentar nije obrisan.';
-          this.commentsLoading = false;
         },
       });
   }
@@ -367,10 +376,21 @@ export class Board {
       cards.map((card) =>
         this.commentService.getComments(card.id).pipe(
           take(1),
+          catchError(() => {
+            this.commentsError = 'Neki komentari nisu ucitani.';
+            return of([]);
+          }),
           map((comments) => [card.id, comments] as const),
         ),
       ),
     )
+      .pipe(
+        finalize(() => {
+          if (board.id === this.lastCommentsBoardId && cardIdsKey === this.lastCommentsCardIdsKey) {
+            this.commentsLoading = false;
+          }
+        }),
+      )
       .subscribe({
         next: (entries) => {
           if (board.id !== this.lastCommentsBoardId || cardIdsKey !== this.lastCommentsCardIdsKey) {
@@ -378,7 +398,6 @@ export class Board {
           }
 
           this.commentsByCardId = Object.fromEntries(entries);
-          this.commentsLoading = false;
         },
         error: () => {
           if (board.id !== this.lastCommentsBoardId || cardIdsKey !== this.lastCommentsCardIdsKey) {
@@ -388,7 +407,6 @@ export class Board {
           this.commentsByCardId = {};
           this.lastCommentsCardIdsKey = '';
           this.commentsError = 'Komentari nisu ucitani.';
-          this.commentsLoading = false;
         },
       });
   }

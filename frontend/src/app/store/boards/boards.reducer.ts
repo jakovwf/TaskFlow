@@ -184,14 +184,7 @@ export const boardsReducer = createReducer(
   on(reorderCardsSuccess, (state, { cards }) =>
     updateSelectedBoard(state, (board) => ({
       ...board,
-      lists: (board.lists ?? [])
-        .map((list) => ({
-          ...list,
-          cards: cards
-            .filter((card) => card.listId === list.id)
-            .sort(sortByPosition),
-        }))
-        .sort(sortByPosition),
+      lists: mergeReorderedCards(board.lists ?? [], cards).sort(sortByPosition),
     })),
   ),
   on(addBoard, (state, { board }) => boardsAdapter.addOne(board, state)),
@@ -219,4 +212,25 @@ function updateSelectedBoard(state: BoardsState, update: (board: Board) => Board
 
 function sortByPosition<T extends BoardList | Card>(a: T, b: T): number {
   return a.position - b.position;
+}
+
+function mergeReorderedCards(lists: BoardList[], reorderedCards: Card[]): BoardList[] {
+  const reorderedCardsById = new Map(reorderedCards.map((card) => [card.id, card]));
+  const reorderedCardIds = new Set(reorderedCards.map((card) => card.id));
+
+  return lists.map((list) => {
+    const existingCards = list.cards ?? [];
+    const unchangedCards = existingCards
+      .filter((card) => !reorderedCardIds.has(card.id))
+      .map((card) => reorderedCardsById.get(card.id) ?? card);
+    const cardsForList = [
+      ...unchangedCards,
+      ...reorderedCards.filter((card) => card.listId === list.id),
+    ].sort(sortByPosition);
+
+    return {
+      ...list,
+      cards: cardsForList,
+    };
+  });
 }

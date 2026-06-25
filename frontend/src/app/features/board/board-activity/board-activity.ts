@@ -37,6 +37,8 @@ export class BoardActivity {
           return;
         }
 
+        this.loading = false;
+        this.activities = [];
         this.error = 'Board nije pronadjen.';
       });
   }
@@ -87,20 +89,31 @@ export class BoardActivity {
   private loadActivity(boardId: string): void {
     this.loading = true;
     this.error = null;
+    this.activities = [];
 
     this.boardService
       .getBoardActivity(boardId)
       .pipe(
         take(1),
         finalize(() => {
-          this.loading = false;
+          if (this.boardId === boardId) {
+            this.loading = false;
+          }
         }),
       )
       .subscribe({
         next: (activities) => {
+          if (this.boardId !== boardId) {
+            return;
+          }
+
           this.activities = activities;
         },
         error: (error: unknown) => {
+          if (this.boardId !== boardId) {
+            return;
+          }
+
           this.error = this.getErrorMessage(error);
         },
       });

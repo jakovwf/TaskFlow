@@ -44,6 +44,9 @@ export class Invite {
           return;
         }
 
+        this.loading = false;
+        this.actionLoading = false;
+        this.invite = null;
         this.error = 'Invite link nije ispravan.';
       });
   }
@@ -117,20 +120,31 @@ export class Invite {
     this.loading = true;
     this.error = null;
     this.successMessage = null;
+    this.invite = null;
 
     this.inviteService
       .getInvite(token)
       .pipe(
         take(1),
         finalize(() => {
-          this.loading = false;
+          if (this.token === token) {
+            this.loading = false;
+          }
         }),
       )
       .subscribe({
         next: (invite) => {
+          if (this.token !== token) {
+            return;
+          }
+
           this.invite = invite;
         },
         error: (error: unknown) => {
+          if (this.token !== token) {
+            return;
+          }
+
           this.error = this.getErrorMessage(error) ?? 'Invite nije pronadjen ili vise nije aktivan.';
         },
       });

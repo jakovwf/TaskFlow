@@ -61,6 +61,10 @@ export class BoardMembers {
           return;
         }
 
+        this.loading = false;
+        this.board = null;
+        this.members = [];
+        this.invites = [];
         this.error = 'Board nije pronadjen.';
       });
 
@@ -278,6 +282,9 @@ export class BoardMembers {
     this.loading = true;
     this.error = null;
     this.successMessage = null;
+    this.board = null;
+    this.members = [];
+    this.invites = [];
 
     forkJoin({
       board: this.boardService.getBoard(boardId),
@@ -287,16 +294,26 @@ export class BoardMembers {
       .pipe(
         take(1),
         finalize(() => {
-          this.loading = false;
+          if (this.boardId === boardId) {
+            this.loading = false;
+          }
         }),
       )
       .subscribe({
         next: ({ board, members, invites }) => {
+          if (this.boardId !== boardId) {
+            return;
+          }
+
           this.board = board;
           this.members = members;
           this.invites = invites.filter((invite) => invite.status === 'PENDING');
         },
         error: (error: unknown) => {
+          if (this.boardId !== boardId) {
+            return;
+          }
+
           this.error = this.getErrorMessage(error, 'Clanovi boarda nisu ucitani.');
         },
       });

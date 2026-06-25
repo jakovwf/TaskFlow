@@ -1,50 +1,50 @@
 <main
-  class="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-4 py-10"
+  class="flex min-h-screen items-center justify-center bg-[var(--color-auth-bg)] px-4 py-10"
 >
-  <section class="card w-full max-w-md border border-slate-200/80 bg-white/95 text-slate-900 shadow-2xl">
+  <section class="card w-full max-w-md border border-base-300 bg-base-100 text-base-content shadow-2xl">
     <div class="card-body gap-5 p-6 sm:p-8">
       <header class="text-center">
         <p class="text-sm font-semibold uppercase tracking-wide text-primary">Trello Klon</p>
         <h1 class="mt-2 text-3xl font-bold">Registracija</h1>
-        <p class="mt-2 text-sm text-slate-500">Kreiraj nalog i odmah nastavi u aplikaciju.</p>
+        <p class="mt-2 text-sm text-base-content/60">Kreiraj nalog i odmah nastavi u aplikaciju.</p>
       </header>
 
       <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
         <label class="form-control w-full">
           <div class="label">
-            <span class="label-text font-medium text-slate-700">Ime za prikaz</span>
+            <span class="label-text font-medium">Ime za prikaz</span>
           </div>
           <input
             type="text"
             formControlName="displayName"
             autocomplete="name"
-            class="input input-bordered w-full bg-white"
+            class="input input-bordered w-full bg-base-100"
             placeholder="Tvoje ime"
           />
         </label>
 
         <label class="form-control w-full">
           <div class="label">
-            <span class="label-text font-medium text-slate-700">Email</span>
+            <span class="label-text font-medium">Email</span>
           </div>
           <input
             type="email"
             formControlName="email"
             autocomplete="email"
-            class="input input-bordered w-full bg-white"
+            class="input input-bordered w-full bg-base-100"
             placeholder="ime@example.com"
           />
         </label>
 
         <label class="form-control w-full">
           <div class="label">
-            <span class="label-text font-medium text-slate-700">Lozinka</span>
+            <span class="label-text font-medium">Lozinka</span>
           </div>
           <input
             type="password"
             formControlName="password"
             autocomplete="new-password"
-            class="input input-bordered w-full bg-white"
+            class="input input-bordered w-full bg-base-100"
             placeholder="Najmanje 6 karaktera"
           />
         </label>
@@ -61,7 +61,7 @@
         </button>
       </form>
 
-      <p class="text-center text-sm text-slate-500">
+      <p class="text-center text-sm text-base-content/60">
         Vec imas nalog?
         <a routerLink="/login" class="link link-primary font-medium">Prijavi se</a>
       </p>

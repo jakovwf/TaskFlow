@@ -1,19 +1,19 @@
-<div class="w-80 shrink-0 rounded-lg border border-base-300 bg-base-100 p-4">
-  <div class="mb-3 flex gap-2">
-    <input #listTitle type="text" class="input input-bordered input-sm flex-1" [value]="list.title" />
-    <button type="button" class="btn btn-sm" [disabled]="loading" (click)="emitRename(listTitle.value)">
+<div class="w-[18rem] shrink-0 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-sm sm:w-80">
+  <div class="mb-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+    <input #listTitle type="text" class="input input-bordered input-sm w-full font-medium" [value]="list.title" />
+    <button type="button" class="btn btn-outline btn-sm" [disabled]="loading" (click)="emitRename(listTitle.value)">
       @if (loading) {
         <span class="loading loading-spinner loading-xs"></span>
       }
       Sacuvaj
     </button>
-    <button type="button" class="btn btn-error btn-sm" [disabled]="loading" (click)="emitDelete()">
+    <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading" (click)="emitDelete()">
       Obrisi
     </button>
   </div>
 
   <div
-    class="mb-4 min-h-10 space-y-2"
+    class="mb-4 min-h-16 space-y-2 rounded-xl bg-base-200/50 p-2"
     cdkDropList
     [id]="list.id"
     [cdkDropListData]="list.cards ?? emptyCards"
@@ -25,13 +25,13 @@
         <app-board-card cdkDrag [card]="card" (selected)="cardSelected.emit($event)" />
       }
     } @else {
-      <p class="rounded-lg border border-dashed border-base-300 p-3 text-sm text-base-content/60">
+      <p class="rounded-lg border border-dashed border-base-300 bg-base-100 p-3 text-sm text-base-content/60">
         Lista nema kartice.
       </p>
     }
   </div>
 
-  <div class="grid gap-2">
+  <div class="grid gap-2 border-t border-base-300 pt-3">
     <input
       type="text"
       class="input input-bordered input-sm"

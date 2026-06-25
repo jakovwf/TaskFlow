@@ -1,9 +1,10 @@
-<main class="flex min-h-screen items-center justify-center bg-base-200 px-4 py-10">
+<main class="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4 py-10">
   <section class="card w-full max-w-lg border border-base-300 bg-base-100 shadow-xl">
-    <div class="card-body gap-5">
-      <header>
+    <div class="card-body gap-5 p-6 sm:p-8">
+      <header class="text-center">
         <p class="text-sm font-semibold uppercase tracking-wide text-primary">Board invite</p>
-        <h1 class="mt-2 text-3xl font-bold">Pozivnica za board</h1>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight">Pozivnica za board</h1>
+        <p class="mt-2 text-sm text-base-content/60">Pregledaj pozivnicu i izaberi da li zelis da se pridruzis.</p>
       </header>
 
       @if (loading) {
@@ -22,7 +23,7 @@
       }
 
       @if (invite) {
-        <div class="rounded-lg border border-base-300 bg-base-200 p-4">
+        <div class="rounded-2xl border border-base-300 bg-base-200/70 p-4">
           <p class="text-sm text-base-content/60">Board</p>
           <p class="text-xl font-semibold">{{ invite.board?.title ?? 'Board' }}</p>
 

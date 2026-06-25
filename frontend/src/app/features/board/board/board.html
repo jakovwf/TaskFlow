@@ -1,8 +1,10 @@
-<main class="mx-auto max-w-6xl px-4 py-8">
-  <a routerLink="/home" class="link link-primary mb-4 inline-block">Nazad na home</a>
+<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+  <a routerLink="/home" class="btn btn-ghost btn-sm mb-4 px-0 text-primary hover:bg-transparent">
+    Nazad na home
+  </a>
 
   @if (loading$ | async) {
-    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70">
+    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
       <span class="loading loading-spinner loading-sm"></span>
       Ucitavanje boarda...
     </div>
@@ -15,7 +17,7 @@
   }
 
   @if (board$ | async; as board) {
-    <header class="mb-6">
+    <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
       @if (editingBoardHeader) {
         <form class="mb-4 grid max-w-2xl gap-3" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit(board.id)">
           <input
@@ -43,24 +45,25 @@
           </div>
         </form>
       } @else {
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div class="min-w-0">
-            <h1 class="text-3xl font-semibold">{{ board.title }}</h1>
+            <p class="text-sm font-semibold uppercase tracking-wide text-primary">Board</p>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight">{{ board.title }}</h1>
             @if (board.description) {
-              <p class="mt-2 text-base-content/70">{{ board.description }}</p>
+              <p class="mt-2 max-w-2xl text-base-content/70">{{ board.description }}</p>
             }
           </div>
           <div class="flex shrink-0 flex-wrap gap-2">
-            <a [routerLink]="['/b', board.id, 'members']" class="btn btn-secondary btn-sm">
+            <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">
               Members
             </a>
-            <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-secondary btn-sm">
+            <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">
               Activity
             </a>
             <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">
               Izmeni
             </button>
-            <button type="button" class="btn btn-error btn-sm" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">
+            <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">
               Obrisi
             </button>
           </div>
@@ -68,18 +71,18 @@
       }
       @if (boardContext$ | async; as context) {
         @if (context.currentUser) {
-          <p class="mt-1 text-sm text-base-content/60">
+          <p class="mt-3 text-sm text-base-content/60">
             Prijavljen korisnik: {{ context.currentUser.displayName }}
           </p>
         }
       }
     </header>
 
-    <form class="mb-6 flex gap-2" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
+    <form class="mb-5 grid gap-2 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-sm sm:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
       <input
         type="text"
         formControlName="title"
-        class="input input-bordered flex-1"
+        class="input input-bordered w-full"
         placeholder="Nova lista"
       />
       <button type="submit" class="btn btn-primary" [disabled]="listForm.invalid || (loading$ | async)">
@@ -92,7 +95,7 @@
 
     @if (board.lists?.length) {
       <section
-        class="flex gap-4 overflow-x-auto"
+        class="flex gap-4 overflow-x-auto pb-4"
         cdkDropList
         cdkDropListOrientation="horizontal"
         [cdkDropListData]="board.lists ?? []"
@@ -113,7 +116,7 @@
         }
       </section>
     } @else {
-      <p class="rounded-xl border border-base-300 bg-base-100 p-4 text-base-content/70">
+      <p class="rounded-xl border border-dashed border-base-300 bg-base-100 p-5 text-sm text-base-content/70 shadow-sm">
         Board je prazan. Dodaj prvu listu.
       </p>
     }

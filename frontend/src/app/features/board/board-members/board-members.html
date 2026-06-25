@@ -1,17 +1,18 @@
-<main class="mx-auto max-w-5xl px-4 py-8">
-  <a [routerLink]="boardId ? ['/b', boardId] : ['/home']" class="link link-primary mb-4 inline-block">
+<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+  <a [routerLink]="boardId ? ['/b', boardId] : ['/home']" class="btn btn-ghost btn-sm mb-4 px-0 text-primary hover:bg-transparent">
     Nazad na board
   </a>
 
-  <header class="mb-6">
-    <h1 class="text-3xl font-semibold">Clanovi boarda</h1>
+  <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Board access</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight">Clanovi boarda</h1>
     @if (board) {
       <p class="mt-2 text-base-content/70">{{ board.title }}</p>
     }
   </header>
 
   @if (loading) {
-    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70">
+    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
       <span class="loading loading-spinner loading-sm"></span>
       Ucitavanje clanova i invite-ova...
     </div>
@@ -25,14 +26,18 @@
     <div class="alert alert-success mb-4 text-sm">{{ successMessage }}</div>
   }
 
-  <section class="grid gap-6 lg:grid-cols-[1fr_22rem]">
-    <div class="rounded-lg border border-base-300 bg-base-100 p-4">
-      <h2 class="mb-4 text-xl font-semibold">Clanovi</h2>
+  <section class="grid items-start gap-6 lg:grid-cols-[1fr_26rem]">
+    <div class="card border border-base-300 bg-base-100 shadow-sm">
+      <div class="card-body gap-4 p-4 sm:p-5">
+      <div>
+        <h2 class="text-xl font-semibold">Clanovi</h2>
+        <p class="mt-1 text-sm text-base-content/60">Pregled clanova i njihovih rola na ovom boardu.</p>
+      </div>
 
       @if (members.length > 0) {
         <ul class="space-y-3">
           @for (member of members; track member.id) {
-            <li class="flex items-start justify-between gap-3 rounded border border-base-300 p-3">
+            <li class="flex flex-col gap-3 rounded-xl border border-base-300 bg-base-100 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
               <div class="min-w-0">
                 <p class="truncate font-medium">
                   {{ member.user?.displayName ?? member.user?.email ?? member.userId }}
@@ -41,10 +46,10 @@
                   <p class="text-sm text-base-content/60">{{ member.user?.email }}</p>
                 }
               </div>
-              <div class="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
+              <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
                 @if (canManageMember(member)) {
                   <select
-                    class="select select-bordered select-xs"
+                    class="select select-bordered select-sm w-full sm:w-auto"
                     [value]="member.role"
                     [disabled]="memberRoleLoadingUserId === member.userId || memberRemoveLoadingUserId === member.userId"
                     (change)="updateMemberRole(member, $any($event.target).value)"
@@ -54,7 +59,7 @@
                   </select>
                   <button
                     type="button"
-                    class="btn btn-error btn-xs"
+                    class="btn btn-error btn-outline btn-sm"
                     [disabled]="memberRoleLoadingUserId === member.userId || memberRemoveLoadingUserId === member.userId"
                     (click)="removeMember(member)"
                   >
@@ -64,23 +69,28 @@
                     Remove
                   </button>
                 } @else {
-                  <span class="badge badge-outline">{{ member.role }}</span>
+                  <span class="badge badge-outline badge-lg">{{ member.role }}</span>
                 }
               </div>
             </li>
           }
         </ul>
       } @else if (!loading) {
-        <div class="rounded-xl border border-base-300 bg-base-100 p-4 text-base-content/70">
+        <div class="rounded-xl border border-dashed border-base-300 bg-base-200/60 p-5 text-sm text-base-content/70">
           Nema dodatnih clanova za prikaz.
         </div>
       }
+      </div>
     </div>
 
-    <aside class="rounded-lg border border-base-300 bg-base-100 p-4">
-      <h2 class="mb-4 text-xl font-semibold">Invite</h2>
+    <aside class="card border border-base-300 bg-base-100 shadow-sm">
+      <div class="card-body gap-4 p-4 sm:p-5">
+      <div>
+        <h2 class="text-xl font-semibold">Invite</h2>
+        <p class="mt-1 text-sm text-base-content/60">Pretrazi korisnika ili unesi email rucno.</p>
+      </div>
 
-      <form class="mb-6 grid gap-3" [formGroup]="inviteForm" (ngSubmit)="createInvite()">
+      <form class="grid gap-3" [formGroup]="inviteForm" (ngSubmit)="createInvite()">
         <label class="form-control w-full">
           <div class="label">
             <span class="label-text">Pretrazi korisnika</span>
@@ -106,12 +116,12 @@
         }
 
         @if (userSearchResults.length > 0) {
-          <ul class="rounded-xl border border-base-300 bg-base-100">
+          <ul class="overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-sm">
             @for (user of userSearchResults; track user.id) {
               <li>
                 <button
                   type="button"
-                  class="flex w-full flex-col items-start gap-1 px-3 py-2 text-left hover:bg-base-200"
+                  class="flex w-full flex-col items-start gap-1 px-3 py-2 text-left transition hover:bg-base-200"
                   (click)="selectUserForInvite(user)"
                 >
                   <span class="font-medium">{{ user.displayName }}</span>
@@ -121,7 +131,7 @@
             }
           </ul>
         } @else if (hasSearchedUsers && !userSearchLoading && !userSearchError) {
-          <div class="rounded-xl border border-base-300 bg-base-100 p-3 text-sm text-base-content/70">
+          <div class="rounded-xl border border-dashed border-base-300 bg-base-200/60 p-3 text-sm text-base-content/70">
             Nema korisnika za ovu pretragu.
           </div>
         }
@@ -146,28 +156,32 @@
         </button>
       </form>
 
-      <h3 class="mb-3 font-semibold">Pending invite-ovi</h3>
+      <div class="divider my-1"></div>
+
+      <h3 class="font-semibold">Pending invite-ovi</h3>
 
       @if (invites.length > 0) {
         <ul class="space-y-3">
           @for (invite of invites; track invite.id) {
-            <li class="rounded border border-base-300 p-3">
-              <div class="flex items-start justify-between gap-3">
+            <li class="rounded-xl border border-base-300 bg-base-100 p-3 shadow-sm">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div class="min-w-0">
                   <p class="truncate font-medium">{{ invite.invitedEmail }}</p>
-                  <p class="text-xs text-base-content/60">Role: {{ invite.role }}</p>
-                  <p class="text-xs text-base-content/60">Status: {{ invite.status }}</p>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <span class="badge badge-outline">{{ invite.role }}</span>
+                    <span class="badge badge-ghost">{{ invite.status }}</span>
+                  </div>
                   <a [routerLink]="['/invite', invite.token]" class="link link-primary text-xs">
                     Otvori invite link
                   </a>
                 </div>
-                <div class="flex shrink-0 flex-col gap-2">
+                <div class="flex shrink-0 flex-wrap gap-2 sm:flex-col">
                   <button type="button" class="btn btn-outline btn-xs" (click)="copyInviteLink(invite)">
                     Copy invite link
                   </button>
                   <button
                     type="button"
-                    class="btn btn-error btn-xs"
+                    class="btn btn-error btn-outline btn-xs"
                     [disabled]="!!revokeLoadingInviteId"
                     (click)="revokeInvite(invite.id)"
                   >
@@ -182,10 +196,11 @@
           }
         </ul>
       } @else {
-        <div class="rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70">
+        <div class="rounded-xl border border-dashed border-base-300 bg-base-200/60 p-4 text-sm text-base-content/70">
           Nema pending pozivnica.
         </div>
       }
+      </div>
     </aside>
   </section>
 </main>

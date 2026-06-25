@@ -1,15 +1,16 @@
-<main class="mx-auto max-w-4xl px-4 py-8">
-  <a [routerLink]="boardId ? ['/b', boardId] : ['/home']" class="link link-primary mb-4 inline-block">
+<main class="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+  <a [routerLink]="boardId ? ['/b', boardId] : ['/home']" class="btn btn-ghost btn-sm mb-4 px-0 text-primary hover:bg-transparent">
     Nazad na board
   </a>
 
-  <header class="mb-6">
-    <h1 class="text-3xl font-semibold">Activity log</h1>
+  <header class="mb-5 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Board history</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight">Activity log</h1>
     <p class="mt-2 text-base-content/70">Najnovije aktivnosti na boardu.</p>
   </header>
 
   @if (loading) {
-    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70">
+    <div class="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4 text-sm text-base-content/70 shadow-sm">
       <span class="loading loading-spinner loading-sm"></span>
       Ucitavanje aktivnosti...
     </div>
@@ -22,26 +23,31 @@
   @if (activities.length > 0) {
     <ul class="space-y-3">
       @for (activity of activities; track activity.id) {
-        <li class="rounded-xl border border-base-300 bg-base-100 p-4">
-          <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p class="text-sm">
-                <span class="font-semibold">
-                  {{ activity.user?.displayName ?? activity.user?.email ?? 'Korisnik' }}
-                </span>
-                {{ describeActivity(activity) }}
-              </p>
-              <p class="mt-1 text-xs text-base-content/60">{{ activity.type }}</p>
+        <li class="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">
+          <div class="flex gap-3">
+            <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary"></div>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p class="text-sm">
+                    <span class="font-semibold">
+                      {{ activity.user?.displayName ?? activity.user?.email ?? 'Korisnik' }}
+                    </span>
+                    {{ describeActivity(activity) }}
+                  </p>
+                  <p class="mt-1 text-xs text-base-content/60">{{ activity.type }}</p>
+                </div>
+                <time class="text-xs text-base-content/60">
+                  {{ activity.createdAt | date: 'short' }}
+                </time>
+              </div>
             </div>
-            <time class="text-xs text-base-content/60">
-              {{ activity.createdAt | date: 'short' }}
-            </time>
           </div>
         </li>
       }
     </ul>
   } @else if (!loading && !error) {
-    <div class="rounded-xl border border-base-300 bg-base-100 p-4 text-base-content/70">
+    <div class="rounded-xl border border-dashed border-base-300 bg-base-100 p-5 text-sm text-base-content/70 shadow-sm">
       Nema aktivnosti za ovaj board.
     </div>
   }

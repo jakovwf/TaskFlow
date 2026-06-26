@@ -19,6 +19,8 @@ import { AttachmentsService } from './attachments.service';
 
 interface UploadedAttachmentFile {
   originalname: string;
+  mimetype: string;
+  size: number;
   buffer: Buffer;
 }
 
@@ -40,7 +42,7 @@ export class AttachmentsController {
     BoardMemberRole.MEMBER,
   )
   @UseGuards(AttachmentBoardRoleGuard)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
   @Post('cards/:cardId/attachments')
   upload(
     @Param('cardId') cardId: string,

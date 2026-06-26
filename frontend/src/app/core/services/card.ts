@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Card, CardMember } from '../../store/models';
+import { Attachment, Card, CardMember } from '../../store/models';
 
 export interface CreateCardData {
   title: string;
@@ -42,5 +42,20 @@ export class CardService {
 
   unassignCardMember(cardId: string, userId: string): Observable<CardMember> {
     return this.http.delete<CardMember>(`${environment.apiUrl}/cards/${cardId}/members/${userId}`);
+  }
+
+  uploadCardAttachment(cardId: string, file: File): Observable<Attachment> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<Attachment>(`${environment.apiUrl}/cards/${cardId}/attachments`, formData);
+  }
+
+  getCardAttachments(cardId: string): Observable<Attachment[]> {
+    return this.http.get<Attachment[]>(`${environment.apiUrl}/cards/${cardId}/attachments`);
+  }
+
+  deleteAttachment(attachmentId: string): Observable<Attachment> {
+    return this.http.delete<Attachment>(`${environment.apiUrl}/attachments/${attachmentId}`);
   }
 }

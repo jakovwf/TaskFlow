@@ -21,6 +21,17 @@ export interface CardMember {
   user?: User;
 }
 
+export interface Attachment {
+  id: string;
+  filename: string;
+  url: string;
+  publicId?: string | null;
+  cardId: string;
+  uploadedById: string;
+  createdAt: string;
+  uploadedBy?: User;
+}
+
 export type BoardMemberRole = BoardMember['role'];
 export type InviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
 
@@ -105,6 +116,7 @@ export interface Card {
     boardId: string;
   };
   members?: CardMember[];
+  attachments?: Attachment[];
   labels?: unknown[];
 }
 

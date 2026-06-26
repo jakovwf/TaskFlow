@@ -458,5 +458,15 @@ export class CardsService {
         label: true,
       },
     },
+    attachments: {
+      include: {
+        uploadedBy: {
+          select: this.safeUserSelect,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc' as const,
+      },
+    },
   };
 }

@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BoardMember, Card, CardComment, CardMember, User } from '../../../../store/models';
+import { Attachment, BoardMember, Card, CardComment, CardMember, User } from '../../../../store/models';
 
 @Component({
   selector: 'app-card-detail',
@@ -23,6 +23,9 @@ export class CardDetailComponent implements OnChanges {
   @Input() canManageMembers = false;
   @Input() memberAssignmentSaving = false;
   @Input() memberAssignmentError: string | null = null;
+  @Input() attachmentUploading = false;
+  @Input() attachmentDeletingId: string | null = null;
+  @Input() attachmentError: string | null = null;
   @Input() currentUser: User | null = null;
   @Input() loading: boolean | null = false;
 
@@ -32,6 +35,8 @@ export class CardDetailComponent implements OnChanges {
   @Output() delete = new EventEmitter<{ cardId: string; listId: string }>();
   @Output() assignMember = new EventEmitter<{ cardId: string; userId: string }>();
   @Output() unassignMember = new EventEmitter<{ cardId: string; userId: string }>();
+  @Output() uploadAttachment = new EventEmitter<{ cardId: string; file: File }>();
+  @Output() deleteAttachment = new EventEmitter<{ cardId: string; attachmentId: string }>();
   @Output() createComment = new EventEmitter<{ cardId: string; content: string }>();
   @Output() updateComment = new EventEmitter<{ cardId: string; commentId: string; content: string }>();
   @Output() deleteComment = new EventEmitter<{ cardId: string; commentId: string }>();
@@ -164,6 +169,35 @@ export class CardDetailComponent implements OnChanges {
     });
   }
 
+  emitUploadAttachment(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+
+    if (!this.card || !file || this.attachmentUploading) {
+      return;
+    }
+
+    this.uploadAttachment.emit({
+      cardId: this.card.id,
+      file,
+    });
+
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  emitDeleteAttachment(attachmentId: string): void {
+    if (!this.card || this.attachmentDeletingId) {
+      return;
+    }
+
+    this.deleteAttachment.emit({
+      cardId: this.card.id,
+      attachmentId,
+    });
+  }
+
   emitCreateComment(): void {
     if (!this.card) {
       return;
@@ -217,6 +251,40 @@ export class CardDetailComponent implements OnChanges {
 
   assignedMembers(): CardMember[] {
     return this.card?.members ?? [];
+  }
+
+  attachments(): Attachment[] {
+    return this.card?.attachments ?? [];
+  }
+
+  canDeleteAttachment(attachment: Attachment): boolean {
+    if (!this.currentUser) {
+      return false;
+    }
+
+    if (attachment.uploadedById === this.currentUser.id) {
+      return true;
+    }
+
+    const role = this.boardMembers.find((member) => member.userId === this.currentUser?.id)?.role;
+
+    return role === 'OWNER' || role === 'ADMIN';
+  }
+
+  isImageAttachment(attachment: Attachment): boolean {
+    return /\.(jpe?g|png|webp)$/i.test(attachment.filename) || attachment.url.includes('/image/upload/');
+  }
+
+  attachmentKind(attachment: Attachment): string {
+    if (/\.pdf$/i.test(attachment.filename)) {
+      return 'PDF';
+    }
+
+    if (this.isImageAttachment(attachment)) {
+      return 'Slika';
+    }
+
+    return 'Fajl';
   }
 
   availableBoardMembers(): BoardMember[] {

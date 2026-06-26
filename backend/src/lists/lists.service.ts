@@ -129,6 +129,22 @@ export class ListsService {
             },
           },
         },
+        attachments: {
+          include: {
+            uploadedBy: {
+              select: {
+                id: true,
+                email: true,
+                displayName: true,
+                avatarUrl: true,
+                createdAt: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'asc' as const,
+          },
+        },
       },
     },
   };

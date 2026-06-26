@@ -12,8 +12,18 @@ import { PrismaService } from '../prisma/prisma.service';
 
 interface UploadedAttachmentFile {
   originalname: string;
+  mimetype: string;
+  size: number;
   buffer: Buffer;
 }
+
+const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+]);
 
 @Injectable()
 export class AttachmentsService {
@@ -26,6 +36,14 @@ export class AttachmentsService {
   ) {
     if (!file) {
       throw new BadRequestException('File is required');
+    }
+
+    if (!ALLOWED_ATTACHMENT_MIME_TYPES.has(file.mimetype)) {
+      throw new BadRequestException('File type is not allowed');
+    }
+
+    if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+      throw new BadRequestException('File is too large');
     }
 
     const uploadedFile = await this.uploadToCloudinary(file);
@@ -92,7 +110,7 @@ export class AttachmentsService {
     }
 
     if (attachment.publicId) {
-      await cloudinary.uploader.destroy(attachment.publicId);
+      await this.deleteFromCloudinary(attachment.publicId);
     }
 
     return this.prisma.attachment.delete({
@@ -106,7 +124,7 @@ export class AttachmentsService {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           resource_type: 'auto',
-          folder: 'trello-klon/attachments',
+          folder: 'taskflow/attachments',
         },
         (error, result) => {
           if (error || !result) {
@@ -120,6 +138,16 @@ export class AttachmentsService {
 
       Readable.from(file.buffer).pipe(uploadStream);
     });
+  }
+
+  private async deleteFromCloudinary(publicId: string): Promise<void> {
+    const resourceTypes = ['image', 'raw'] as const;
+
+    await Promise.allSettled(
+      resourceTypes.map((resource_type) =>
+        cloudinary.uploader.destroy(publicId, { resource_type }),
+      ),
+    );
   }
 
   private readonly safeUserSelect = {

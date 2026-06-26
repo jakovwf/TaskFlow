@@ -283,6 +283,16 @@ export class BoardsService {
                 },
               },
             },
+            attachments: {
+              include: {
+                uploadedBy: {
+                  select: this.safeUserSelect,
+                },
+              },
+              orderBy: {
+                createdAt: 'asc' as const,
+              },
+            },
           },
         },
       },

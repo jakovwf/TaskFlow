@@ -128,6 +128,89 @@
       </section>
 
       <section class="mt-6 border-t border-base-300 pt-4">
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <h3 class="text-lg font-semibold">Attachments</h3>
+          @if (attachmentUploading) {
+            <span class="loading loading-spinner loading-sm text-primary"></span>
+          }
+        </div>
+
+        @if (attachmentError) {
+          <div class="alert alert-error mb-3 text-sm">{{ attachmentError }}</div>
+        }
+
+        <label class="form-control mb-4">
+          <span class="label-text mb-1">Dodaj fajl</span>
+          <input
+            type="file"
+            class="file-input file-input-bordered w-full bg-base-100/80"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            [disabled]="attachmentUploading"
+            (change)="emitUploadAttachment($event)"
+          />
+          <span class="label-text-alt mt-1 text-base-content/60">JPG, PNG, WEBP ili PDF do 10MB.</span>
+        </label>
+
+        @if (attachments().length > 0) {
+          <div class="grid gap-3">
+            @for (attachment of attachments(); track attachment.id) {
+              <article class="tf-card flex flex-col gap-3 bg-base-100 p-3 sm:flex-row sm:items-center">
+                @if (isImageAttachment(attachment)) {
+                  <img
+                    [src]="attachment.url"
+                    [alt]="attachment.filename"
+                    class="h-20 w-full rounded-lg border border-base-300 object-cover sm:w-24"
+                  />
+                } @else {
+                  <div class="flex h-20 w-full items-center justify-center rounded-lg border border-dashed border-base-300 bg-base-200/60 text-sm font-semibold text-base-content/60 sm:w-24">
+                    PDF
+                  </div>
+                }
+
+                <div class="min-w-0 flex-1">
+                  <div class="mb-1 flex flex-wrap items-center gap-2">
+                    <p class="max-w-full truncate font-medium">{{ attachment.filename }}</p>
+                    <span class="badge badge-outline badge-sm">{{ attachmentKind(attachment) }}</span>
+                  </div>
+                  <p class="text-xs text-base-content/60">
+                    {{ displayUser(attachment.uploadedBy) }} - {{ attachment.createdAt | date: 'short' }}
+                  </p>
+                </div>
+
+                <div class="flex shrink-0 gap-2">
+                  <a
+                    class="btn btn-outline btn-sm"
+                    [href]="attachment.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Otvori
+                  </a>
+                  @if (canDeleteAttachment(attachment)) {
+                    <button
+                      type="button"
+                      class="btn btn-error btn-outline btn-sm"
+                      [disabled]="attachmentDeletingId === attachment.id"
+                      (click)="emitDeleteAttachment(attachment.id)"
+                    >
+                      @if (attachmentDeletingId === attachment.id) {
+                        <span class="loading loading-spinner loading-xs"></span>
+                      }
+                      Obrisi
+                    </button>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="tf-empty p-3 text-sm">
+            Kartica nema attachment fajlove.
+          </p>
+        }
+      </section>
+
+      <section class="mt-6 border-t border-base-300 pt-4">
         <h3 class="mb-3 text-lg font-semibold">Komentari</h3>
 
         @if (commentsError) {

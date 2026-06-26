@@ -31,7 +31,7 @@ import {
   selectBoardsReorderError,
   selectSelectedBoard,
 } from '../../../store/boards/boards.selectors';
-import { Board as BoardModel, BoardList, Card, CardComment, CardMember, User } from '../../../store/models';
+import { Attachment, Board as BoardModel, BoardList, Card, CardComment, CardMember, User } from '../../../store/models';
 import { BoardListComponent } from '../components/board-list/board-list';
 import { CardDetailComponent } from '../components/card-detail/card-detail';
 
@@ -69,6 +69,9 @@ export class Board {
   cardTitleError: string | null = null;
   memberAssignmentSaving = false;
   memberAssignmentError: string | null = null;
+  attachmentUploading = false;
+  attachmentDeletingId: string | null = null;
+  attachmentError: string | null = null;
   renamingListId: string | null = null;
   listRenameErrors: Record<string, string | null> = {};
   editingBoardHeader = false;
@@ -223,6 +226,9 @@ export class Board {
     this.cardTitleError = null;
     this.memberAssignmentError = null;
     this.memberAssignmentSaving = false;
+    this.attachmentUploading = false;
+    this.attachmentDeletingId = null;
+    this.attachmentError = null;
     this.loadComments(card.id);
     this.cdr.markForCheck();
   }
@@ -236,6 +242,9 @@ export class Board {
     this.cardTitleError = null;
     this.memberAssignmentSaving = false;
     this.memberAssignmentError = null;
+    this.attachmentUploading = false;
+    this.attachmentDeletingId = null;
+    this.attachmentError = null;
     this.cdr.markForCheck();
   }
 
@@ -455,6 +464,68 @@ export class Board {
       });
   }
 
+  uploadCardAttachment(event: { cardId: string; file: File }): void {
+    if (!this.selectedCard || this.selectedCard.id !== event.cardId || this.attachmentUploading) {
+      return;
+    }
+
+    this.attachmentError = null;
+    this.attachmentUploading = true;
+    this.cardService
+      .uploadCardAttachment(event.cardId, event.file)
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.attachmentUploading = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (attachment) => {
+          const attachments = this.selectedCard?.attachments ?? [];
+
+          if (!attachments.some((item) => item.id === attachment.id)) {
+            this.applySelectedCardAttachments([...attachments, attachment]);
+          }
+
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.attachmentError = this.getAttachmentError(error, 'Attachment nije uploadovan.');
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  deleteCardAttachment(event: { cardId: string; attachmentId: string }): void {
+    if (!this.selectedCard || this.selectedCard.id !== event.cardId || this.attachmentDeletingId) {
+      return;
+    }
+
+    this.attachmentError = null;
+    this.attachmentDeletingId = event.attachmentId;
+    this.cardService
+      .deleteAttachment(event.attachmentId)
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.attachmentDeletingId = null;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: () => {
+          const attachments = this.selectedCard?.attachments ?? [];
+          this.applySelectedCardAttachments(attachments.filter((attachment) => attachment.id !== event.attachmentId));
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.attachmentError = this.getAttachmentError(error, 'Attachment nije obrisan.');
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
   canManageCardAssignments(board: BoardModel): boolean {
     if (!this.currentUser) {
       return false;
@@ -615,6 +686,20 @@ export class Board {
     this.store.dispatch(updateCardSuccess({ card: updatedCard }));
   }
 
+  private applySelectedCardAttachments(attachments: Attachment[]): void {
+    if (!this.selectedCard) {
+      return;
+    }
+
+    const updatedCard = {
+      ...this.selectedCard,
+      attachments,
+    };
+
+    this.selectedCard = updatedCard;
+    this.store.dispatch(updateCardSuccess({ card: updatedCard }));
+  }
+
   private getMemberAssignmentError(error: unknown, fallback: string): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 400) {
@@ -627,6 +712,24 @@ export class Board {
 
       if (error.status === 409) {
         return 'Clan je vec dodeljen ovoj kartici.';
+      }
+    }
+
+    return fallback;
+  }
+
+  private getAttachmentError(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 400) {
+        return 'Dozvoljeni su JPG, PNG, WEBP i PDF fajlovi do 10MB.';
+      }
+
+      if (error.status === 403) {
+        return 'Nemas dozvolu za attachment na ovoj kartici.';
+      }
+
+      if (error.status === 413) {
+        return 'Fajl je prevelik. Maksimalna velicina je 10MB.';
       }
     }
 

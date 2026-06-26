@@ -1,6 +1,6 @@
 @if (card) {
-  <div class="modal modal-open items-start overflow-hidden p-3 sm:items-center sm:p-6">
-    <div class="modal-box tf-panel flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden p-0 sm:h-[calc(100dvh-3rem)] sm:max-h-[calc(100dvh-3rem)]">
+  <div class="modal modal-open items-start overflow-hidden bg-slate-950/40 p-3 backdrop-blur-sm sm:items-center sm:p-6">
+    <div class="modal-box flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-0 shadow-2xl sm:h-[calc(100dvh-3rem)] sm:max-h-[calc(100dvh-3rem)]">
       <button
         type="button"
         class="btn btn-circle btn-ghost btn-sm absolute right-3 top-3 z-10"
@@ -10,12 +10,12 @@
         x
       </button>
 
-      <header class="shrink-0 border-b border-base-300 bg-base-100/95 p-5 pr-14 backdrop-blur sm:p-6 sm:pr-16">
+      <header class="shrink-0 border-b border-base-300 bg-base-100 p-5 pr-14 sm:p-6 sm:pr-16">
         <p class="tf-kicker">TaskFlow card</p>
         <h2 class="mt-1 text-xl font-bold">Kartica</h2>
       </header>
 
-      <main class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-5 sm:pb-6">
+      <main class="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-base-100 px-5 py-4 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-5 sm:pb-6">
       <form class="grid gap-3" [formGroup]="form" (ngSubmit)="emitSave()">
         <label class="form-control">
           <span class="label-text mb-1">Naslov</span>
@@ -160,10 +160,11 @@
                     [src]="attachment.url"
                     [alt]="attachment.filename"
                     class="h-20 w-full rounded-lg border border-base-300 object-cover sm:w-24"
+                    (error)="markAttachmentPreviewFailed(attachment.id)"
                   />
                 } @else {
                   <div class="flex h-20 w-full items-center justify-center rounded-lg border border-dashed border-base-300 bg-base-200/60 text-sm font-semibold text-base-content/60 sm:w-24">
-                    PDF
+                    {{ attachmentBadgeLabel(attachment) }}
                   </div>
                 }
 
@@ -185,6 +186,15 @@
                     rel="noopener noreferrer"
                   >
                     Otvori
+                  </a>
+                  <a
+                    class="btn btn-outline btn-sm"
+                    [href]="getAttachmentDownloadUrl(attachment)"
+                    [attr.download]="attachment.filename"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Download
                   </a>
                   @if (canDeleteAttachment(attachment)) {
                     <button

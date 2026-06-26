@@ -26,6 +26,9 @@ export interface Attachment {
   filename: string;
   url: string;
   publicId?: string | null;
+  mimeType?: string | null;
+  resourceType?: string | null;
+  format?: string | null;
   cardId: string;
   uploadedById: string;
   createdAt: string;

@@ -45,6 +45,7 @@ export class CardDetailComponent implements OnChanges {
   editingCommentId: string | null = null;
   editCommentContent = '';
   selectedMemberId = '';
+  failedAttachmentPreviewIds = new Set<string>();
 
   readonly form = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
@@ -57,6 +58,7 @@ export class CardDetailComponent implements OnChanges {
         this.resetCommentEditor();
         this.newCommentContent = '';
         this.selectedMemberId = '';
+        this.failedAttachmentPreviewIds.clear();
         return;
       }
 
@@ -67,6 +69,7 @@ export class CardDetailComponent implements OnChanges {
       this.resetCommentEditor();
       this.newCommentContent = '';
       this.selectedMemberId = '';
+      this.failedAttachmentPreviewIds.clear();
     }
 
     if ('cardTitleError' in changes && this.cardTitleError && this.card) {
@@ -272,11 +275,19 @@ export class CardDetailComponent implements OnChanges {
   }
 
   isImageAttachment(attachment: Attachment): boolean {
-    return /\.(jpe?g|png|webp)$/i.test(attachment.filename) || attachment.url.includes('/image/upload/');
+    if (this.failedAttachmentPreviewIds.has(attachment.id)) {
+      return false;
+    }
+
+    if (attachment.mimeType) {
+      return attachment.mimeType.startsWith('image/');
+    }
+
+    return ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(this.attachmentExtension(attachment));
   }
 
   attachmentKind(attachment: Attachment): string {
-    if (/\.pdf$/i.test(attachment.filename)) {
+    if (this.isPdfAttachment(attachment)) {
       return 'PDF';
     }
 
@@ -285,6 +296,38 @@ export class CardDetailComponent implements OnChanges {
     }
 
     return 'Fajl';
+  }
+
+  attachmentBadgeLabel(attachment: Attachment): string {
+    if (this.isPdfAttachment(attachment)) {
+      return 'PDF';
+    }
+
+    if (this.isImageAttachment(attachment)) {
+      return 'IMG';
+    }
+
+    return 'FILE';
+  }
+
+  markAttachmentPreviewFailed(attachmentId: string): void {
+    this.failedAttachmentPreviewIds = new Set([...this.failedAttachmentPreviewIds, attachmentId]);
+  }
+
+  getAttachmentDownloadUrl(attachment: Attachment): string {
+    if (!attachment.url) {
+      return '#';
+    }
+
+    if (attachment.url.includes('/upload/fl_attachment/')) {
+      return attachment.url;
+    }
+
+    if (attachment.url.includes('/upload/')) {
+      return attachment.url.replace('/upload/', '/upload/fl_attachment/');
+    }
+
+    return attachment.url;
   }
 
   availableBoardMembers(): BoardMember[] {
@@ -299,6 +342,17 @@ export class CardDetailComponent implements OnChanges {
 
   userInitial(user: User | undefined | null): string {
     return this.displayUser(user).slice(0, 1).toUpperCase();
+  }
+
+  private isPdfAttachment(attachment: Attachment): boolean {
+    return attachment.mimeType === 'application/pdf' || this.attachmentExtension(attachment) === 'pdf';
+  }
+
+  private attachmentExtension(attachment: Attachment): string {
+    const filename = attachment.filename.toLowerCase();
+    const extension = filename.includes('.') ? filename.split('.').pop() : '';
+
+    return extension ?? '';
   }
 
   private resetCommentEditor(): void {

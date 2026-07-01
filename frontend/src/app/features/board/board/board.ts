@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -86,6 +86,7 @@ export class Board {
   listRenameErrors: Record<string, string | null> = {};
   editingBoardHeader = false;
   showNewListForm = false;
+  mobileToolbarOpen = false;
   hasBoardRoute = false;
   private lastCommentsBoardId: string | null = null;
   private activeCommentsLoadCardId: string | null = null;
@@ -324,7 +325,18 @@ export class Board {
     this.listForm.reset();
   }
 
+  toggleMobileToolbar(event: MouseEvent): void {
+    event.stopPropagation();
+    this.mobileToolbarOpen = !this.mobileToolbarOpen;
+  }
+
+  @HostListener('document:click')
+  closeMobileToolbar(): void {
+    this.mobileToolbarOpen = false;
+  }
+
   startBoardEdit(board: BoardModel): void {
+    this.mobileToolbarOpen = false;
     this.editingBoardHeader = true;
     this.boardEditForm.setValue({
       title: board.title,
@@ -362,6 +374,7 @@ export class Board {
   }
 
   async deleteCurrentBoard(boardId: string): Promise<void> {
+    this.mobileToolbarOpen = false;
     if (!(await this.confirmModalService.confirm('Brisanje boarda', 'Da li ste sigurni da želite da obrišete board?'))) {
       return;
     }

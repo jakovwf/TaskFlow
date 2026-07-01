@@ -72,14 +72,16 @@
               Obrisi
             </button>
           </div>
-          <div class="dropdown dropdown-end self-end lg:hidden">
-            <div tabindex="0" role="button" class="btn btn-ghost btn-sm" aria-label="Board akcije">...</div>
-            <ul tabindex="0" class="menu dropdown-content z-50 mt-2 w-40 rounded-box border border-base-200 bg-base-100 p-2 shadow-lg">
-              <li><a [routerLink]="['/b', board.id, 'members']">Members</a></li>
-              <li><a [routerLink]="['/b', board.id, 'activity']">Activity</a></li>
-              <li><button type="button" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button></li>
-              <li><button type="button" class="text-error" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">Obrisi</button></li>
-            </ul>
+          <div class="dropdown dropdown-end relative z-50 self-end lg:hidden">
+            <button type="button" class="btn btn-ghost btn-sm" aria-label="Board akcije" [attr.aria-expanded]="mobileToolbarOpen" (click)="toggleMobileToolbar($event)">...</button>
+            @if (mobileToolbarOpen) {
+              <ul class="menu absolute right-0 top-full z-50 mt-2 w-40 rounded-box border border-base-200 bg-base-100 p-2 shadow-lg" (click)="$event.stopPropagation()">
+                <li><a [routerLink]="['/b', board.id, 'members']" (click)="mobileToolbarOpen = false">Members</a></li>
+                <li><a [routerLink]="['/b', board.id, 'activity']" (click)="mobileToolbarOpen = false">Activity</a></li>
+                <li><button type="button" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button></li>
+                <li><button type="button" class="text-error" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">Obrisi</button></li>
+              </ul>
+            }
           </div>
         </div>
       }
@@ -101,7 +103,7 @@
     </form>
 
     <section
-      class="flex flex-row gap-4 overflow-x-auto pb-4"
+      class="flex h-[calc(100vh-200px)] w-full min-w-0 flex-row gap-4 overflow-x-auto overflow-y-hidden pb-4"
       cdkDropList
       cdkDropListOrientation="horizontal"
       [cdkDropListData]="board.lists ?? []"
@@ -109,7 +111,7 @@
     >
       @for (list of board.lists; track list.id) {
         <app-board-list
-          class="block min-w-[280px] w-[280px]"
+          class="block min-w-[280px] w-[280px] shrink-0"
           cdkDrag
           [list]="list"
           [loading]="loading$ | async"

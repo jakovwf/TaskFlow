@@ -11,3 +11,17 @@
     <router-outlet />
   </main>
 }
+
+@if (confirmModal.state(); as modal) {
+  <app-confirm-modal
+    [title]="modal.title"
+    [message]="modal.message"
+    [confirmText]="modal.confirmText"
+    [cancelText]="modal.cancelText"
+    [danger]="modal.danger"
+    (confirmed)="confirmModal.resolve(true)"
+    (cancelled)="confirmModal.resolve(false)"
+  />
+}
+
+<app-toast />

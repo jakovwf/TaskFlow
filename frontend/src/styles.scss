@@ -154,6 +154,18 @@ body {
   box-shadow: 0 10px 26px rgb(15 23 42 / 0.06);
 }
 
+@media (min-width: 640px) {
+  .tf-toast-container {
+    top: 1rem;
+    right: 1rem;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    min-width: 320px;
+    max-width: 24rem;
+  }
+}
+
 .tf-brand-mark {
   display: inline-flex;
   align-items: center;

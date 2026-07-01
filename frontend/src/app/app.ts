@@ -9,15 +9,19 @@ import { NavbarComponent } from './shared/components/navbar/navbar';
 import { loadMe } from './store/auth/auth.actions';
 import { selectSelectedBoard } from './store/boards/boards.selectors';
 import { Board as BoardModel } from './store/models';
+import { ConfirmModalComponent } from './shared/components/confirm-modal/confirm-modal';
+import { ToastComponent } from './shared/components/toast/toast';
+import { ConfirmModalService } from './shared/services/confirm-modal.service';
 
 @Component({
   selector: 'app-root',
-  imports: [NavbarComponent, RouterOutlet],
+  imports: [ConfirmModalComponent, NavbarComponent, RouterOutlet, ToastComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
   private readonly authService = inject(AuthService);
+  protected readonly confirmModal = inject(ConfirmModalService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly store = inject(Store);

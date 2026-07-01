@@ -20,6 +20,7 @@ import { notificationsReducer } from './store/notifications/notifications.reduce
 import { WorkspacesEffects } from './store/workspaces/workspaces.effects';
 import { workspacesReducer } from './store/workspaces/workspaces.reducer';
 import { provideServiceWorker } from '@angular/service-worker';
+import { ToastEffects } from './store/toast.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,7 +34,7 @@ export const appConfig: ApplicationConfig = {
       notifications: notificationsReducer,
       workspaces: workspacesReducer,
     }),
-    provideEffects([AuthEffects, BoardsEffects, NotificationsEffects, WorkspacesEffects]),
+    provideEffects([AuthEffects, BoardsEffects, NotificationsEffects, WorkspacesEffects, ToastEffects]),
     provideStoreDevtools({ maxAge: 25, logOnly: false }), provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),
             registrationStrategy: 'registerImmediately'

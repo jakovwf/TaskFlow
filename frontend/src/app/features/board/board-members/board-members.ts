@@ -11,6 +11,7 @@ import { SocketService } from '../../../core/services/socket.service';
 import { UserService } from '../../../core/services/user';
 import { selectCurrentUser } from '../../../store/auth/auth.selectors';
 import { Board, BoardInvite, BoardMember, BoardMemberRole, User } from '../../../store/models';
+import { ConfirmModalService } from '../../../shared/services/confirm-modal.service';
 
 @Component({
   selector: 'app-board-members',
@@ -20,6 +21,7 @@ import { Board, BoardInvite, BoardMember, BoardMemberRole, User } from '../../..
 })
 export class BoardMembers {
   private readonly boardService = inject(BoardService);
+  private readonly confirmModalService = inject(ConfirmModalService);
   private readonly boardSocketService = inject(BoardSocketService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly formBuilder = inject(FormBuilder);
@@ -197,8 +199,12 @@ export class BoardMembers {
       });
   }
 
-  revokeInvite(inviteId: string): void {
-    if (!this.boardId || !confirm('Da li zelite da povucete ovaj invite?')) {
+  async revokeInvite(inviteId: string): Promise<void> {
+    if (!this.boardId) {
+      return;
+    }
+
+    if (!(await this.confirmModalService.confirm('Povlačenje pozivnice', 'Da li želite da povučete ovu pozivnicu?'))) {
       return;
     }
 
@@ -261,12 +267,12 @@ export class BoardMembers {
       });
   }
 
-  removeMember(member: BoardMember): void {
+  async removeMember(member: BoardMember): Promise<void> {
     if (!this.boardId || !this.canManageMember(member)) {
       return;
     }
 
-    if (!confirm('Da li zelite da uklonite ovog clana sa boarda?')) {
+    if (!(await this.confirmModalService.confirm('Uklanjanje člana', 'Da li želite da uklonite ovog člana sa boarda?'))) {
       return;
     }
 

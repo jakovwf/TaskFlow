@@ -3,6 +3,7 @@ import { Component, HostListener, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { ConfirmModalService } from '../../shared/services/confirm-modal.service';
 import {
   createBoard,
   deleteBoard,
@@ -35,6 +36,7 @@ import {
 })
 export class Home {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly confirmModalService = inject(ConfirmModalService);
   private readonly router = inject(Router);
   private readonly store = inject(Store);
 
@@ -124,9 +126,9 @@ export class Home {
     this.cancelWorkspaceEdit();
   }
 
-  deleteWorkspace(workspaceId: string): void {
+  async deleteWorkspace(workspaceId: string): Promise<void> {
     this.closeDropdown();
-    if (!confirm('Da li ste sigurni da zelite da obrisete workspace?')) {
+    if (!(await this.confirmModalService.confirm('Brisanje workspace-a', 'Da li ste sigurni da želite da obrišete workspace?'))) {
       return;
     }
 
@@ -220,9 +222,9 @@ export class Home {
     this.cancelBoardEdit();
   }
 
-  deleteBoard(boardId: string): void {
+  async deleteBoard(boardId: string): Promise<void> {
     this.closeDropdown();
-    if (!confirm('Da li ste sigurni da zelite da obrisete board?')) {
+    if (!(await this.confirmModalService.confirm('Brisanje boarda', 'Da li ste sigurni da želite da obrišete board?'))) {
       return;
     }
 

@@ -12,6 +12,7 @@ import { BoardSocketService } from '../../../core/services/board-socket.service'
 import { CardService } from '../../../core/services/card';
 import { ListService } from '../../../core/services/list';
 import { LabelService } from '../../../core/services/label.service';
+import { ConfirmModalService } from '../../../shared/services/confirm-modal.service';
 import {
   createCard,
   createList,
@@ -50,6 +51,7 @@ export class Board {
   private readonly boardSocketService = inject(BoardSocketService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly commentService = inject(CommentService);
+  private readonly confirmModalService = inject(ConfirmModalService);
   private readonly listService = inject(ListService);
   private readonly labelService = inject(LabelService);
   private readonly route = inject(ActivatedRoute);
@@ -359,8 +361,8 @@ export class Board {
     this.cancelBoardEdit();
   }
 
-  deleteCurrentBoard(boardId: string): void {
-    if (!confirm('Da li ste sigurni da zelite da obrisete board?')) {
+  async deleteCurrentBoard(boardId: string): Promise<void> {
+    if (!(await this.confirmModalService.confirm('Brisanje boarda', 'Da li ste sigurni da želite da obrišete board?'))) {
       return;
     }
 
@@ -759,8 +761,12 @@ export class Board {
       });
   }
 
-  deleteBoardLabel(labelId: string): void {
-    if (!this.currentBoard || this.labelSaving || !confirm('Obrisati ovu labelu?')) {
+  async deleteBoardLabel(labelId: string): Promise<void> {
+    if (!this.currentBoard || this.labelSaving) {
+      return;
+    }
+
+    if (!(await this.confirmModalService.confirm('Brisanje labele', 'Da li želite da obrišete ovu labelu?'))) {
       return;
     }
 

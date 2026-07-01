@@ -187,6 +187,7 @@ export class AttachmentsService {
           folder: 'taskflow/attachments',
           use_filename: true,
           unique_filename: true,
+          format: file.originalname.split('.').pop()?.toLowerCase() ?? undefined,
         },
         (error, result) => {
           if (error || !result) {

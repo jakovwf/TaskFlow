@@ -151,6 +151,11 @@ export class ListsService {
             },
           },
         },
+        labels: {
+          include: {
+            label: true,
+          },
+        },
         attachments: {
           include: {
             uploadedBy: {

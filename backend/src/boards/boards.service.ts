@@ -307,6 +307,11 @@ export class BoardsService {
                 },
               },
             },
+            labels: {
+              include: {
+                label: true,
+              },
+            },
             attachments: {
               include: {
                 uploadedBy: {

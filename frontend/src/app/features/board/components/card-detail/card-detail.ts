@@ -416,7 +416,7 @@ export class CardDetailComponent implements OnChanges {
     if (attachment.mimeType === 'application/pdf') {
       const viewerUrl = attachment.url.replace(
         '/raw/upload/',
-        '/image/upload/fl_attachment:false/',
+        '/raw/upload/fl_attachment:false/',
       );
       window.open(viewerUrl, '_blank');
       return;

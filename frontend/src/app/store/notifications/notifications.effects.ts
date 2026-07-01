@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, exhaustMap, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Notification } from '../models';
 import {
@@ -35,7 +35,7 @@ export class NotificationsEffects {
   readonly markAsRead$ = createEffect(() =>
     this.actions$.pipe(
       ofType(markAsRead),
-      switchMap(({ id }) =>
+      exhaustMap(({ id }) =>
         this.http.patch<Notification>(`${this.notificationsApiUrl}/${id}/read`, {}).pipe(
           map((notification) => markAsReadSuccess({ notification })),
           catchError((error: unknown) => of(loadNotificationsFailure({ error: this.getErrorMessage(error) }))),
@@ -47,7 +47,7 @@ export class NotificationsEffects {
   readonly markAllAsRead$ = createEffect(() =>
     this.actions$.pipe(
       ofType(markAllAsRead),
-      switchMap(() =>
+      exhaustMap(() =>
         this.http.patch(`${this.notificationsApiUrl}/read-all`, {}).pipe(
           map(() => markAllAsReadSuccess()),
           catchError((error: unknown) => of(loadNotificationsFailure({ error: this.getErrorMessage(error) }))),

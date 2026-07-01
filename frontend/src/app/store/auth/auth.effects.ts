@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import { catchError, exhaustMap, map, of, switchMap, tap } from 'rxjs';
 import { AuthService } from '../../core/services/auth';
 import { User } from '../models';
 import {
@@ -24,7 +24,7 @@ export class AuthEffects {
   readonly loginEffect$ = createEffect(() =>
     this.actions$.pipe(
       ofType(login),
-      switchMap(({ email, password }) =>
+      exhaustMap(({ email, password }) =>
         this.authService.login(email, password).pipe(
           map((response) => {
             const token = response.token ?? response.accessToken;
@@ -41,7 +41,7 @@ export class AuthEffects {
   readonly registerEffect$ = createEffect(() =>
     this.actions$.pipe(
       ofType(register),
-      switchMap(({ displayName, email, password }) =>
+      exhaustMap(({ displayName, email, password }) =>
         this.authService.register(email, password, displayName).pipe(
           map((response) => {
             const token = response.token ?? response.accessToken;

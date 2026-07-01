@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, exhaustMap, map, mergeMap, of, switchMap } from 'rxjs';
 import { WorkspaceService } from '../../core/services/workspace';
 import { loadMyBoards } from '../boards/boards.actions';
 import {
@@ -40,7 +40,7 @@ export class WorkspacesEffects {
   readonly createWorkspace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(createWorkspace),
-      switchMap(({ name }) =>
+      exhaustMap(({ name }) =>
         this.workspaceService.createWorkspace({ name }).pipe(
           map((workspace) => createWorkspaceSuccess({ workspace })),
           catchError((error: unknown) =>
@@ -54,7 +54,7 @@ export class WorkspacesEffects {
   readonly updateWorkspace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(updateWorkspace),
-      switchMap(({ workspaceId, name }) =>
+      exhaustMap(({ workspaceId, name }) =>
         this.workspaceService.updateWorkspace(workspaceId, { name }).pipe(
           map((workspace) => updateWorkspaceSuccess({ workspace })),
           catchError((error: unknown) =>
@@ -68,7 +68,7 @@ export class WorkspacesEffects {
   readonly deleteWorkspace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(deleteWorkspace),
-      switchMap(({ workspaceId }) =>
+      mergeMap(({ workspaceId }) =>
         this.workspaceService.deleteWorkspace(workspaceId).pipe(
           map(() => deleteWorkspaceSuccess({ workspaceId })),
           catchError((error: unknown) =>

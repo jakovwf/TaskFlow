@@ -110,13 +110,13 @@
                             }
                             <div class="mt-4 flex items-center justify-between gap-2">
                               <a [routerLink]="['/b', board.id]" class="btn btn-primary btn-sm">Otvori</a>
-                              <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
-                                <button type="button" tabindex="0" class="btn btn-ghost btn-sm" aria-label="Akcije za board" [attr.aria-expanded]="openBoardMenuId === board.id" (click)="toggleBoardMenu(board.id, $event)">...</button>
-                                @if (openBoardMenuId === board.id) {
-                                  <ul tabindex="0" class="menu dropdown-content z-20 mt-2 w-36 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
-                                    <li><button type="button" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">Izmeni</button></li>
-                                    <li><button type="button" class="text-error" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">Obrisi</button></li>
-                                  </ul>
+                              <div class="relative">
+                                <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za board" (click)="toggleDropdown(board.id, $event)">...</button>
+                                @if (activeDropdownId === board.id) {
+                                  <div class="absolute bottom-8 right-0 z-50 w-32 rounded-box border border-base-200 bg-base-100 p-1 shadow-lg">
+                                    <button type="button" class="btn btn-ghost btn-sm w-full text-left" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
+                                    <button type="button" class="btn btn-ghost btn-sm w-full text-left text-error" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">Obrisi</button>
+                                  </div>
                                 }
                               </div>
                             </div>

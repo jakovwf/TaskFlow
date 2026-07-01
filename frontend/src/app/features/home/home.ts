@@ -46,7 +46,7 @@ export class Home {
   editingWorkspaceId: string | null = null;
   editingBoardId: string | null = null;
   creatingBoardWorkspaceId: string | null = null;
-  openBoardMenuId: string | null = null;
+  activeDropdownId: string | null = null;
 
   readonly workspaceForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(1)]],
@@ -158,18 +158,18 @@ export class Home {
     this.creatingBoardWorkspaceId = null;
   }
 
-  toggleBoardMenu(boardId: string, event: MouseEvent): void {
+  toggleDropdown(boardId: string, event: MouseEvent): void {
     event.stopPropagation();
-    this.openBoardMenuId = this.openBoardMenuId === boardId ? null : boardId;
+    this.activeDropdownId = this.activeDropdownId === boardId ? null : boardId;
   }
 
   @HostListener('document:click')
-  closeBoardMenu(): void {
-    this.openBoardMenuId = null;
+  closeDropdown(): void {
+    this.activeDropdownId = null;
   }
 
   startBoardEdit(board: Board): void {
-    this.closeBoardMenu();
+    this.closeDropdown();
     this.editingBoardId = board.id;
     this.boardEditForm.setValue({
       title: board.title,
@@ -207,7 +207,7 @@ export class Home {
   }
 
   deleteBoard(boardId: string): void {
-    this.closeBoardMenu();
+    this.closeDropdown();
     if (!confirm('Da li ste sigurni da zelite da obrisete board?')) {
       return;
     }

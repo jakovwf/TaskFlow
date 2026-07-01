@@ -12,21 +12,15 @@
     </p>
   </div>
 
-  <section class="grid items-start gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-    <div class="card tf-panel">
-      <div class="card-body gap-4 p-4 sm:p-5">
+  <section class="card tf-panel mb-6">
+    <div class="card-body gap-4 p-4 sm:p-5">
       <div>
-        <h2 class="text-xl font-semibold">Workspaceovi</h2>
+        <h2 class="text-xl font-semibold">Novi workspace</h2>
         <p class="mt-1 text-sm text-base-content/60">Organizuj boardove po timovima ili projektima.</p>
       </div>
 
       <form class="grid gap-2 sm:grid-cols-[1fr_auto]" [formGroup]="workspaceForm" (ngSubmit)="createWorkspace()">
-        <input
-          type="text"
-          formControlName="name"
-          class="input input-bordered w-full"
-          placeholder="Novi workspace"
-        />
+        <input type="text" formControlName="name" class="input input-bordered w-full" placeholder="Naziv workspace-a" />
         <button type="submit" class="btn btn-primary" [disabled]="workspaceForm.invalid || (workspacesLoading$ | async)">
           @if (workspacesLoading$ | async) {
             <span class="loading loading-spinner loading-sm"></span>
@@ -34,185 +28,116 @@
           Kreiraj
         </button>
       </form>
-
-      @if (workspacesLoading$ | async) {
-        <div class="tf-loading text-sm">
-          <span class="loading loading-spinner loading-sm"></span>
-          Ucitavanje workspace-ova...
-        </div>
-      }
-
-      @if (workspacesError$ | async; as error) {
-        <div class="alert alert-error text-sm">{{ error }}</div>
-      }
-
-      @if (workspaces$ | async; as workspaces) {
-        @if (workspaces.length > 0) {
-          <ul class="space-y-3">
-            @for (workspace of workspaces; track workspace.id) {
-              <li class="tf-card p-3">
-                @if (editingWorkspaceId === workspace.id) {
-                  <form class="grid gap-2 sm:grid-cols-[1fr_auto_auto]" [formGroup]="workspaceEditForm" (ngSubmit)="saveWorkspaceEdit()">
-                    <input
-                      type="text"
-                      formControlName="name"
-                      class="input input-bordered input-sm w-full"
-                      placeholder="Naziv workspace-a"
-                    />
-                    <button type="submit" class="btn btn-primary btn-sm" [disabled]="workspaceEditForm.invalid || (workspacesLoading$ | async)">
-                      @if (workspacesLoading$ | async) {
-                        <span class="loading loading-spinner loading-xs"></span>
-                      }
-                      Sacuvaj
-                    </button>
-                    <button type="button" class="btn btn-ghost btn-sm" (click)="cancelWorkspaceEdit()">
-                      Odustani
-                    </button>
-                  </form>
-                } @else {
-                  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div class="min-w-0">
-                      <p class="truncate font-medium">{{ workspace.name }}</p>
-                    </div>
-                    <div class="flex shrink-0 flex-wrap gap-2">
-                      <button type="button" class="btn btn-outline btn-xs" [disabled]="workspacesLoading$ | async" (click)="startWorkspaceEdit(workspace)">
-                        Izmeni
-                      </button>
-                      <button type="button" class="btn btn-error btn-outline btn-xs" [disabled]="workspacesLoading$ | async" (click)="deleteWorkspace(workspace.id)">
-                        Obrisi
-                      </button>
-                    </div>
-                  </div>
-                }
-              </li>
-            }
-          </ul>
-        } @else if (!(workspacesLoading$ | async)) {
-          <div class="tf-empty text-sm">
-            Nema workspace-ova. Kreiraj prvi workspace da bi mogao da dodas board.
-          </div>
-        }
-      }
-      </div>
-    </div>
-
-    <div class="card tf-panel">
-      <div class="card-body gap-4 p-4 sm:p-5">
-      <div>
-        <h2 class="text-xl font-semibold">Boardovi</h2>
-        <p class="mt-1 text-sm text-base-content/60">Kreiraj, otvori ili izmeni board iz odabranog workspace-a.</p>
-      </div>
-
-      <form class="grid gap-3" [formGroup]="boardForm" (ngSubmit)="createBoard()">
-        <select class="select select-bordered w-full" formControlName="workspaceId">
-          <option value="">Izaberi workspace</option>
-          @if (workspaces$ | async; as workspaces) {
-            @for (workspace of workspaces; track workspace.id) {
-              <option [value]="workspace.id">{{ workspace.name }}</option>
-            }
-          }
-        </select>
-
-        <input
-          type="text"
-          formControlName="title"
-          class="input input-bordered w-full"
-          placeholder="Naziv boarda"
-        />
-
-        <input
-          type="text"
-          formControlName="description"
-          class="input input-bordered w-full"
-          placeholder="Opis, opciono"
-        />
-
-        <button type="submit" class="btn btn-primary" [disabled]="boardForm.invalid || (boardsLoading$ | async)">
-          @if (boardsLoading$ | async) {
-            <span class="loading loading-spinner loading-sm"></span>
-          }
-          Kreiraj board
-        </button>
-      </form>
-
-      @if (boardsLoading$ | async) {
-        <div class="tf-loading text-sm">
-          <span class="loading loading-spinner loading-sm"></span>
-          Ucitavanje boardova...
-        </div>
-      }
-
-      @if (boardsError$ | async; as error) {
-        <div class="alert alert-error mb-4 text-sm">{{ error }}</div>
-      }
-
-      @if (boards$ | async; as boards) {
-        @if (boards.length > 0) {
-          <div class="grid gap-3 md:grid-cols-2">
-            @for (board of boards; track board.id) {
-              <article class="tf-card p-4">
-                @if (editingBoardId === board.id) {
-                  <form class="grid gap-2" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit()">
-                    <input
-                      type="text"
-                      formControlName="title"
-                      class="input input-bordered input-sm w-full"
-                      placeholder="Naziv boarda"
-                    />
-                    <input
-                      type="text"
-                      formControlName="description"
-                      class="input input-bordered input-sm w-full"
-                      placeholder="Opis, opciono"
-                    />
-                    <div class="flex flex-wrap gap-2">
-                      <button type="submit" class="btn btn-primary btn-sm" [disabled]="boardEditForm.invalid || (boardsLoading$ | async)">
-                        @if (boardsLoading$ | async) {
-                          <span class="loading loading-spinner loading-xs"></span>
-                        }
-                        Sacuvaj
-                      </button>
-                      <button type="button" class="btn btn-ghost btn-sm" (click)="cancelBoardEdit()">
-                        Odustani
-                      </button>
-                    </div>
-                  </form>
-                } @else {
-                  <h3 class="font-semibold">{{ board.title }}</h3>
-                  @if (board.description) {
-                    <p class="mt-1 text-sm text-base-content/70">{{ board.description }}</p>
-                  }
-                  <div class="mt-4 flex items-center gap-2">
-                    <a [routerLink]="['/b', board.id]" class="btn btn-primary btn-sm">
-                      Otvori
-                    </a>
-                    <details class="dropdown dropdown-end">
-                      <summary class="btn btn-ghost btn-sm" aria-label="Akcije za board">...</summary>
-                      <ul class="menu dropdown-content z-20 mt-2 w-36 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
-                        <li>
-                          <button type="button" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">
-                            Izmeni
-                          </button>
-                        </li>
-                        <li>
-                          <button type="button" class="text-error" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">
-                            Obrisi
-                          </button>
-                        </li>
-                      </ul>
-                    </details>
-                  </div>
-                }
-              </article>
-            }
-          </div>
-        } @else if (!(boardsLoading$ | async)) {
-          <div class="tf-empty text-sm">
-            Nema boardova. Izaberi workspace i kreiraj prvi board.
-          </div>
-        }
-      }
-      </div>
     </div>
   </section>
+
+  @if (workspacesLoading$ | async) {
+    <div class="tf-loading mb-4 text-sm">
+      <span class="loading loading-spinner loading-sm"></span>
+      Ucitavanje workspace-ova...
+    </div>
+  }
+
+  @if (workspacesError$ | async; as error) {
+    <div class="alert alert-error mb-4 text-sm">{{ error }}</div>
+  }
+
+  @if (boardsLoading$ | async) {
+    <div class="tf-loading mb-4 text-sm">
+      <span class="loading loading-spinner loading-sm"></span>
+      Ucitavanje boardova...
+    </div>
+  }
+
+  @if (boardsError$ | async; as error) {
+    <div class="alert alert-error mb-4 text-sm">{{ error }}</div>
+  }
+
+  @if (workspaces$ | async; as workspaces) {
+    @if (boards$ | async; as boards) {
+      @if (workspaces.length > 0) {
+        <section class="space-y-6">
+          @for (workspace of workspaces; track workspace.id) {
+            <article class="card tf-panel">
+              <div class="card-body gap-4 p-4 sm:p-5">
+                <header class="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 pb-3">
+                  @if (editingWorkspaceId === workspace.id) {
+                    <form class="grid flex-1 gap-2 sm:grid-cols-[1fr_auto_auto]" [formGroup]="workspaceEditForm" (ngSubmit)="saveWorkspaceEdit()">
+                      <input type="text" formControlName="name" class="input input-bordered input-sm w-full" placeholder="Naziv workspace-a" />
+                      <button type="submit" class="btn btn-primary btn-sm" [disabled]="workspaceEditForm.invalid || (workspacesLoading$ | async)">Sacuvaj</button>
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="cancelWorkspaceEdit()">Odustani</button>
+                    </form>
+                  } @else {
+                    <h2 class="min-w-0 truncate text-lg font-bold">{{ workspace.name }}</h2>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <button type="button" class="btn btn-ghost btn-xs" [disabled]="workspacesLoading$ | async" (click)="startWorkspaceEdit(workspace)">Izmeni</button>
+                      <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="workspacesLoading$ | async" (click)="deleteWorkspace(workspace.id)">Obrisi</button>
+                      <button type="button" class="btn btn-primary btn-sm" (click)="toggleBoardCreate(workspace.id)">
+                        <span aria-hidden="true">+</span>
+                        Novi board
+                      </button>
+                    </div>
+                  }
+                </header>
+
+                @if (creatingBoardWorkspaceId === workspace.id) {
+                  <form class="grid gap-3 rounded-box bg-base-200 p-4 md:grid-cols-[1fr_1fr_auto_auto]" [formGroup]="boardForm" (ngSubmit)="createBoard(workspace.id)">
+                    <input type="text" formControlName="title" class="input input-bordered w-full" placeholder="Naziv boarda" />
+                    <input type="text" formControlName="description" class="input input-bordered w-full" placeholder="Opis, opciono" />
+                    <button type="submit" class="btn btn-primary" [disabled]="boardForm.invalid || (boardsLoading$ | async)">Kreiraj</button>
+                    <button type="button" class="btn btn-ghost" (click)="toggleBoardCreate(workspace.id)">Odustani</button>
+                  </form>
+                }
+
+                @if (boardsForWorkspace(boards, workspace.id); as workspaceBoards) {
+                  @if (workspaceBoards.length > 0) {
+                    <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                      @for (board of workspaceBoards; track board.id) {
+                        <article class="tf-card min-w-0 p-4">
+                          @if (editingBoardId === board.id) {
+                            <form class="grid gap-2" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit()">
+                              <input type="text" formControlName="title" class="input input-bordered input-sm w-full" placeholder="Naziv boarda" />
+                              <input type="text" formControlName="description" class="input input-bordered input-sm w-full" placeholder="Opis, opciono" />
+                              <div class="flex flex-wrap gap-2">
+                                <button type="submit" class="btn btn-primary btn-sm" [disabled]="boardEditForm.invalid || (boardsLoading$ | async)">Sacuvaj</button>
+                                <button type="button" class="btn btn-ghost btn-sm" (click)="cancelBoardEdit()">Odustani</button>
+                              </div>
+                            </form>
+                          } @else {
+                            <h3 class="truncate font-semibold">{{ board.title }}</h3>
+                            @if (board.description) {
+                              <p class="mt-1 line-clamp-2 text-sm text-base-content/70">{{ board.description }}</p>
+                            }
+                            <div class="mt-4 flex items-center justify-between gap-2">
+                              <a [routerLink]="['/b', board.id]" class="btn btn-primary btn-sm">Otvori</a>
+                              <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
+                                <button type="button" tabindex="0" class="btn btn-ghost btn-sm" aria-label="Akcije za board" [attr.aria-expanded]="openBoardMenuId === board.id" (click)="toggleBoardMenu(board.id, $event)">...</button>
+                                @if (openBoardMenuId === board.id) {
+                                  <ul tabindex="0" class="menu dropdown-content z-20 mt-2 w-36 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
+                                    <li><button type="button" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">Izmeni</button></li>
+                                    <li><button type="button" class="text-error" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">Obrisi</button></li>
+                                  </ul>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </article>
+                      }
+                    </div>
+                  } @else if (!(boardsLoading$ | async)) {
+                    <div class="alert">
+                      <span>Nema boardova</span>
+                      <button type="button" class="btn btn-primary btn-sm" (click)="toggleBoardCreate(workspace.id)">Kreiraj board</button>
+                    </div>
+                  }
+                }
+              </div>
+            </article>
+          }
+        </section>
+      } @else if (!(workspacesLoading$ | async)) {
+        <div class="tf-empty text-sm">Nema workspace-ova. Kreiraj prvi workspace da bi mogao da dodas board.</div>
+      }
+    }
+  }
 </main>

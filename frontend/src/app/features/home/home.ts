@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -45,6 +45,8 @@ export class Home {
   readonly boardsError$ = this.store.select(selectBoardsError);
   editingWorkspaceId: string | null = null;
   editingBoardId: string | null = null;
+  creatingBoardWorkspaceId: string | null = null;
+  openBoardMenuId: string | null = null;
 
   readonly workspaceForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(1)]],
@@ -55,7 +57,6 @@ export class Home {
   });
 
   readonly boardForm = this.formBuilder.nonNullable.group({
-    workspaceId: ['', Validators.required],
     title: ['', [Validators.required, Validators.minLength(1)]],
     description: [''],
   });
@@ -122,13 +123,23 @@ export class Home {
     this.store.dispatch(deleteWorkspace({ workspaceId }));
   }
 
-  createBoard(): void {
+  boardsForWorkspace(boards: Board[], workspaceId: string): Board[] {
+    return boards.filter((board) => board.workspaceId === workspaceId);
+  }
+
+  toggleBoardCreate(workspaceId: string): void {
+    this.creatingBoardWorkspaceId =
+      this.creatingBoardWorkspaceId === workspaceId ? null : workspaceId;
+    this.boardForm.reset();
+  }
+
+  createBoard(workspaceId: string): void {
     if (this.boardForm.invalid) {
       this.boardForm.markAllAsTouched();
       return;
     }
 
-    const { workspaceId, title, description } = this.boardForm.getRawValue();
+    const { title, description } = this.boardForm.getRawValue();
     const trimmedTitle = title.trim();
 
     if (!trimmedTitle) {
@@ -143,10 +154,22 @@ export class Home {
         description: description.trim() || undefined,
       }),
     );
-    this.boardForm.patchValue({ title: '', description: '' });
+    this.boardForm.reset();
+    this.creatingBoardWorkspaceId = null;
+  }
+
+  toggleBoardMenu(boardId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.openBoardMenuId = this.openBoardMenuId === boardId ? null : boardId;
+  }
+
+  @HostListener('document:click')
+  closeBoardMenu(): void {
+    this.openBoardMenuId = null;
   }
 
   startBoardEdit(board: Board): void {
+    this.closeBoardMenu();
     this.editingBoardId = board.id;
     this.boardEditForm.setValue({
       title: board.title,
@@ -184,6 +207,7 @@ export class Home {
   }
 
   deleteBoard(boardId: string): void {
+    this.closeBoardMenu();
     if (!confirm('Da li ste sigurni da zelite da obrisete board?')) {
       return;
     }

@@ -83,6 +83,7 @@ export class Board {
   renamingListId: string | null = null;
   listRenameErrors: Record<string, string | null> = {};
   editingBoardHeader = false;
+  showNewListForm = false;
   hasBoardRoute = false;
   private lastCommentsBoardId: string | null = null;
   private activeCommentsLoadCardId: string | null = null;
@@ -312,6 +313,12 @@ export class Board {
 
     const { title } = this.listForm.getRawValue();
     this.store.dispatch(createList({ boardId, title }));
+    this.listForm.reset();
+    this.showNewListForm = false;
+  }
+
+  toggleNewListForm(): void {
+    this.showNewListForm = !this.showNewListForm;
     this.listForm.reset();
   }
 

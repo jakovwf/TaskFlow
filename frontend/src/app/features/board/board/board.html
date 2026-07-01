@@ -58,7 +58,7 @@
               <p class="mt-2 max-w-2xl text-base-content/70">{{ board.description }}</p>
             }
           </div>
-          <div class="flex shrink-0 flex-wrap gap-2">
+          <div class="hidden shrink-0 flex-wrap gap-2 lg:flex">
             <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">
               Members
             </a>
@@ -72,11 +72,20 @@
               Obrisi
             </button>
           </div>
+          <div class="dropdown dropdown-end self-end lg:hidden">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-sm" aria-label="Board akcije">...</div>
+            <ul tabindex="0" class="menu dropdown-content z-50 mt-2 w-40 rounded-box border border-base-200 bg-base-100 p-2 shadow-lg">
+              <li><a [routerLink]="['/b', board.id, 'members']">Members</a></li>
+              <li><a [routerLink]="['/b', board.id, 'activity']">Activity</a></li>
+              <li><button type="button" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button></li>
+              <li><button type="button" class="text-error" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">Obrisi</button></li>
+            </ul>
+          </div>
         </div>
       }
     </header>
 
-    <form class="tf-panel mb-5 grid gap-2 p-3 sm:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
+    <form class="tf-panel mb-5 hidden gap-2 p-3 lg:grid lg:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
       <input
         type="text"
         formControlName="title"
@@ -91,36 +100,47 @@
       </button>
     </form>
 
-    @if (board.lists?.length) {
-      <div class="-mx-4 overflow-x-auto overflow-y-hidden overscroll-x-contain px-4 pb-28 sm:mx-0 sm:px-0 md:pb-8">
-        <section
-          class="flex w-max min-w-full touch-pan-x gap-4"
-          cdkDropList
-          cdkDropListOrientation="horizontal"
-          [cdkDropListData]="board.lists ?? []"
-          (cdkDropListDropped)="dropList($event, board.id, board.lists ?? [])"
-        >
-          @for (list of board.lists; track list.id) {
-            <app-board-list
-              cdkDrag
-              [list]="list"
-              [loading]="loading$ | async"
-              [renaming]="renamingListId === list.id"
-              [renameError]="listRenameErrors[list.id] ?? null"
-              [connectedDropLists]="cardDropListIds(board.lists??[])"
-              (renameList)="renameList($event)"
-              (deleteList)="removeList($event)"
-              (createCard)="createCard($event)"
-              (cardSelected)="openCard($event)"
-              (cardDropped)="dropCard($event, board.id)"
-            />
-          }
-        </section>
+    <section
+      class="flex flex-row gap-4 overflow-x-auto pb-4"
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      [cdkDropListData]="board.lists ?? []"
+      (cdkDropListDropped)="dropList($event, board.id, board.lists ?? [])"
+    >
+      @for (list of board.lists; track list.id) {
+        <app-board-list
+          class="block min-w-[280px] w-[280px]"
+          cdkDrag
+          [list]="list"
+          [loading]="loading$ | async"
+          [renaming]="renamingListId === list.id"
+          [renameError]="listRenameErrors[list.id] ?? null"
+          [connectedDropLists]="cardDropListIds(board.lists??[])"
+          (renameList)="renameList($event)"
+          (deleteList)="removeList($event)"
+          (createCard)="createCard($event)"
+          (cardSelected)="openCard($event)"
+          (cardDropped)="dropCard($event, board.id)"
+        />
+      }
+
+      <div class="w-[280px] min-w-[280px] lg:hidden">
+        @if (showNewListForm) {
+          <form class="tf-panel grid gap-2 p-3" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
+            <input type="text" formControlName="title" class="input input-bordered w-full" placeholder="Nova lista" />
+            <div class="flex gap-2">
+              <button type="submit" class="btn btn-primary btn-sm" [disabled]="listForm.invalid || (loading$ | async)">Dodaj listu</button>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="toggleNewListForm()">Odustani</button>
+            </div>
+          </form>
+        } @else {
+          <button type="button" class="btn btn-circle btn-primary btn-sm" aria-label="Dodaj listu" (click)="toggleNewListForm()">+</button>
+        }
       </div>
-    } @else {
-      <p class="tf-empty text-sm">
-        Board je prazan. Dodaj prvu listu.
-      </p>
+    </section>
+
+    @if (!board.lists?.length && !showNewListForm) {
+      <p class="tf-empty mt-3 text-sm lg:hidden">Board je prazan. Dodaj prvu listu.</p>
     }
 
     <app-card-detail

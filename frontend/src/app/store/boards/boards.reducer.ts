@@ -3,6 +3,7 @@ import { createReducer, on } from '@ngrx/store';
 import { Board, BoardList, Card } from '../models';
 import {
   addBoard,
+  boardUpdatedRemotely,
   cardCreatedRemotely,
   cardDeletedRemotely,
   cardUpdatedRemotely,
@@ -234,6 +235,15 @@ export const boardsReducer = createReducer(
       : nextState;
   }),
   on(addBoard, (state, { board }) => boardsAdapter.addOne(board, state)),
+  on(boardUpdatedRemotely, (state, { boardId, title, description, backgroundUrl }) =>
+    boardsAdapter.updateOne(
+      {
+        id: boardId,
+        changes: { title, description, backgroundUrl },
+      },
+      state,
+    ),
+  ),
   on(updateBoard, (state, { board }) => boardsAdapter.upsertOne(board, state)),
   on(removeBoard, (state, { boardId }) => boardsAdapter.removeOne(boardId, state)),
 );

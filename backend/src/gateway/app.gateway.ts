@@ -35,6 +35,7 @@ export class AppGateway implements OnGatewayConnection {
     try {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
       socket.data.userId = payload.sub;
+      await socket.join(`user:${payload.sub}`);
     } catch {
       socket.disconnect();
     }
@@ -94,5 +95,9 @@ export class AppGateway implements OnGatewayConnection {
 
   emitToBoard(boardId: string, event: string, payload: unknown): void {
     this.server.to(`board:${boardId}`).emit(event, payload);
+  }
+
+  emitToUser(userId: string, event: string, payload: unknown): void {
+    this.server.to(`user:${userId}`).emit(event, payload);
   }
 }

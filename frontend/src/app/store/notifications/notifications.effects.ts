@@ -3,9 +3,11 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { SocketService } from '../../core/services/socket.service';
 import { Notification } from '../models';
 import {
   loadNotifications,
+  addNotification,
   loadNotificationsFailure,
   loadNotificationsSuccess,
   markAllAsRead,
@@ -18,6 +20,7 @@ import {
 export class NotificationsEffects {
   private readonly actions$ = inject(Actions);
   private readonly http = inject(HttpClient);
+  private readonly socketService = inject(SocketService);
   private readonly notificationsApiUrl = `${environment.apiUrl}/notifications`;
 
   readonly loadNotifications$ = createEffect(() =>
@@ -30,6 +33,12 @@ export class NotificationsEffects {
         ),
       ),
     ),
+  );
+
+  readonly notificationNew$ = createEffect(() =>
+    this.socketService
+      .on<Notification>('notification:new')
+      .pipe(map((notification) => addNotification({ notification }))),
   );
 
   readonly markAsRead$ = createEffect(() =>

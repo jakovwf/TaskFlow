@@ -9,6 +9,7 @@ import { ListService } from '../../core/services/list';
 import { SocketService } from '../../core/services/socket.service';
 import {
   cardCreatedRemotely,
+  boardUpdatedRemotely,
   cardDeletedRemotely,
   cardUpdatedRemotely,
   cardsReorderedRemotely,
@@ -255,6 +256,7 @@ export class BoardsEffects {
           ),
           this.boardSocketService.listDeleted$.pipe(map((data) => listDeletedRemotely(data))),
           this.boardSocketService.listsReordered$.pipe(map((data) => listsReorderedRemotely(data))),
+          this.boardSocketService.boardUpdated$.pipe(map((data) => boardUpdatedRemotely(data))),
         ).pipe(takeUntil(this.actions$.pipe(ofType(loadBoard))));
       }),
     ),

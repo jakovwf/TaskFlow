@@ -9,6 +9,7 @@ export class SocketService {
   private readonly authService = inject(AuthService);
   private socket?: Socket;
   private activeBoardId?: string;
+  private readonly listeners = new Map<string, Set<(data: unknown) => void>>();
 
   connect(token: string): void {
     const authToken = token || this.authService.getToken();
@@ -21,6 +22,10 @@ export class SocketService {
     this.socket = io(environment.apiUrl, {
       auth: { token: authToken },
       transports: ['websocket'],
+    });
+
+    this.listeners.forEach((listeners, event) => {
+      listeners.forEach((listener) => this.socket?.on(event, listener));
     });
   }
 
@@ -55,10 +60,20 @@ export class SocketService {
 
   on<T>(event: string): Observable<T> {
     return new Observable<T>((observer) => {
-      const listener = (data: T) => observer.next(data);
+      const listener = (data: unknown) => observer.next(data as T);
+      const eventListeners = this.listeners.get(event) ?? new Set<(data: unknown) => void>();
+      eventListeners.add(listener);
+      this.listeners.set(event, eventListeners);
       this.socket?.on(event, listener);
 
-      return () => this.socket?.off(event, listener);
+      return () => {
+        this.socket?.off(event, listener);
+        eventListeners.delete(listener);
+
+        if (eventListeners.size === 0) {
+          this.listeners.delete(event);
+        }
+      };
     });
   }
 

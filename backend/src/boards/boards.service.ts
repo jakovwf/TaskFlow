@@ -8,6 +8,7 @@ import {
 import { ActivityType, BoardMemberRole, NotificationType } from '@prisma/client';
 import { ActivityService } from '../activity/activity.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AppGateway } from '../gateway/app.gateway';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddBoardMemberDto } from './dto/add-board-member.dto';
 import { CreateBoardDto } from './dto/create-board.dto';
@@ -20,6 +21,7 @@ export class BoardsService {
     private readonly prisma: PrismaService,
     private readonly activityService: ActivityService,
     private readonly notificationsService: NotificationsService,
+    private readonly appGateway: AppGateway,
   ) {}
 
   findAllForUser(userId: string) {
@@ -99,6 +101,13 @@ export class BoardsService {
           }),
         ),
     );
+
+    this.appGateway.emitToBoard(board.id, 'board:updated', {
+      boardId: board.id,
+      title: board.title,
+      description: board.description,
+      backgroundUrl: board.backgroundUrl,
+    });
 
     return board;
   }

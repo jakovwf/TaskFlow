@@ -58,10 +58,14 @@ export const notificationsReducer = createReducer(
       { ...state, unreadCount: 0, loading: false, error: null },
     ),
   ),
-  on(addNotification, (state, { notification }) =>
-    notificationsAdapter.upsertOne(notification, {
+  on(addNotification, (state, { notification }) => {
+    const existingNotification = state.entities[notification.id];
+    const previousUnread = existingNotification && !existingNotification.isRead ? 1 : 0;
+    const nextUnread = notification.isRead ? 0 : 1;
+
+    return notificationsAdapter.upsertOne(notification, {
       ...state,
-      unreadCount: state.unreadCount + (notification.isRead ? 0 : 1),
-    }),
-  ),
+      unreadCount: Math.max(0, state.unreadCount - previousUnread + nextUnread),
+    });
+  }),
 );

@@ -71,4 +71,10 @@ export class BoardSocketService {
     role: BoardMemberRole;
     boardId: string;
   }>('member:joined');
+  readonly boardUpdated$ = this.socketService.on<{
+    boardId: string;
+    title: string;
+    description: string | null;
+    backgroundUrl: string | null;
+  }>('board:updated');
 }

@@ -126,3 +126,12 @@ export const listsReorderedRemotely = createAction(
   '[Board Socket] Lists Reordered',
   props<{ items: { id: string; position: number }[] }>(),
 );
+export const boardUpdatedRemotely = createAction(
+  '[Board Socket] Board Updated',
+  props<{
+    boardId: string;
+    title: string;
+    description: string | null;
+    backgroundUrl: string | null;
+  }>(),
+);

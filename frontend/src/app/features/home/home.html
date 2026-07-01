@@ -73,7 +73,6 @@
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div class="min-w-0">
                       <p class="truncate font-medium">{{ workspace.name }}</p>
-                      <p class="text-xs text-base-content/60">{{ workspace.id }}</p>
                     </div>
                     <div class="flex shrink-0 flex-wrap gap-2">
                       <button type="button" class="btn btn-outline btn-xs" [disabled]="workspacesLoading$ | async" (click)="startWorkspaceEdit(workspace)">
@@ -183,16 +182,25 @@
                   @if (board.description) {
                     <p class="mt-1 text-sm text-base-content/70">{{ board.description }}</p>
                   }
-                  <div class="mt-4 flex flex-wrap gap-2">
+                  <div class="mt-4 flex items-center gap-2">
                     <a [routerLink]="['/b', board.id]" class="btn btn-primary btn-sm">
                       Otvori
                     </a>
-                    <button type="button" class="btn btn-outline btn-sm" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">
-                      Izmeni
-                    </button>
-                    <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">
-                      Obrisi
-                    </button>
+                    <details class="dropdown dropdown-end">
+                      <summary class="btn btn-ghost btn-sm" aria-label="Akcije za board">...</summary>
+                      <ul class="menu dropdown-content z-20 mt-2 w-36 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
+                        <li>
+                          <button type="button" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">
+                            Izmeni
+                          </button>
+                        </li>
+                        <li>
+                          <button type="button" class="text-error" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">
+                            Obrisi
+                          </button>
+                        </li>
+                      </ul>
+                    </details>
                   </div>
                 }
               </article>

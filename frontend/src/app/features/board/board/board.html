@@ -53,7 +53,6 @@
       } @else {
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div class="min-w-0">
-            <p class="tf-kicker">TaskFlow board</p>
             <h1 class="mt-1 text-3xl font-black tracking-tight">{{ board.title }}</h1>
             @if (board.description) {
               <p class="mt-2 max-w-2xl text-base-content/70">{{ board.description }}</p>
@@ -74,13 +73,6 @@
             </button>
           </div>
         </div>
-      }
-      @if (boardContext$ | async; as context) {
-        @if (context.currentUser) {
-          <p class="mt-3 text-sm text-base-content/60">
-            Prijavljen korisnik: {{ context.currentUser.displayName }}
-          </p>
-        }
       }
     </header>
 

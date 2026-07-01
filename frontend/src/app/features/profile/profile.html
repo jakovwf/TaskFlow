@@ -76,9 +76,6 @@
           </label>
 
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-sm text-base-content/60">
-              ID korisnika: {{ user.id }}
-            </p>
             <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || loading">
               @if (loading) {
                 <span class="loading loading-spinner loading-sm"></span>

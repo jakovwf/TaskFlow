@@ -178,12 +178,46 @@ export class Profile {
       } else {
         await this.pushService.cancelSubscription();
       }
-    } catch {
-      this.pushError = 'Promena push notifikacija nije uspela. Pokušaj ponovo.';
+    } catch (error: unknown) {
+      this.pushError = this.getPushErrorMessage(error);
     } finally {
       this.pushLoading = false;
       this.cdr.markForCheck();
     }
+  }
+
+  private getPushErrorMessage(error: unknown): string {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+      return 'Dozvola za notifikacije je blokirana. Omogući je u podešavanjima browsera.';
+    }
+
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 0) {
+        return 'Backend nije dostupan ili je zahtev blokiran. Proveri mrežu i API adresu.';
+      }
+
+      if (error.status === 401) {
+        return 'Sesija je istekla. Prijavi se ponovo pa uključi push notifikacije.';
+      }
+
+      return `Backend je odbio push zahtev (HTTP ${error.status}).`;
+    }
+
+    if (error instanceof Error) {
+      if (error.message === 'VAPID_PUBLIC_KEY_MISSING') {
+        return 'Backend nema podešen VAPID public key.';
+      }
+
+      if (error.name === 'NotAllowedError') {
+        return 'Browser nije dozvolio push notifikacije.';
+      }
+
+      if (error.name === 'AbortError' || error.name === 'InvalidStateError') {
+        return 'Service worker nije spreman. Osveži stranicu i pokušaj ponovo.';
+      }
+    }
+
+    return 'Promena push notifikacija nije uspela. Pokušaj ponovo.';
   }
 
   private getErrorMessage(error: unknown): string {

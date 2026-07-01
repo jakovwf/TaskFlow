@@ -17,6 +17,11 @@ export class PushNotificationService {
     const { publicKey } = await firstValueFrom(
       this.http.get<{ publicKey: string }>(`${environment.apiUrl}/push/vapid-public-key`),
     );
+
+    if (!publicKey) {
+      throw new Error('VAPID_PUBLIC_KEY_MISSING');
+    }
+
     const subscription = await this.swPush.requestSubscription({
       serverPublicKey: publicKey,
     });

@@ -77,7 +77,22 @@ export class PushService {
                 auth: subscription.auth,
               },
             },
-            JSON.stringify(payload),
+            JSON.stringify({
+              notification: {
+                title: payload.title,
+                body: payload.body,
+                icon: '/icons/icon-192x192.png',
+                badge: '/icons/icon-96x96.png',
+                data: {
+                  onActionClick: {
+                    default: {
+                      operation: 'openWindow',
+                      url: payload.url ?? '/notifications',
+                    },
+                  },
+                },
+              },
+            }),
           );
         } catch (error) {
           if (this.isExpiredSubscriptionError(error)) {

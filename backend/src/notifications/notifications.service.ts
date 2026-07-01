@@ -64,12 +64,23 @@ export class NotificationsService {
     });
 
     await this.pushService.sendPushNotification(data.userId, {
-      title: data.type,
+      title: this.getPushTitle(data.type),
       body: data.message,
       url: data.relatedBoardId ? `/b/${data.relatedBoardId}` : '/notifications',
     });
 
     return notification;
+  }
+
+  private getPushTitle(type: NotificationType): string {
+    switch (type) {
+      case NotificationType.BOARD_INVITE:
+        return 'Novi poziv na board';
+      case NotificationType.CARD_ASSIGNED:
+        return 'Dodeljen vam je zadatak';
+      default:
+        return 'TaskFlow obaveštenje';
+    }
   }
 
   private readonly notificationInclude = {

@@ -36,7 +36,7 @@ export const appConfig: ApplicationConfig = {
     provideEffects([AuthEffects, BoardsEffects, NotificationsEffects, WorkspacesEffects]),
     provideStoreDevtools({ maxAge: 25, logOnly: false }), provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
+            registrationStrategy: 'registerImmediately'
           }),
   ]
 };

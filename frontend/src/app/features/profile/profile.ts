@@ -208,12 +208,20 @@ export class Profile {
         return 'Backend nema podešen VAPID public key.';
       }
 
+      if (error.message === 'SERVICE_WORKER_UNSUPPORTED') {
+        return 'Ovaj browser ne podržava service worker.';
+      }
+
       if (error.name === 'NotAllowedError') {
         return 'Browser nije dozvolio push notifikacije.';
       }
 
-      if (error.name === 'AbortError' || error.name === 'InvalidStateError') {
+      if (error.name === 'InvalidStateError') {
         return 'Service worker nije spreman. Osveži stranicu i pokušaj ponovo.';
+      }
+
+      if (error.name === 'AbortError') {
+        return 'Browser push servis je odbio registraciju. Proveri dozvole, ad blocker/VPN i pokušaj bez Incognito režima.';
       }
     }
 

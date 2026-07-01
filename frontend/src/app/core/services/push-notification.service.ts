@@ -14,6 +14,12 @@ export class PushNotificationService {
   readonly subscription$ = this.swPush.subscription;
 
   async requestSubscription(): Promise<void> {
+    if (!('serviceWorker' in navigator)) {
+      throw new Error('SERVICE_WORKER_UNSUPPORTED');
+    }
+
+    await navigator.serviceWorker.ready;
+
     const { publicKey } = await firstValueFrom(
       this.http.get<{ publicKey: string }>(`${environment.apiUrl}/push/vapid-public-key`),
     );

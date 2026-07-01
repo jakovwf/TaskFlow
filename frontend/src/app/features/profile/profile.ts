@@ -6,6 +6,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { EMPTY, catchError, finalize, switchMap, take } from 'rxjs';
 import { CloudinaryService } from '../../core/services/cloudinary.service';
+import { PushNotificationService } from '../../core/services/push-notification.service';
 import { UserService } from '../../core/services/user';
 import { loadMe } from '../../store/auth/auth.actions';
 import { selectCurrentUser } from '../../store/auth/auth.selectors';
@@ -21,15 +22,20 @@ export class Profile {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly cloudinaryService = inject(CloudinaryService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly pushService = inject(PushNotificationService);
   private readonly store = inject(Store);
   private readonly userService = inject(UserService);
 
   readonly currentUser$ = this.store.select(selectCurrentUser);
+  readonly pushSubscription$ = this.pushService.subscription$;
+  readonly pushSupported = this.pushService.isEnabled;
   loading = false;
   error: string | null = null;
   successMessage: string | null = null;
   uploadLoading = false;
   uploadError: string | null = null;
+  pushLoading = false;
+  pushError: string | null = null;
   private currentUser: User | null = null;
 
   readonly profileForm = this.formBuilder.nonNullable.group({
@@ -153,6 +159,31 @@ export class Profile {
         this.store.dispatch(loadMe());
         this.cdr.markForCheck();
       });
+  }
+
+  async onPushToggle(event: Event): Promise<void> {
+    if (!this.pushSupported) {
+      this.pushError = 'Push notifikacije nisu podržane u ovom browseru';
+      return;
+    }
+
+    const enabled = (event.target as HTMLInputElement).checked;
+    this.pushLoading = true;
+    this.pushError = null;
+    this.cdr.markForCheck();
+
+    try {
+      if (enabled) {
+        await this.pushService.requestSubscription();
+      } else {
+        await this.pushService.cancelSubscription();
+      }
+    } catch {
+      this.pushError = 'Promena push notifikacija nije uspela. Pokušaj ponovo.';
+    } finally {
+      this.pushLoading = false;
+      this.cdr.markForCheck();
+    }
   }
 
   private getErrorMessage(error: unknown): string {

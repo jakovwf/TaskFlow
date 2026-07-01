@@ -87,6 +87,37 @@
             </button>
           </div>
         </form>
+
+        <div class="border-t border-base-content/10 pt-4">
+          <div class="flex items-center justify-between gap-4 rounded-lg bg-base-200/60 p-4">
+            <div>
+              <p class="font-semibold">Push notifikacije</p>
+              <p class="text-sm text-base-content/60">Primaj obaveštenja i kada aplikacija nije otvorena.</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              @if (pushLoading) {
+                <span class="loading loading-spinner loading-sm text-primary"></span>
+              }
+              <input
+                type="checkbox"
+                class="toggle toggle-primary"
+                aria-label="Uključi ili isključi push notifikacije"
+                [checked]="(pushSubscription$ | async) !== null"
+                [disabled]="!pushSupported || pushLoading"
+                (change)="onPushToggle($event)"
+              />
+            </div>
+          </div>
+
+          @if (!pushSupported) {
+            <div class="alert alert-warning mt-3 text-sm">
+              Push notifikacije nisu podržane u ovom browseru
+            </div>
+          } @else if (pushError) {
+            <div class="alert alert-error mt-3 text-sm" role="alert">{{ pushError }}</div>
+          }
+        </div>
       </div>
     </section>
   } @else {

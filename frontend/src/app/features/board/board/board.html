@@ -72,22 +72,17 @@
               Obrisi
             </button>
           </div>
-          <div class="dropdown dropdown-end relative z-50 self-end lg:hidden">
-            <button type="button" class="btn btn-ghost btn-sm" aria-label="Board akcije" [attr.aria-expanded]="mobileToolbarOpen" (click)="toggleMobileToolbar($event)">...</button>
-            @if (mobileToolbarOpen) {
-              <ul class="menu absolute right-0 top-full z-50 mt-2 w-40 rounded-box border border-base-200 bg-base-100 p-2 shadow-lg" (click)="$event.stopPropagation()">
-                <li><a [routerLink]="['/b', board.id, 'members']" (click)="mobileToolbarOpen = false">Members</a></li>
-                <li><a [routerLink]="['/b', board.id, 'activity']" (click)="mobileToolbarOpen = false">Activity</a></li>
-                <li><button type="button" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button></li>
-                <li><button type="button" class="text-error" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">Obrisi</button></li>
-              </ul>
-            }
+          <div class="board-mobile-actions flex lg:hidden" aria-label="Board akcije">
+            <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">Members</a>
+            <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">Activity</a>
+            <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
+            <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">Obrisi</button>
           </div>
         </div>
       }
     </header>
 
-    <form class="tf-panel mb-5 hidden gap-2 p-3 lg:grid lg:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
+    <form class="tf-panel mb-5 hidden gap-2 p-3 sm:grid sm:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
       <input
         type="text"
         formControlName="title"
@@ -102,48 +97,108 @@
       </button>
     </form>
 
-    <section
-      class="flex h-[calc(100vh-200px)] w-full min-w-0 flex-row gap-4 overflow-x-auto overflow-y-hidden pb-4"
-      cdkDropList
-      cdkDropListOrientation="horizontal"
-      [cdkDropListData]="board.lists ?? []"
-      (cdkDropListDropped)="dropList($event, board.id, board.lists ?? [])"
-    >
-      @for (list of board.lists; track list.id) {
-        <app-board-list
-          class="block min-w-[280px] w-[280px] shrink-0"
-          cdkDrag
-          [list]="list"
-          [loading]="loading$ | async"
-          [renaming]="renamingListId === list.id"
-          [renameError]="listRenameErrors[list.id] ?? null"
-          [connectedDropLists]="cardDropListIds(board.lists??[])"
-          (renameList)="renameList($event)"
-          (deleteList)="removeList($event)"
-          (createCard)="createCard($event)"
-          (cardSelected)="openCard($event)"
-          (cardDropped)="dropCard($event, board.id)"
-        />
-      }
-
-      <div class="w-[280px] min-w-[280px] lg:hidden">
-        @if (showNewListForm) {
-          <form class="tf-panel grid gap-2 p-3" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
-            <input type="text" formControlName="title" class="input input-bordered w-full" placeholder="Nova lista" />
-            <div class="flex gap-2">
-              <button type="submit" class="btn btn-primary btn-sm" [disabled]="listForm.invalid || (loading$ | async)">Dodaj listu</button>
-              <button type="button" class="btn btn-ghost btn-sm" (click)="toggleNewListForm()">Odustani</button>
-            </div>
-          </form>
-        } @else {
-          <button type="button" class="btn btn-circle btn-primary btn-sm" aria-label="Dodaj listu" (click)="toggleNewListForm()">+</button>
-        }
+    @if ((board.lists ?? []).length > 0) {
+      <div class="mobile-list-navigator grid sm:hidden" aria-label="Kretanje kroz liste">
+        <button
+          type="button"
+          class="btn btn-circle btn-ghost btn-sm"
+          aria-label="Prethodna lista"
+          [disabled]="activeMobileListIndex === 0"
+          (click)="showPreviousMobileList(board.lists ?? [])"
+        >
+          &larr;
+        </button>
+        <div class="min-w-0 text-center">
+          <p class="truncate text-sm font-bold">{{ (board.lists ?? [])[activeMobileListIndex]?.title }}</p>
+          <p class="text-xs text-base-content/55">{{ activeMobileListIndex + 1 }}/{{ (board.lists ?? []).length }}</p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-circle btn-ghost btn-sm"
+          aria-label="Sledeca lista"
+          [disabled]="activeMobileListIndex >= (board.lists ?? []).length - 1"
+          (click)="showNextMobileList(board.lists ?? [])"
+        >
+          &rarr;
+        </button>
       </div>
-    </section>
-
-    @if (!board.lists?.length && !showNewListForm) {
-      <p class="tf-empty mt-3 text-sm lg:hidden">Board je prazan. Dodaj prvu listu.</p>
     }
+
+    <div
+      class="board-scroll-shell"
+      [class.has-left-overflow]="canScrollBoardLeft"
+      [class.has-right-overflow]="canScrollBoardRight"
+    >
+      <button
+        type="button"
+        class="board-scroll-control board-scroll-control-left hidden sm:flex"
+        aria-label="Pomeri board ulevo"
+        [disabled]="!canScrollBoardLeft"
+        (click)="scrollBoard(-1)"
+      >
+        &larr;
+      </button>
+      <section
+        #boardScroller
+        class="board-scroll-container"
+        cdkDropList
+        cdkDropListOrientation="horizontal"
+        [cdkDropListData]="board.lists ?? []"
+        (scroll)="updateScrollControls()"
+        (wheel)="handleBoardWheel($event)"
+        (cdkDropListDropped)="dropList($event, board.id, board.lists ?? [])"
+      >
+        @for (list of board.lists; track list.id) {
+          <app-board-list
+            class="board-list-host"
+            [class.mobile-list-hidden]="$index !== activeMobileListIndex"
+            cdkDrag
+            [cdkDragDisabled]="isMobileViewport"
+            [list]="list"
+            [loading]="loading$ | async"
+            [renaming]="renamingListId === list.id"
+            [renameError]="listRenameErrors[list.id] ?? null"
+            [connectedDropLists]="cardDropListIds(board.lists??[])"
+            (renameList)="renameList($event)"
+            (deleteList)="removeList($event)"
+            (createCard)="createCard($event)"
+            (cardSelected)="openCard($event)"
+            (cardDropped)="dropCard($event, board.id)"
+          />
+        }
+      </section>
+      <button
+        type="button"
+        class="board-scroll-control board-scroll-control-right hidden sm:flex"
+        aria-label="Pomeri board udesno"
+        [disabled]="!canScrollBoardRight"
+        (click)="scrollBoard(1)"
+      >
+        &rarr;
+      </button>
+    </div>
+
+    <div class="mobile-add-list pb-8 sm:hidden">
+      @if (showNewListForm || !(board.lists ?? []).length) {
+        <form class="tf-panel grid gap-2 p-3" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
+          @if (!(board.lists ?? []).length) {
+            <div class="mb-1">
+              <h2 class="font-bold">Board je spreman za prvu listu</h2>
+              <p class="mt-1 text-sm text-base-content/65">Dodaj listu i pocni da organizujes kartice.</p>
+            </div>
+          }
+          <input type="text" formControlName="title" class="input input-bordered w-full" placeholder="Nova lista" />
+          <div class="flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary btn-sm" [disabled]="listForm.invalid || (loading$ | async)">Dodaj listu</button>
+            @if ((board.lists ?? []).length) {
+              <button type="button" class="btn btn-ghost btn-sm" (click)="toggleNewListForm()">Odustani</button>
+            }
+          </div>
+        </form>
+      } @else {
+        <button type="button" class="btn btn-outline btn-sm w-full" (click)="toggleNewListForm()">+ Dodaj listu</button>
+      }
+    </div>
 
     <app-card-detail
       [card]="selectedCard"

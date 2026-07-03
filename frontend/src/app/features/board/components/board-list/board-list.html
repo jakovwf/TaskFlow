@@ -1,4 +1,4 @@
-<div class="tf-panel flex h-full min-w-[280px] w-[280px] shrink-0 flex-col p-3">
+<div class="board-list-panel tf-panel flex max-h-full w-full flex-col p-3">
   <div class="mb-3 shrink-0 grid gap-2 sm:grid-cols-[1fr_auto]">
     <div class="min-w-0">
       <input
@@ -24,7 +24,7 @@
   </div>
 
   <div
-    class="mb-4 min-h-24 flex-1 space-y-2 overflow-y-auto overscroll-contain rounded-lg bg-base-200/60 p-2"
+    class="card-drop-zone mb-4 min-h-24 space-y-2 overflow-y-auto overscroll-contain rounded-lg bg-base-200/60 p-2"
     cdkDropList
     [id]="list.id"
     [cdkDropListData]="list.cards ?? emptyCards"
@@ -36,9 +36,10 @@
         <app-board-card cdkDrag [card]="card" (selected)="cardSelected.emit($event)" />
       }
     } @else {
-      <p class="tf-empty p-3 text-sm">
-        Lista nema kartice.
-      </p>
+      <div class="list-empty-state">
+        <p class="font-medium">Nema kartica u ovoj listi.</p>
+        <p class="mt-1 text-xs text-base-content/55">Dodaj novu karticu ili prevuci postojecu ovde.</p>
+      </div>
     }
   </div>
 

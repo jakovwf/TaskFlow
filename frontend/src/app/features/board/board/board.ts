@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, HostListener, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -87,6 +87,10 @@ export class Board {
   editingBoardHeader = false;
   showNewListForm = false;
   mobileToolbarOpen = false;
+  activeMobileListIndex = 0;
+  canScrollBoardLeft = false;
+  canScrollBoardRight = false;
+  isMobileViewport = typeof window !== 'undefined' && window.innerWidth < 640;
   hasBoardRoute = false;
   private lastCommentsBoardId: string | null = null;
   private activeCommentsLoadCardId: string | null = null;
@@ -94,6 +98,13 @@ export class Board {
   private currentBoard: BoardModel | null = null;
   private labelHydrationBoardId: string | null = null;
   private readonly requestedLabelCardIds = new Set<string>();
+  private boardScroller?: ElementRef<HTMLElement>;
+
+  @ViewChild('boardScroller')
+  set boardScrollerElement(element: ElementRef<HTMLElement> | undefined) {
+    this.boardScroller = element;
+    this.scheduleScrollStateUpdate();
+  }
 
   readonly listForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
@@ -117,6 +128,8 @@ export class Board {
       .subscribe((board) => {
         this.currentBoard = board;
         this.boardLabels = [...(board?.labels ?? [])];
+        this.syncMobileListIndex(board?.lists ?? []);
+        this.scheduleScrollStateUpdate();
 
         if (!board) {
           this.labelHydrationBoardId = null;
@@ -333,6 +346,12 @@ export class Board {
   @HostListener('document:click')
   closeMobileToolbar(): void {
     this.mobileToolbarOpen = false;
+  }
+
+  @HostListener('window:resize')
+  handleViewportResize(): void {
+    this.isMobileViewport = window.innerWidth < 640;
+    this.updateScrollControls();
   }
 
   startBoardEdit(board: BoardModel): void {
@@ -884,6 +903,48 @@ export class Board {
     return (lists ?? []).map((list) => list.id);
   }
 
+  showPreviousMobileList(lists: BoardList[]): void {
+    if (this.activeMobileListIndex > 0) {
+      this.activeMobileListIndex--;
+    }
+  }
+
+  showNextMobileList(lists: BoardList[]): void {
+    if (this.activeMobileListIndex < lists.length - 1) {
+      this.activeMobileListIndex++;
+    }
+  }
+
+  scrollBoard(direction: -1 | 1): void {
+    this.boardScroller?.nativeElement.scrollBy({ left: direction * 336, behavior: 'smooth' });
+  }
+
+  updateScrollControls(): void {
+    const scroller = this.boardScroller?.nativeElement;
+
+    if (!scroller) {
+      this.canScrollBoardLeft = false;
+      this.canScrollBoardRight = false;
+      return;
+    }
+
+    const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+    this.canScrollBoardLeft = scroller.scrollLeft > 4;
+    this.canScrollBoardRight = maxScrollLeft - scroller.scrollLeft > 4;
+    this.cdr.markForCheck();
+  }
+
+  handleBoardWheel(event: WheelEvent): void {
+    const scroller = this.boardScroller?.nativeElement;
+
+    if (!scroller || !event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+      return;
+    }
+
+    event.preventDefault();
+    scroller.scrollLeft += event.deltaY;
+  }
+
   dropList(event: CdkDragDrop<BoardList[]>, boardId: string, lists: BoardList[]): void {
     if (event.previousIndex === event.currentIndex) {
       return;
@@ -901,6 +962,20 @@ export class Board {
         })),
       }),
     );
+  }
+
+  private syncMobileListIndex(lists: BoardList[]): void {
+    this.activeMobileListIndex = lists.length === 0
+      ? 0
+      : Math.min(this.activeMobileListIndex, lists.length - 1);
+  }
+
+  private scheduleScrollStateUpdate(): void {
+    if (typeof requestAnimationFrame === 'undefined') {
+      return;
+    }
+
+    requestAnimationFrame(() => this.updateScrollControls());
   }
 
   dropCard(event: CdkDragDrop<Card[]>, boardId: string): void {

@@ -46,7 +46,7 @@
           <div>
             <div class="mb-2 flex items-center justify-between gap-3">
               <span class="text-sm font-medium">Tema boarda</span>
-              @if (boardAppearanceSaving) {
+              @if (loading$ | async) {
                 <span class="loading loading-spinner loading-xs text-primary"></span>
               }
             </div>
@@ -55,18 +55,15 @@
                 <button
                   type="button"
                   class="board-theme-swatch"
-                  [class.is-selected]="(board.backgroundColor ?? null) === option.value"
+                  [class.is-selected]="pendingBoardBackgroundColor === option.value"
                   [style.background]="option.preview"
-                  [disabled]="boardAppearanceSaving"
+                  [disabled]="loading$ | async"
                   [attr.aria-label]="option.label"
                   [attr.title]="option.label"
-                  (click)="updateBoardBackground(board.id, option.value)"
+                  (click)="selectPendingBoardBackground(option.value)"
                 ></button>
               }
             </div>
-            @if (boardAppearanceError) {
-              <p class="mt-2 text-xs text-error">{{ boardAppearanceError }}</p>
-            }
           </div>
           <div class="flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary btn-sm" [disabled]="boardEditForm.invalid || (loading$ | async)">
@@ -106,13 +103,35 @@
             <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">Members</a>
             <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">Activity</a>
             <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
-            <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">Obrisi</button>
+            <div class="relative ml-auto">
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                aria-label="Dodatne board akcije"
+                [attr.aria-expanded]="mobileToolbarOpen"
+                (click)="toggleMobileToolbar($event)"
+              >
+                Akcije
+              </button>
+              @if (mobileToolbarOpen) {
+                <div class="board-action-menu" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="btn btn-error btn-outline btn-sm w-full"
+                    [disabled]="loading$ | async"
+                    (click)="deleteCurrentBoard(board.id)"
+                  >
+                    Obrisi board
+                  </button>
+                </div>
+              }
+            </div>
           </div>
         </div>
       }
     </header>
 
-    <form class="tf-panel mb-5 hidden gap-2 p-3 sm:grid sm:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
+    <form class="board-add-list-panel tf-panel mb-5 hidden gap-2 p-3 sm:grid sm:grid-cols-[1fr_auto]" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
       <input
         type="text"
         formControlName="title"
@@ -212,7 +231,7 @@
 
     <div class="mobile-add-list pb-8 sm:hidden">
       @if (showNewListForm || !(board.lists ?? []).length) {
-        <form class="tf-panel grid gap-2 p-3" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
+        <form class="board-add-list-panel tf-panel grid gap-2 p-3" [formGroup]="listForm" (ngSubmit)="createList(board.id)">
           @if (!(board.lists ?? []).length) {
             <div class="mb-1">
               <h2 class="font-bold">Board je spreman za prvu listu</h2>

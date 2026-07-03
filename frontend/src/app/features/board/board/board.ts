@@ -9,7 +9,6 @@ import { Store } from '@ngrx/store';
 import { catchError, combineLatest, distinctUntilChanged, finalize, forkJoin, map, of, take } from 'rxjs';
 import { CommentService } from '../../../core/services/comment';
 import { BoardSocketService } from '../../../core/services/board-socket.service';
-import { BoardService } from '../../../core/services/board';
 import { CardService } from '../../../core/services/card';
 import { ListService } from '../../../core/services/list';
 import { LabelService } from '../../../core/services/label.service';
@@ -50,7 +49,6 @@ import { BOARD_BACKGROUNDS } from '../appearance-options';
 export class Board {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly cardService = inject(CardService);
-  private readonly boardService = inject(BoardService);
   private readonly boardSocketService = inject(BoardSocketService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly commentService = inject(CommentService);
@@ -88,11 +86,10 @@ export class Board {
   cardAppearanceSaving = false;
   cardAppearanceError: string | null = null;
   listAppearanceSavingId: string | null = null;
-  boardAppearanceSaving = false;
-  boardAppearanceError: string | null = null;
   renamingListId: string | null = null;
   listRenameErrors: Record<string, string | null> = {};
   editingBoardHeader = false;
+  pendingBoardBackgroundColor: string | null = null;
   showNewListForm = false;
   mobileToolbarOpen = false;
   activeMobileListIndex = 0;
@@ -363,6 +360,7 @@ export class Board {
   startBoardEdit(board: BoardModel): void {
     this.mobileToolbarOpen = false;
     this.editingBoardHeader = true;
+    this.pendingBoardBackgroundColor = board.backgroundColor ?? null;
     this.boardEditForm.setValue({
       title: board.title,
       description: board.description ?? '',
@@ -371,6 +369,7 @@ export class Board {
 
   cancelBoardEdit(): void {
     this.editingBoardHeader = false;
+    this.pendingBoardBackgroundColor = null;
     this.boardEditForm.reset();
   }
 
@@ -393,6 +392,7 @@ export class Board {
         boardId,
         title: trimmedTitle,
         description: description.trim() || undefined,
+        backgroundColor: this.pendingBoardBackgroundColor,
       }),
     );
     this.cancelBoardEdit();
@@ -556,31 +556,8 @@ export class Board {
       });
   }
 
-  updateBoardBackground(boardId: string, backgroundColor: string | null): void {
-    if (this.boardAppearanceSaving || this.currentBoard?.backgroundColor === backgroundColor) {
-      return;
-    }
-
-    this.boardAppearanceSaving = true;
-    this.boardAppearanceError = null;
-    this.boardService
-      .updateBoard(boardId, { backgroundColor })
-      .pipe(
-        take(1),
-        finalize(() => {
-          this.boardAppearanceSaving = false;
-          this.cdr.markForCheck();
-        }),
-      )
-      .subscribe({
-        next: (board) => {
-          this.currentBoard = board;
-          this.store.dispatch(updateBoard({ board }));
-        },
-        error: () => {
-          this.boardAppearanceError = 'Pozadina boarda nije sacuvana.';
-        },
-      });
+  selectPendingBoardBackground(backgroundColor: string | null): void {
+    this.pendingBoardBackgroundColor = backgroundColor;
   }
 
   boardBackgroundPreview(value: string | null | undefined): string | null {

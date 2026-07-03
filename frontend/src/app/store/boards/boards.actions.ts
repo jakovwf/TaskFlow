@@ -13,7 +13,12 @@ export const boardsActions = createActionGroup({
     'Create Board': props<{ workspaceId: string; title: string; description?: string }>(),
     'Create Board Success': props<{ board: Board }>(),
     'Create Board Failure': props<{ error: string }>(),
-    'Update Board Details': props<{ boardId: string; title: string; description?: string }>(),
+    'Update Board Details': props<{
+      boardId: string;
+      title: string;
+      description?: string;
+      backgroundColor?: string | null;
+    }>(),
     'Update Board Details Success': props<{ board: Board }>(),
     'Update Board Details Failure': props<{ error: string }>(),
     'Delete Board': props<{ boardId: string }>(),

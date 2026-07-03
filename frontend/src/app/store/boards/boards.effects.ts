@@ -107,8 +107,8 @@ export class BoardsEffects {
   readonly updateBoardDetails$ = createEffect(() =>
     this.actions$.pipe(
       ofType(updateBoardDetails),
-      exhaustMap(({ boardId, title, description }) =>
-        this.boardService.updateBoard(boardId, { title, description }).pipe(
+      exhaustMap(({ boardId, title, description, backgroundColor }) =>
+        this.boardService.updateBoard(boardId, { title, description, backgroundColor }).pipe(
           map((board) => updateBoardDetailsSuccess({ board })),
           catchError((error: unknown) => of(updateBoardDetailsFailure({ error: this.getErrorMessage(error) }))),
         ),

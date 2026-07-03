@@ -6,6 +6,9 @@ import {
   loadNotifications,
   loadNotificationsFailure,
   loadNotificationsSuccess,
+  loadMoreNotifications,
+  loadMoreNotificationsFailure,
+  loadMoreNotificationsSuccess,
   markAllAsRead,
   markAllAsReadSuccess,
   markAsRead,
@@ -16,6 +19,11 @@ export interface NotificationsState extends EntityState<Notification> {
   unreadCount: number;
   loading: boolean;
   error: string | null;
+  page: number;
+  limit: number;
+  total: number;
+  hasMore: boolean;
+  loadingMore: boolean;
 }
 
 export const notificationsAdapter = createEntityAdapter<Notification>({
@@ -26,6 +34,11 @@ export const initialNotificationsState: NotificationsState = notificationsAdapte
   unreadCount: 0,
   loading: false,
   error: null,
+  page: 0,
+  limit: 10,
+  total: 0,
+  hasMore: false,
+  loadingMore: false,
 });
 
 export const notificationsReducer = createReducer(
@@ -35,18 +48,34 @@ export const notificationsReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(loadNotificationsSuccess, (state, { notifications }) =>
-    notificationsAdapter.setAll(notifications, {
+  on(loadNotificationsSuccess, (state, { response }) =>
+    notificationsAdapter.setAll(response.items, {
       ...state,
-      unreadCount: notifications.reduce(
-        (count, notification) => count + (notification.isRead ? 0 : 1),
-        0,
-      ),
+      unreadCount: response.unreadCount,
+      page: response.page,
+      limit: response.limit,
+      total: response.total,
+      hasMore: response.hasMore,
       loading: false,
+      loadingMore: false,
+      error: null,
+    }),
+  ),
+  on(loadMoreNotifications, (state) => ({ ...state, loadingMore: true, error: null })),
+  on(loadMoreNotificationsSuccess, (state, { response }) =>
+    notificationsAdapter.upsertMany(response.items, {
+      ...state,
+      unreadCount: response.unreadCount,
+      page: response.page,
+      limit: response.limit,
+      total: response.total,
+      hasMore: response.hasMore,
+      loadingMore: false,
       error: null,
     }),
   ),
   on(loadNotificationsFailure, (state, { error }) => ({ ...state, loading: false, error })),
+  on(loadMoreNotificationsFailure, (state, { error }) => ({ ...state, loadingMore: false, error })),
   on(markAsReadSuccess, (state, { notification }) =>
     notificationsAdapter.upsertOne(notification, {
       ...state,
@@ -69,6 +98,7 @@ export const notificationsReducer = createReducer(
     return notificationsAdapter.upsertOne(notification, {
       ...state,
       unreadCount: Math.max(0, state.unreadCount - previousUnread + nextUnread),
+      total: state.total + (existingNotification ? 0 : 1),
     });
   }),
 );

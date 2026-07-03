@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Attachment, BoardMember, Card, CardComment, CardLabel, CardMember, Label, User } from '../../../../store/models';
 import { CARD_COVER_COLORS } from '../../appearance-options';
@@ -100,6 +100,13 @@ export class CardDetailComponent implements OnChanges {
 
   emitClose(): void {
     this.close.emit();
+  }
+
+  @HostListener('document:keydown.escape')
+  closeOnEscape(): void {
+    if (this.card) {
+      this.emitClose();
+    }
   }
 
   emitSave(): void {

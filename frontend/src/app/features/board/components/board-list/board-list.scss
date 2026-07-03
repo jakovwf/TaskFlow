@@ -1,6 +1,8 @@
 .board-list-panel {
   min-height: 0;
   border-top-style: solid;
+  background: hsl(var(--b1));
+  box-shadow: 0 16px 34px rgb(15 23 42 / 0.13);
 }
 
 .color-swatch {
@@ -16,9 +18,14 @@
 }
 
 .card-drop-zone {
+  min-height: 7rem;
   max-height: min(30rem, calc(100vh - 31rem));
   scrollbar-color: hsl(var(--bc) / 0.22) transparent;
   scrollbar-width: thin;
+}
+
+.card-drop-zone app-board-card {
+  display: block;
 }
 
 .list-empty-state {

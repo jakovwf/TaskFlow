@@ -70,6 +70,26 @@
           </li>
         }
       </ul>
+
+      @if (hasMore$ | async) {
+        @if (page$ | async; as page) {
+          <div class="mt-5 flex justify-center">
+            <button
+              type="button"
+              class="btn btn-outline btn-sm min-w-36"
+              [disabled]="loadingMore$ | async"
+              (click)="loadMore(page)"
+            >
+              @if (loadingMore$ | async) {
+                <span class="loading loading-spinner loading-xs"></span>
+                Ucitavanje...
+              } @else {
+                Ucitaj jos
+              }
+            </button>
+          </div>
+        }
+      }
     } @else if (!(loading$ | async) && !(error$ | async)) {
       <div class="tf-empty text-sm">
         Nema notifikacija za prikaz.

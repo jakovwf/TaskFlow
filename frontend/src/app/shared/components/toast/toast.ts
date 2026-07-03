@@ -11,6 +11,6 @@ export class ToastComponent {
   readonly toastService = inject(ToastService);
 
   icon(type: ToastType): string {
-    return { success: '✓', error: '!', warning: '⚠', info: 'i' }[type];
+    return { success: 'OK', error: '!', warning: '!', info: 'i' }[type];
   }
 }

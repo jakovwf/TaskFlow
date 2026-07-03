@@ -190,6 +190,15 @@ export interface Notification {
   } | null;
 }
 
+export interface NotificationPage {
+  items: Notification[];
+  page: number;
+  limit: number;
+  total: number;
+  unreadCount: number;
+  hasMore: boolean;
+}
+
 export interface AuthResponse {
   token?: string;
   accessToken?: string;

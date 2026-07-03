@@ -4,12 +4,14 @@ import {
   Get,
   Param,
   Patch,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { NotificationsService } from './notifications.service';
+import { GetNotificationsQueryDto } from './dto/get-notifications-query.dto';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -24,8 +26,11 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  findAll(@Req() request: AuthenticatedRequest) {
-    return this.notificationsService.findAll(request.user.userId);
+  findAll(
+    @Req() request: AuthenticatedRequest,
+    @Query() query: GetNotificationsQueryDto,
+  ) {
+    return this.notificationsService.findAll(request.user.userId, query.page, query.limit);
   }
 
   @Patch('read-all')

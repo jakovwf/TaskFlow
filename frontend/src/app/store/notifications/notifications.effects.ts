@@ -4,12 +4,15 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SocketService } from '../../core/services/socket.service';
-import { Notification } from '../models';
+import { Notification, NotificationPage } from '../models';
 import {
   loadNotifications,
   addNotification,
   loadNotificationsFailure,
   loadNotificationsSuccess,
+  loadMoreNotifications,
+  loadMoreNotificationsFailure,
+  loadMoreNotificationsSuccess,
   markAllAsRead,
   markAllAsReadSuccess,
   markAsRead,
@@ -27,9 +30,23 @@ export class NotificationsEffects {
     this.actions$.pipe(
       ofType(loadNotifications),
       switchMap(() =>
-        this.http.get<Notification[]>(this.notificationsApiUrl).pipe(
-          map((notifications) => loadNotificationsSuccess({ notifications })),
+        this.http.get<NotificationPage>(this.notificationsApiUrl, { params: { page: 1, limit: 10 } }).pipe(
+          map((response) => loadNotificationsSuccess({ response })),
           catchError((error: unknown) => of(loadNotificationsFailure({ error: this.getErrorMessage(error) }))),
+        ),
+      ),
+    ),
+  );
+
+  readonly loadMoreNotifications$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadMoreNotifications),
+      exhaustMap(({ page }) =>
+        this.http.get<NotificationPage>(this.notificationsApiUrl, { params: { page, limit: 10 } }).pipe(
+          map((response) => loadMoreNotificationsSuccess({ response })),
+          catchError((error: unknown) =>
+            of(loadMoreNotificationsFailure({ error: this.getErrorMessage(error) })),
+          ),
         ),
       ),
     ),

@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import {
   loadNotifications,
+  loadMoreNotifications,
   markAllAsRead,
   markAsRead,
 } from '../../store/notifications/notifications.actions';
@@ -11,6 +12,9 @@ import {
   selectAllNotifications,
   selectNotificationsError,
   selectNotificationsLoading,
+  selectNotificationsHasMore,
+  selectNotificationsLoadingMore,
+  selectNotificationsPage,
   selectUnreadCount,
 } from '../../store/notifications/notifications.selectors';
 import { Notification } from '../../store/models';
@@ -28,6 +32,9 @@ export class Notifications {
   readonly loading$ = this.store.select(selectNotificationsLoading);
   readonly error$ = this.store.select(selectNotificationsError);
   readonly unreadCount$ = this.store.select(selectUnreadCount);
+  readonly page$ = this.store.select(selectNotificationsPage);
+  readonly hasMore$ = this.store.select(selectNotificationsHasMore);
+  readonly loadingMore$ = this.store.select(selectNotificationsLoadingMore);
 
   constructor() {
     this.store.dispatch(loadNotifications());
@@ -39,6 +46,10 @@ export class Notifications {
 
   markAllAsRead(): void {
     this.store.dispatch(markAllAsRead());
+  }
+
+  loadMore(page: number): void {
+    this.store.dispatch(loadMoreNotifications({ page: page + 1 }));
   }
 
   notificationLabel(notification: Notification): string {

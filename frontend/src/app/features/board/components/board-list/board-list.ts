@@ -1,5 +1,5 @@
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BoardList, Card } from '../../../../store/models';
 import { BoardCard } from '../board-card/board-card';
@@ -12,6 +12,9 @@ import { LIST_ACCENT_COLORS } from '../../appearance-options';
   styleUrl: './board-list.scss',
 })
 export class BoardListComponent implements OnChanges {
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+
+  @ViewChild('colorPicker') private colorPicker?: ElementRef<HTMLDetailsElement>;
   @Input({ required: true }) list!: BoardList;
   @Input() connectedDropLists: string[] = [];
   @Input() loading: boolean | null = false;
@@ -109,6 +112,21 @@ export class BoardListComponent implements OnChanges {
   setAccentColor(accentColor: string | null): void {
     if (this.list.accentColor !== accentColor) {
       this.accentColorChange.emit({ listId: this.list.id, accentColor });
+    }
+    this.closeColorPicker();
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeColorPickerOnOutsideClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.closeColorPicker();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  closeColorPicker(): void {
+    if (this.colorPicker?.nativeElement.open) {
+      this.colorPicker.nativeElement.open = false;
     }
   }
 }

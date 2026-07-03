@@ -21,12 +21,28 @@ export class NotificationsService {
     private readonly appGateway: AppGateway,
   ) {}
 
-  findAll(userId: string) {
-    return this.prisma.notification.findMany({
-      where: { userId },
-      include: this.notificationInclude,
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll(userId: string, page: number, limit: number) {
+    const where = { userId };
+    const [items, total, unreadCount] = await this.prisma.$transaction([
+      this.prisma.notification.findMany({
+        where,
+        include: this.notificationInclude,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.notification.count({ where }),
+      this.prisma.notification.count({ where: { userId, isRead: false } }),
+    ]);
+
+    return {
+      items,
+      page,
+      limit,
+      total,
+      unreadCount,
+      hasMore: page * limit < total,
+    };
   }
 
   async findOne(id: string) {
@@ -83,7 +99,7 @@ export class NotificationsService {
       case NotificationType.CARD_ASSIGNED:
         return 'Dodeljen vam je zadatak';
       default:
-        return 'TaskFlow obaveštenje';
+        return 'TaskFlow';
     }
   }
 

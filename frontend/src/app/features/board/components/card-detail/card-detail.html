@@ -1,9 +1,9 @@
 @if (card) {
-  <div class="modal modal-open items-start overflow-hidden bg-slate-950/40 p-3 backdrop-blur-sm sm:items-center sm:p-6">
-    <div class="modal-box flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-0 shadow-2xl sm:h-[calc(100dvh-3rem)] sm:max-h-[calc(100dvh-3rem)]">
+  <div class="modal modal-open items-start overflow-hidden bg-slate-950/40 p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center sm:p-6" (click)="emitClose()">
+    <div class="modal-box flex h-[calc(100dvh-7rem)] max-h-[calc(100dvh-7rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-0 shadow-2xl sm:h-[calc(100dvh-3rem)] sm:max-h-[calc(100dvh-3rem)]" (click)="$event.stopPropagation()">
       <button
         type="button"
-        class="btn btn-circle btn-ghost btn-sm absolute right-3 top-3 z-10"
+        class="btn btn-circle btn-sm absolute right-3 top-3 z-20 border border-base-300 bg-base-100 shadow-sm hover:bg-base-200"
         aria-label="Zatvori detalje kartice"
         (click)="emitClose()"
       >

@@ -2,6 +2,37 @@
   min-height: 100vh;
 }
 
+.landing-page .btn-primary:hover,
+.landing-page .btn-primary:focus-visible {
+  color: #fff;
+}
+
+.system-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  color: hsl(var(--bc) / 0.58);
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+}
+
+.system-status-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex: none;
+  border-radius: 999px;
+  background: hsl(var(--bc) / 0.35);
+}
+
+.system-status-dot.is-online {
+  background: #40916c;
+}
+
+.system-status-dot.is-offline {
+  background: #b7791f;
+}
+
 .landing-grid {
   background:
     linear-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px),

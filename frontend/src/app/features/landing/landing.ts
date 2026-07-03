@@ -41,8 +41,8 @@ export class Landing {
     },
     {
       marker: 'P',
-      title: 'PWA za mobilne uredjaje',
-      text: 'TaskFlow je spreman za brz rad na telefonu, tabletu i desktopu.',
+      title: 'Responsive iskustvo',
+      text: 'TaskFlow je prilagodjen radu na telefonu, tabletu i desktopu.',
       tone: 'bg-rose-100 text-rose-700',
     },
     {

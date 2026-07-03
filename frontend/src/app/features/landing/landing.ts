@@ -1,6 +1,7 @@
 import { NgClass } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { HealthService } from '../../core/services/health.service';
 
 @Component({
   selector: 'app-landing',
@@ -9,6 +10,10 @@ import { RouterLink } from '@angular/router';
   styleUrl: './landing.scss',
 })
 export class Landing {
+  private readonly healthService = inject(HealthService);
+
+  readonly backendStatus = signal<'online' | 'offline' | null>(null);
+
   readonly features = [
     {
       marker: 'B',
@@ -65,4 +70,13 @@ export class Landing {
       text: 'Kreiraj kartice, dodeli ljude i pomeraj posao kroz tok rada.',
     },
   ];
+
+  constructor() {
+    void this.checkBackendHealth();
+  }
+
+  private async checkBackendHealth(): Promise<void> {
+    const isOnline = await this.healthService.checkHealth();
+    this.backendStatus.set(isOnline ? 'online' : 'offline');
+  }
 }

@@ -1,7 +1,7 @@
 <div class="landing-page overflow-hidden bg-base-100 text-base-content">
   <header class="relative isolate min-h-screen">
     <div class="landing-grid absolute inset-0 -z-10"></div>
-    <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+    <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
       <nav class="landing-fade flex items-center justify-between gap-4" aria-label="Javna navigacija">
         <a routerLink="/" class="flex items-center gap-3 font-bold" aria-label="TaskFlow pocetna">
           <img
@@ -11,13 +11,13 @@
           />
         </a>
 
-        <div class="flex items-center gap-2">
+        <div class="hidden items-center gap-2 sm:flex">
           <a routerLink="/login" class="btn btn-ghost btn-sm">Prijavi se</a>
           <a routerLink="/register" class="btn btn-primary btn-sm shadow-sm">Kreni sada</a>
         </div>
       </nav>
 
-      <section class="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(500px,1.08fr)] lg:py-16">
+      <section class="grid flex-1 items-center gap-7 py-8 sm:gap-10 sm:py-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(500px,1.08fr)] lg:py-16">
         <div class="landing-fade max-w-3xl">
           <p class="mb-4 inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
             Timski taskovi, jasniji tok rada
@@ -30,7 +30,7 @@
             kolaborativni workspace.
           </p>
 
-          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div class="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
             <a routerLink="/register" class="btn btn-primary btn-lg shadow-md shadow-primary/20">
               Kreni sada
             </a>
@@ -81,7 +81,7 @@
               </div>
             </div>
 
-            <div class="grid gap-3 md:grid-cols-3">
+            <div class="mock-board-grid grid gap-3 md:grid-cols-3">
               <article class="mock-column">
                 <div class="mb-3 flex items-center justify-between">
                   <h3 class="font-semibold">To do</h3>
@@ -153,7 +153,7 @@
     </div>
   </header>
 
-  <section class="bg-base-200/70 py-16 sm:py-20">
+  <section class="bg-base-200/70 py-12 sm:py-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="max-w-2xl">
         <p class="text-sm font-bold uppercase tracking-wide text-primary">Funkcionalnosti</p>
@@ -165,19 +165,19 @@
 
       <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         @for (feature of features; track feature.title) {
-          <article class="feature-card rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm">
+          <article class="feature-card rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm sm:p-5">
             <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-sm font-black" [ngClass]="feature.tone">
               {{ feature.marker }}
             </span>
             <h3 class="mt-4 text-lg font-bold">{{ feature.title }}</h3>
-            <p class="mt-2 text-sm leading-6 text-base-content/70">{{ feature.text }}</p>
+            <p class="mt-2 text-[0.9375rem] leading-6 text-base-content/75 sm:text-sm sm:text-base-content/70">{{ feature.text }}</p>
           </article>
         }
       </div>
     </div>
   </section>
 
-  <section class="py-16 sm:py-20">
+  <section class="py-12 sm:py-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
         <div>

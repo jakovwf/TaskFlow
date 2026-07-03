@@ -54,6 +54,51 @@
 
       <section class="mt-6 border-t border-base-300 pt-4">
         <div class="mb-3 flex items-center justify-between gap-3">
+          <h3 class="text-lg font-semibold">Izgled i status</h3>
+          @if (appearanceSaving) {
+            <span class="loading loading-spinner loading-sm text-primary"></span>
+          }
+        </div>
+
+        @if (appearanceError) {
+          <div class="alert alert-error mb-3 text-sm">{{ appearanceError }}</div>
+        }
+
+        <label class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-base-300 bg-base-200/40 p-3">
+          <span>
+            <span class="block font-medium">Kartica je zavrsena</span>
+            <span class="mt-0.5 block text-xs text-base-content/55">Kartica ostaje vidljiva na boardu.</span>
+          </span>
+          <input
+            type="checkbox"
+            class="toggle toggle-success"
+            [checked]="card.isDone"
+            [disabled]="appearanceSaving"
+            (change)="emitDoneChange($event)"
+          />
+        </label>
+
+        <div class="mt-4">
+          <p class="mb-2 text-sm font-medium">Boja kartice</p>
+          <div class="flex flex-wrap gap-2" aria-label="Boja kartice">
+            @for (color of coverColors; track color.label) {
+              <button
+                type="button"
+                class="appearance-swatch"
+                [class.is-selected]="card.coverColor === color.value"
+                [style.background]="color.preview"
+                [disabled]="appearanceSaving"
+                [attr.aria-label]="color.label"
+                [attr.title]="color.label"
+                (click)="emitCoverColorChange(color.value)"
+              ></button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-6 border-t border-base-300 pt-4">
+        <div class="mb-3 flex items-center justify-between gap-3">
           <h3 class="text-lg font-semibold">Labele</h3>
           @if (labelSaving) {
             <span class="loading loading-spinner loading-sm text-primary"></span>

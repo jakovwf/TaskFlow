@@ -133,5 +133,6 @@ export const boardUpdatedRemotely = createAction(
     title: string;
     description: string | null;
     backgroundUrl: string | null;
+    backgroundColor: string | null;
   }>(),
 );

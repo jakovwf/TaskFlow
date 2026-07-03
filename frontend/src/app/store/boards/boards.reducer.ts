@@ -235,11 +235,11 @@ export const boardsReducer = createReducer(
       : nextState;
   }),
   on(addBoard, (state, { board }) => boardsAdapter.addOne(board, state)),
-  on(boardUpdatedRemotely, (state, { boardId, title, description, backgroundUrl }) =>
+  on(boardUpdatedRemotely, (state, { boardId, title, description, backgroundUrl, backgroundColor }) =>
     boardsAdapter.updateOne(
       {
         id: boardId,
-        changes: { title, description, backgroundUrl },
+        changes: { title, description, backgroundUrl, backgroundColor },
       },
       state,
     ),

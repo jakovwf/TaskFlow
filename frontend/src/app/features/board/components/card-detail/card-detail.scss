@@ -1,0 +1,16 @@
+.appearance-swatch {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid hsl(var(--b1));
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px hsl(var(--bc) / 0.16);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.appearance-swatch:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.appearance-swatch.is-selected {
+  box-shadow: 0 0 0 3px hsl(var(--p));
+}

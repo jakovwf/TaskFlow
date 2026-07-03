@@ -107,6 +107,7 @@ export class BoardsService {
       title: board.title,
       description: board.description,
       backgroundUrl: board.backgroundUrl,
+      backgroundColor: board.backgroundColor,
     });
 
     return board;

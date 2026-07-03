@@ -176,3 +176,27 @@
     min-width: 21rem;
   }
 }
+.board-page {
+  position: relative;
+}
+
+.board-theme-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 1rem;
+  opacity: 0.82;
+  transition: background 180ms ease;
+}
+
+.board-theme-swatch {
+  width: 2.5rem;
+  height: 2.1rem;
+  border: 3px solid hsl(var(--b1));
+  border-radius: 0.65rem;
+  box-shadow: 0 0 0 1px hsl(var(--bc) / 0.16);
+}
+
+.board-theme-swatch.is-selected {
+  box-shadow: 0 0 0 3px hsl(var(--p));
+}

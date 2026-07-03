@@ -76,5 +76,6 @@ export class BoardSocketService {
     title: string;
     description: string | null;
     backgroundUrl: string | null;
+    backgroundColor: string | null;
   }>('board:updated');
 }

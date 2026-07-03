@@ -47,16 +47,19 @@ export class ListsService {
       where: { id },
       data: {
         title: updateListDto.title,
+        accentColor: updateListDto.accentColor,
       },
       include: this.listInclude,
     });
 
-    await this.activityService.logActivity({
-      type: ActivityType.LIST_RENAMED,
-      boardId: list.boardId,
-      userId,
-      payload: { listTitle: list.title },
-    });
+    if (updateListDto.title !== undefined) {
+      await this.activityService.logActivity({
+        type: ActivityType.LIST_RENAMED,
+        boardId: list.boardId,
+        userId,
+        payload: { listTitle: list.title },
+      });
+    }
 
     this.appGateway.emitToBoardExcept(list.boardId, 'list:updated', { list }, socketId);
 

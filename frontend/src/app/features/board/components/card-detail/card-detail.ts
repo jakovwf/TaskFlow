@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Attachment, BoardMember, Card, CardComment, CardLabel, CardMember, Label, User } from '../../../../store/models';
+import { CARD_COVER_COLORS } from '../../appearance-options';
 
 @Component({
   selector: 'app-card-detail',
@@ -32,6 +33,8 @@ export class CardDetailComponent implements OnChanges {
   @Input() attachmentError: string | null = null;
   @Input() currentUser: User | null = null;
   @Input() loading: boolean | null = false;
+  @Input() appearanceSaving = false;
+  @Input() appearanceError: string | null = null;
 
   @Output() close = new EventEmitter<void>();
   @Output() saveTitle = new EventEmitter<{ cardId: string; title: string }>();
@@ -48,6 +51,8 @@ export class CardDetailComponent implements OnChanges {
   @Output() createComment = new EventEmitter<{ cardId: string; content: string }>();
   @Output() updateComment = new EventEmitter<{ cardId: string; commentId: string; content: string }>();
   @Output() deleteComment = new EventEmitter<{ cardId: string; commentId: string }>();
+  @Output() doneChange = new EventEmitter<{ cardId: string; isDone: boolean }>();
+  @Output() coverColorChange = new EventEmitter<{ cardId: string; coverColor: string | null }>();
 
   newCommentContent = '';
   editingCommentId: string | null = null;
@@ -59,6 +64,7 @@ export class CardDetailComponent implements OnChanges {
   editLabelName = '';
   editLabelColor = '#2563eb';
   failedAttachmentPreviewIds = new Set<string>();
+  readonly coverColors = CARD_COVER_COLORS;
 
   readonly form = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(1)]],
@@ -162,6 +168,23 @@ export class CardDetailComponent implements OnChanges {
     }
 
     this.delete.emit({ cardId: this.card.id, listId: this.card.listId });
+  }
+
+  emitDoneChange(event: Event): void {
+    if (!this.card || this.appearanceSaving) {
+      return;
+    }
+
+    this.doneChange.emit({
+      cardId: this.card.id,
+      isDone: (event.target as HTMLInputElement).checked,
+    });
+  }
+
+  emitCoverColorChange(coverColor: string | null): void {
+    if (this.card && !this.appearanceSaving && this.card.coverColor !== coverColor) {
+      this.coverColorChange.emit({ cardId: this.card.id, coverColor });
+    }
   }
 
   emitAssignMember(): void {

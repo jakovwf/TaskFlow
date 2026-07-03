@@ -1,5 +1,18 @@
 .board-list-panel {
   min-height: 0;
+  border-top-style: solid;
+}
+
+.color-swatch {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid hsl(var(--b1));
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px hsl(var(--bc) / 0.16);
+}
+
+.color-swatch.is-selected {
+  box-shadow: 0 0 0 2px hsl(var(--p));
 }
 
 .card-drop-zone {

@@ -12,6 +12,8 @@ export interface CreateCardData {
 export interface UpdateCardData {
   title?: string;
   description?: string;
+  isDone?: boolean;
+  coverColor?: string | null;
 }
 
 @Injectable({

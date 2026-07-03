@@ -99,6 +99,7 @@ model Board {
   title         String
   description   String?
   backgroundUrl String?
+  backgroundColor String?
   workspaceId   String
   createdAt     DateTime @default(now())
 
@@ -139,11 +140,12 @@ model BoardInvite {
 }
 
 model List {
-  id        String   @id @default(cuid())
-  title     String
-  position  Float
-  boardId   String
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  title       String
+  position    Float
+  accentColor String?
+  boardId     String
+  createdAt   DateTime @default(now())
 
   board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards Card[]
@@ -156,6 +158,8 @@ model Card {
   position    Float
   listId      String
   dueDate     DateTime?
+  isDone      Boolean   @default(false)
+  coverColor  String?
   createdAt   DateTime  @default(now())
 
   list          List           @relation(fields: [listId], references: [id], onDelete: Cascade)

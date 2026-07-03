@@ -9,7 +9,8 @@ export interface CreateListData {
 }
 
 export interface UpdateListData {
-  title: string;
+  title?: string;
+  accentColor?: string | null;
 }
 
 @Injectable({

@@ -1,4 +1,4 @@
-import { IsDateString, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsDateString, IsHexColor, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateCardDto {
   @IsOptional()
@@ -13,4 +13,12 @@ export class UpdateCardDto {
   @IsOptional()
   @IsDateString()
   dueDate?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isDone?: boolean;
+
+  @IsOptional()
+  @IsHexColor()
+  coverColor?: string | null;
 }

@@ -1,4 +1,8 @@
-<div class="board-list-panel tf-panel flex max-h-full w-full flex-col p-3">
+<div
+  class="board-list-panel tf-panel flex max-h-full w-full flex-col p-3"
+  [style.borderTopColor]="list.accentColor || null"
+  [style.borderTopWidth]="list.accentColor ? '4px' : null"
+>
   <div class="mb-3 shrink-0 grid gap-2 sm:grid-cols-[1fr_auto]">
     <div class="min-w-0">
       <input
@@ -18,9 +22,27 @@
         }
       </div>
     </div>
-    <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading" (click)="emitDelete()">
-      Obrisi
-    </button>
+    <div class="flex items-center justify-end gap-1 sm:flex-col sm:items-end">
+      <details class="dropdown dropdown-end">
+        <summary class="btn btn-ghost btn-sm" aria-label="Boja liste">Boja</summary>
+        <div class="dropdown-content z-30 mt-2 grid w-44 grid-cols-4 gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl">
+          @for (color of accentColors; track color.label) {
+            <button
+              type="button"
+              class="color-swatch"
+              [class.is-selected]="list.accentColor === color.value"
+              [style.background]="color.preview"
+              [attr.aria-label]="color.label"
+              [attr.title]="color.label"
+              (click)="setAccentColor(color.value)"
+            ></button>
+          }
+        </div>
+      </details>
+      <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading" (click)="emitDelete()">
+        Obrisi
+      </button>
+    </div>
   </div>
 
   <div
@@ -33,7 +55,12 @@
   >
     @if (list.cards?.length) {
       @for (card of list.cards; track card.id) {
-        <app-board-card cdkDrag [card]="card" (selected)="cardSelected.emit($event)" />
+        <app-board-card
+          cdkDrag
+          [card]="card"
+          (selected)="cardSelected.emit($event)"
+          (doneChange)="cardDoneChange.emit($event)"
+        />
       }
     } @else {
       <div class="list-empty-state">

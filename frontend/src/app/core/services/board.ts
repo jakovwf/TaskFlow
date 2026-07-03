@@ -13,7 +13,8 @@ export interface CreateBoardData {
 export interface UpdateBoardData {
   title?: string;
   description?: string;
-  backgroundUrl?: string;
+  backgroundUrl?: string | null;
+  backgroundColor?: string | null;
 }
 
 export interface CreateBoardInviteData {

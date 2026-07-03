@@ -1,7 +1,12 @@
-<button
-  type="button"
-  class="tf-card block w-full p-3 text-left"
+<div
+  class="board-card-tile tf-card block w-full cursor-pointer overflow-hidden p-3 text-left"
+  [class.is-done]="card.isDone"
+  [style.borderTopColor]="card.coverColor || null"
+  [style.borderTopWidth]="card.coverColor ? '4px' : null"
+  role="button"
+  tabindex="0"
   (click)="selectCard()"
+  (keydown)="handleKeydown($event)"
 >
   @if (card.labels?.length) {
     <div class="mb-2 flex flex-wrap gap-1" aria-label="Labele kartice">
@@ -14,8 +19,25 @@
       }
     </div>
   }
-  <h3 class="font-medium">{{ card.title }}</h3>
+  <div class="flex items-start gap-3">
+    <input
+      type="checkbox"
+      class="checkbox checkbox-primary checkbox-sm mt-0.5 shrink-0"
+      aria-label="Oznaci karticu kao zavrsenu"
+      [checked]="card.isDone"
+      (click)="$event.stopPropagation()"
+      (change)="toggleDone($event)"
+    />
+    <div class="min-w-0 flex-1">
+      <div class="flex flex-wrap items-center gap-2">
+        <h3 class="card-title min-w-0 font-medium">{{ card.title }}</h3>
+        @if (card.isDone) {
+          <span class="badge badge-success badge-sm border-0">Done</span>
+        }
+      </div>
   @if (card.description) {
     <p class="mt-1 text-sm text-base-content/70">{{ card.description }}</p>
   }
-</button>
+    </div>
+  </div>
+</div>

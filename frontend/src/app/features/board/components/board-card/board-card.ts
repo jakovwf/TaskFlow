@@ -11,8 +11,24 @@ export class BoardCard {
   @Input({ required: true }) card!: Card;
 
   @Output() selected = new EventEmitter<Card>();
+  @Output() doneChange = new EventEmitter<{ cardId: string; isDone: boolean }>();
 
   selectCard(): void {
     this.selected.emit(this.card);
+  }
+
+  handleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.selectCard();
+    }
+  }
+
+  toggleDone(event: Event): void {
+    event.stopPropagation();
+    this.doneChange.emit({
+      cardId: this.card.id,
+      isDone: (event.target as HTMLInputElement).checked,
+    });
   }
 }

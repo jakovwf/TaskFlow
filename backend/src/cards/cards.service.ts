@@ -72,6 +72,8 @@ export class CardsService {
         title: updateCardDto.title,
         description: updateCardDto.description,
         dueDate: updateCardDto.dueDate ? new Date(updateCardDto.dueDate) : undefined,
+        isDone: updateCardDto.isDone,
+        coverColor: updateCardDto.coverColor,
       },
       include: this.cardInclude,
     });
@@ -83,9 +85,7 @@ export class CardsService {
       payload: { cardTitle: card.title },
     });
 
-    if (updateCardDto.description !== undefined) {
-      this.appGateway.emitToBoardExcept(card.list.boardId, 'card:updated', { card }, socketId);
-    }
+    this.appGateway.emitToBoardExcept(card.list.boardId, 'card:updated', { card }, socketId);
 
     return card;
   }

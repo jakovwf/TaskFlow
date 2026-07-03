@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateBoardDto {
   @IsOptional()
@@ -12,5 +12,9 @@ export class UpdateBoardDto {
 
   @IsOptional()
   @IsString()
-  backgroundUrl?: string;
+  backgroundUrl?: string | null;
+
+  @IsOptional()
+  @IsIn(['blue', 'purple', 'green', 'orange', 'slate'])
+  backgroundColor?: string | null;
 }

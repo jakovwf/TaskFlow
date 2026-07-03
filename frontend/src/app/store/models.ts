@@ -126,6 +126,8 @@ export interface Card {
   position: number;
   listId: string;
   dueDate?: string | null;
+  isDone: boolean;
+  coverColor?: string | null;
   createdAt?: string;
   list?: {
     id: string;
@@ -151,6 +153,7 @@ export interface BoardList {
   id: string;
   title: string;
   position: number;
+  accentColor?: string | null;
   boardId: string;
   createdAt?: string;
   cards?: Card[];
@@ -161,6 +164,7 @@ export interface Board {
   title: string;
   description?: string | null;
   backgroundUrl?: string | null;
+  backgroundColor?: string | null;
   workspaceId: string;
   createdAt?: string;
   members?: BoardMember[];

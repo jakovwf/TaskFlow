@@ -1,4 +1,4 @@
-<main class="tf-page">
+<main class="board-page tf-page isolate">
   <a routerLink="/home" class="btn btn-ghost btn-sm mb-4 px-0 text-primary hover:bg-transparent">
     Nazad na home
   </a>
@@ -23,6 +23,11 @@
   }
 
   @if (board$ | async; as board) {
+    <div
+      class="board-theme-backdrop"
+      [style.background]="boardBackgroundPreview(board.backgroundColor)"
+      aria-hidden="true"
+    ></div>
     <header class="tf-hero-card mb-5 sm:p-6">
       @if (editingBoardHeader) {
         <form class="mb-4 grid max-w-2xl gap-3" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit(board.id)">
@@ -38,6 +43,31 @@
             class="input input-bordered w-full"
             placeholder="Opis, opciono"
           />
+          <div>
+            <div class="mb-2 flex items-center justify-between gap-3">
+              <span class="text-sm font-medium">Tema boarda</span>
+              @if (boardAppearanceSaving) {
+                <span class="loading loading-spinner loading-xs text-primary"></span>
+              }
+            </div>
+            <div class="flex flex-wrap gap-2" aria-label="Tema boarda">
+              @for (option of boardBackgrounds; track option.label) {
+                <button
+                  type="button"
+                  class="board-theme-swatch"
+                  [class.is-selected]="(board.backgroundColor ?? null) === option.value"
+                  [style.background]="option.preview"
+                  [disabled]="boardAppearanceSaving"
+                  [attr.aria-label]="option.label"
+                  [attr.title]="option.label"
+                  (click)="updateBoardBackground(board.id, option.value)"
+                ></button>
+              }
+            </div>
+            @if (boardAppearanceError) {
+              <p class="mt-2 text-xs text-error">{{ boardAppearanceError }}</p>
+            }
+          </div>
           <div class="flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary btn-sm" [disabled]="boardEditForm.invalid || (loading$ | async)">
               @if (loading$ | async) {
@@ -163,6 +193,8 @@
             (deleteList)="removeList($event)"
             (createCard)="createCard($event)"
             (cardSelected)="openCard($event)"
+            (cardDoneChange)="updateCardDone($event)"
+            (accentColorChange)="updateListAccent($event)"
             (cardDropped)="dropCard($event, board.id)"
           />
         }
@@ -221,6 +253,8 @@
       [attachmentError]="attachmentError"
       [currentUser]="currentUser$ | async"
       [loading]="loading$ | async"
+      [appearanceSaving]="cardAppearanceSaving"
+      [appearanceError]="cardAppearanceError"
       (close)="closeCard()"
       (saveTitle)="saveCardTitle($event)"
       (save)="saveCard($event)"
@@ -236,6 +270,8 @@
       (createComment)="createComment($event)"
       (updateComment)="updateComment($event)"
       (deleteComment)="deleteComment($event)"
+      (doneChange)="updateCardDone($event)"
+      (coverColorChange)="updateCardCover($event)"
     />
   } @else {
     @if (hasBoardRoute && !(loading$ | async) && !(error$ | async)) {

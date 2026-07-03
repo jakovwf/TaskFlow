@@ -9,6 +9,7 @@ import { Store } from '@ngrx/store';
 import { catchError, combineLatest, distinctUntilChanged, finalize, forkJoin, map, of, take } from 'rxjs';
 import { CommentService } from '../../../core/services/comment';
 import { BoardSocketService } from '../../../core/services/board-socket.service';
+import { BoardService } from '../../../core/services/board';
 import { CardService } from '../../../core/services/card';
 import { ListService } from '../../../core/services/list';
 import { LabelService } from '../../../core/services/label.service';
@@ -38,6 +39,7 @@ import {
 import { Attachment, Board as BoardModel, BoardList, BoardMember, Card, CardComment, CardLabel, CardMember, Label, User } from '../../../store/models';
 import { BoardListComponent } from '../components/board-list/board-list';
 import { CardDetailComponent } from '../components/card-detail/card-detail';
+import { BOARD_BACKGROUNDS } from '../appearance-options';
 
 @Component({
   selector: 'app-board',
@@ -48,6 +50,7 @@ import { CardDetailComponent } from '../components/card-detail/card-detail';
 export class Board {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly cardService = inject(CardService);
+  private readonly boardService = inject(BoardService);
   private readonly boardSocketService = inject(BoardSocketService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly commentService = inject(CommentService);
@@ -82,6 +85,11 @@ export class Board {
   boardLabels: Label[] = [];
   labelSaving = false;
   labelError: string | null = null;
+  cardAppearanceSaving = false;
+  cardAppearanceError: string | null = null;
+  listAppearanceSavingId: string | null = null;
+  boardAppearanceSaving = false;
+  boardAppearanceError: string | null = null;
   renamingListId: string | null = null;
   listRenameErrors: Record<string, string | null> = {};
   editingBoardHeader = false;
@@ -98,6 +106,7 @@ export class Board {
   private currentBoard: BoardModel | null = null;
   private labelHydrationBoardId: string | null = null;
   private readonly requestedLabelCardIds = new Set<string>();
+  readonly boardBackgrounds = BOARD_BACKGROUNDS;
   private boardScroller?: ElementRef<HTMLElement>;
 
   @ViewChild('boardScroller')
@@ -169,10 +178,7 @@ export class Board {
           return;
         }
 
-        this.selectedCard = {
-          ...this.selectedCard,
-          description: card.description,
-        };
+        this.selectedCard = { ...this.selectedCard, ...card };
         this.cdr.markForCheck();
       });
 
@@ -472,6 +478,7 @@ export class Board {
     this.attachmentDeletingId = null;
     this.attachmentError = null;
     this.labelError = null;
+    this.cardAppearanceError = null;
     this.cdr.markForCheck();
   }
 
@@ -518,6 +525,66 @@ export class Board {
           this.cdr.markForCheck();
         },
       });
+  }
+
+  updateCardDone(event: { cardId: string; isDone: boolean }): void {
+    this.updateCardAppearance(event.cardId, { isDone: event.isDone });
+  }
+
+  updateCardCover(event: { cardId: string; coverColor: string | null }): void {
+    this.updateCardAppearance(event.cardId, { coverColor: event.coverColor });
+  }
+
+  updateListAccent(event: { listId: string; accentColor: string | null }): void {
+    if (this.listAppearanceSavingId) {
+      return;
+    }
+
+    this.listAppearanceSavingId = event.listId;
+    this.listService
+      .updateList(event.listId, { accentColor: event.accentColor })
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.listAppearanceSavingId = null;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (list) => this.store.dispatch(updateListSuccess({ list })),
+        error: () => this.cdr.markForCheck(),
+      });
+  }
+
+  updateBoardBackground(boardId: string, backgroundColor: string | null): void {
+    if (this.boardAppearanceSaving || this.currentBoard?.backgroundColor === backgroundColor) {
+      return;
+    }
+
+    this.boardAppearanceSaving = true;
+    this.boardAppearanceError = null;
+    this.boardService
+      .updateBoard(boardId, { backgroundColor })
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.boardAppearanceSaving = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (board) => {
+          this.currentBoard = board;
+          this.store.dispatch(updateBoard({ board }));
+        },
+        error: () => {
+          this.boardAppearanceError = 'Pozadina boarda nije sacuvana.';
+        },
+      });
+  }
+
+  boardBackgroundPreview(value: string | null | undefined): string | null {
+    return this.boardBackgrounds.find((option) => option.value === (value ?? null))?.preview ?? null;
   }
 
   removeCard(event: { cardId: string; listId: string }): void {
@@ -968,6 +1035,38 @@ export class Board {
     this.activeMobileListIndex = lists.length === 0
       ? 0
       : Math.min(this.activeMobileListIndex, lists.length - 1);
+  }
+
+  private updateCardAppearance(
+    cardId: string,
+    changes: { isDone?: boolean; coverColor?: string | null },
+  ): void {
+    if (this.cardAppearanceSaving) {
+      return;
+    }
+
+    this.cardAppearanceSaving = true;
+    this.cardAppearanceError = null;
+    this.cardService
+      .updateCard(cardId, changes)
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.cardAppearanceSaving = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (card) => {
+          this.store.dispatch(updateCardSuccess({ card }));
+          if (this.selectedCard?.id === card.id) {
+            this.selectedCard = { ...this.selectedCard, ...card };
+          }
+        },
+        error: () => {
+          this.cardAppearanceError = 'Status ili boja kartice nisu sacuvani.';
+        },
+      });
   }
 
   private scheduleScrollStateUpdate(): void {

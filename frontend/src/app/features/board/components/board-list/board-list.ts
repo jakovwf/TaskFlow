@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { FormsModule } from '@angular/forms';
 import { BoardList, Card } from '../../../../store/models';
 import { BoardCard } from '../board-card/board-card';
+import { LIST_ACCENT_COLORS } from '../../appearance-options';
 
 @Component({
   selector: 'app-board-list',
@@ -25,9 +26,12 @@ export class BoardListComponent implements OnChanges {
     description?: string;
   }>();
   @Output() cardSelected = new EventEmitter<Card>();
+  @Output() cardDoneChange = new EventEmitter<{ cardId: string; isDone: boolean }>();
+  @Output() accentColorChange = new EventEmitter<{ listId: string; accentColor: string | null }>();
   @Output() cardDropped = new EventEmitter<CdkDragDrop<Card[]>>();
 
   readonly emptyCards: Card[] = [];
+  readonly accentColors = LIST_ACCENT_COLORS;
   editableListTitle = '';
   cardTitle = '';
   cardDescription = '';
@@ -100,5 +104,11 @@ export class BoardListComponent implements OnChanges {
 
   emitCardDrop(event: CdkDragDrop<Card[]>): void {
     this.cardDropped.emit(event);
+  }
+
+  setAccentColor(accentColor: string | null): void {
+    if (this.list.accentColor !== accentColor) {
+      this.accentColorChange.emit({ listId: this.list.id, accentColor });
+    }
   }
 }

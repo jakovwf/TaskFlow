@@ -38,7 +38,10 @@ export const notificationsReducer = createReducer(
   on(loadNotificationsSuccess, (state, { notifications }) =>
     notificationsAdapter.setAll(notifications, {
       ...state,
-      unreadCount: notifications.filter((notification) => !notification.isRead).length,
+      unreadCount: notifications.reduce(
+        (count, notification) => count + (notification.isRead ? 0 : 1),
+        0,
+      ),
       loading: false,
       error: null,
     }),

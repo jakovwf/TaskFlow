@@ -28,9 +28,9 @@
       [style.background]="boardBackgroundPreview(board.backgroundColor)"
       aria-hidden="true"
     ></div>
-    <header class="tf-hero-card mb-5 sm:p-6">
+    <header class="board-header-panel tf-hero-card mb-5 sm:p-6">
       @if (editingBoardHeader) {
-        <form class="mb-4 grid max-w-2xl gap-3" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit(board.id)">
+        <form class="board-edit-panel mb-4 grid max-w-2xl gap-3" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit(board.id)">
           <input
             type="text"
             formControlName="title"
@@ -103,25 +103,25 @@
             <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">Members</a>
             <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">Activity</a>
             <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
-            <div class="relative ml-auto">
+            <div class="board-action-menu-wrapper ml-auto">
               <button
                 type="button"
-                class="btn btn-ghost btn-sm"
+                class="board-more-button btn btn-ghost btn-sm"
                 aria-label="Dodatne board akcije"
                 [attr.aria-expanded]="mobileToolbarOpen"
                 (click)="toggleMobileToolbar($event)"
               >
-                Akcije
+                <span aria-hidden="true">&#8943;</span>
               </button>
               @if (mobileToolbarOpen) {
                 <div class="board-action-menu" (click)="$event.stopPropagation()">
                   <button
                     type="button"
-                    class="btn btn-error btn-outline btn-sm w-full"
+                    class="board-delete-action"
                     [disabled]="loading$ | async"
                     (click)="deleteCurrentBoard(board.id)"
                   >
-                    Obrisi board
+                    Obriši board
                   </button>
                 </div>
               }

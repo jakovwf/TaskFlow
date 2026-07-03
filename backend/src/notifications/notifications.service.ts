@@ -99,7 +99,7 @@ export class NotificationsService {
       case NotificationType.CARD_ASSIGNED:
         return 'Dodeljen vam je zadatak';
       default:
-        return 'TaskFlow';
+        return 'Obaveštenje';
     }
   }
 

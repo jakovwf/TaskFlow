@@ -2,24 +2,57 @@
   width: 100%;
   gap: 0.5rem;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .board-mobile-actions .btn {
   flex: 0 0 auto;
 }
 
+.board-action-menu-wrapper {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.board-more-button {
+  width: 2.25rem;
+  min-height: 2rem;
+  padding-inline: 0;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
 .board-action-menu {
   position: absolute;
   top: calc(100% + 0.4rem);
   right: 0;
-  z-index: 40;
-  width: 10rem;
+  z-index: 100;
+  width: 11rem;
   border: 1px solid hsl(var(--bc) / 0.12);
   border-radius: 0.75rem;
-  background: hsl(var(--b1));
+  background: #ffffff;
   padding: 0.5rem;
   box-shadow: 0 16px 36px rgb(15 23 42 / 0.16);
+}
+
+.board-delete-action {
+  width: 100%;
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  color: #b91c1c;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background-color 150ms ease;
+}
+
+.board-delete-action:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.board-delete-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .mobile-list-navigator {
@@ -29,10 +62,11 @@
   margin-bottom: 0.75rem;
   border: 1px solid hsl(var(--bc) / 0.1);
   border-radius: 0.75rem;
-  background: hsl(var(--b1));
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
   padding: 0.5rem 0.65rem;
   box-shadow: 0 10px 24px rgb(15 23 42 / 0.06);
-  backdrop-filter: blur(12px);
 }
 
 .board-scroll-shell {
@@ -123,11 +157,10 @@
   translate: 0 -50%;
   border: 1px solid hsl(var(--bc) / 0.12);
   border-radius: 999px;
-  background: hsl(var(--b1) / 0.94);
+  background: #ffffff;
   color: hsl(var(--bc) / 0.76);
   font-size: 1.2rem;
   box-shadow: 0 10px 28px rgb(15 23 42 / 0.14);
-  backdrop-filter: blur(12px);
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
@@ -150,6 +183,23 @@
 }
 
 @media (max-width: 639px) {
+  .board-header-panel {
+    padding: 1rem;
+  }
+
+  .board-mobile-actions {
+    gap: 0.35rem;
+  }
+
+  .board-mobile-actions .btn {
+    min-height: 2rem;
+    padding-inline: 0.65rem;
+  }
+
+  .board-mobile-actions .board-more-button {
+    padding-inline: 0;
+  }
+
   .board-scroll-shell::before,
   .board-scroll-shell::after {
     display: none;
@@ -188,11 +238,29 @@
 }
 .board-page {
   position: relative;
+  border-radius: 1rem;
 }
 
-.board-page .tf-hero-card,
+.board-header-panel,
+.board-edit-panel,
 .board-page .board-add-list-panel {
-  background: hsl(var(--b1));
+  background: #ffffff;
+}
+
+.board-header-panel {
+  position: relative;
+  z-index: 30;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.board-edit-panel,
+.board-add-list-panel {
+  border-radius: 0.65rem;
+}
+
+.mobile-add-list > .btn {
+  background: #ffffff;
 }
 
 .board-theme-backdrop {
@@ -200,7 +268,7 @@
   inset: 0;
   z-index: -1;
   border-radius: 1rem;
-  opacity: 0.62;
+  opacity: 0.72;
   transition: background 180ms ease;
 }
 

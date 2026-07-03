@@ -351,6 +351,11 @@ export class Board {
     this.mobileToolbarOpen = false;
   }
 
+  @HostListener('document:keydown.escape')
+  closeMobileToolbarOnEscape(): void {
+    this.mobileToolbarOpen = false;
+  }
+
   @HostListener('window:resize')
   handleViewportResize(): void {
     this.isMobileViewport = window.innerWidth < 640;

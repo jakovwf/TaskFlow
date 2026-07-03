@@ -3,11 +3,11 @@
   [style.borderTopColor]="list.accentColor || null"
   [style.borderTopWidth]="list.accentColor ? '4px' : null"
 >
-  <div class="mb-3 shrink-0 grid gap-2 sm:grid-cols-[1fr_auto]">
+  <div class="board-list-header mb-3 shrink-0 grid gap-2 sm:grid-cols-[1fr_auto]">
     <div class="min-w-0">
       <input
         type="text"
-        class="input input-bordered input-sm w-full bg-base-100/80 font-semibold transition focus:border-primary focus:bg-base-100"
+        class="input input-bordered input-sm w-full font-semibold transition focus:border-primary"
         aria-label="Naziv liste"
         [(ngModel)]="editableListTitle"
         [disabled]="renaming"
@@ -25,7 +25,7 @@
     <div class="flex items-center justify-end gap-1 sm:flex-col sm:items-end">
       <details #colorPicker class="dropdown dropdown-end">
         <summary class="btn btn-ghost btn-sm" aria-label="Boja liste">Boja</summary>
-        <div class="dropdown-content z-30 mt-2 grid w-44 grid-cols-4 gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl">
+        <div class="list-color-picker dropdown-content z-30 mt-2 grid w-44 grid-cols-4 gap-2 rounded-box border border-base-300 p-3 shadow-xl">
           @for (color of accentColors; track color.label) {
             <button
               type="button"
@@ -46,7 +46,7 @@
   </div>
 
   <div
-    class="card-drop-zone mb-4 min-h-24 flex-1 space-y-3 overflow-y-auto overscroll-contain rounded-lg bg-base-200/60 p-2"
+    class="card-drop-zone mb-4 min-h-24 flex-1 space-y-3 overflow-y-auto overscroll-contain rounded-lg p-2"
     cdkDropList
     [id]="list.id"
     [cdkDropListData]="list.cards ?? emptyCards"
@@ -70,7 +70,7 @@
     }
   </div>
 
-  <div class="grid shrink-0 gap-2 border-t border-base-300 pt-3">
+  <div class="add-card-panel grid shrink-0 gap-2 border-t border-base-300 pt-3">
     <input
       type="text"
       class="input input-bordered input-sm"

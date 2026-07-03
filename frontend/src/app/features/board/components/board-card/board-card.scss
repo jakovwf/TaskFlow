@@ -1,12 +1,12 @@
 .board-card-tile {
   border-top-style: solid;
-  background: hsl(var(--b1));
+  background: #ffffff;
   border-color: hsl(var(--bc) / 0.14);
   box-shadow: 0 8px 20px rgb(15 23 42 / 0.1);
 }
 
 .board-card-tile.is-done {
-  background: hsl(var(--b2) / 0.72);
+  background: #f1f5f9;
   opacity: 0.78;
 }
 

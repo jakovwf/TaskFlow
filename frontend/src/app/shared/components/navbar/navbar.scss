@@ -1,0 +1,22 @@
+.notification-badge {
+  display: inline-flex;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid hsl(var(--b1));
+  border-radius: 999px;
+  background: hsl(var(--p));
+  padding-inline: 0.2rem;
+  color: hsl(var(--pc));
+  font-size: 0.625rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgb(15 23 42 / 0.18);
+}
+
+.notification-tab-active .notification-badge {
+  border-color: hsl(var(--p));
+  background: #ffffff;
+  color: hsl(var(--p));
+}

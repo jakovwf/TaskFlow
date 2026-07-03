@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Attachment, BoardMember, Card, CardComment, CardLabel, CardMember, Label, User } from '../../../../store/models';
 import { CARD_COVER_COLORS } from '../../appearance-options';
@@ -10,8 +10,10 @@ import { CARD_COVER_COLORS } from '../../appearance-options';
   templateUrl: './card-detail.html',
   styleUrl: './card-detail.scss',
 })
-export class CardDetailComponent implements OnChanges {
+export class CardDetailComponent implements OnChanges, OnDestroy {
   private readonly formBuilder = inject(FormBuilder);
+  private previousBodyOverflow = '';
+  private pageScrollLocked = false;
 
   @Input() card: Card | null = null;
   @Input() comments: CardComment[] = [];
@@ -73,6 +75,8 @@ export class CardDetailComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if ('card' in changes) {
+      this.setPageScrollLocked(Boolean(this.card));
+
       if (!this.card) {
         this.resetCommentEditor();
         this.newCommentContent = '';
@@ -98,6 +102,10 @@ export class CardDetailComponent implements OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.setPageScrollLocked(false);
+  }
+
   emitClose(): void {
     this.close.emit();
   }
@@ -107,6 +115,22 @@ export class CardDetailComponent implements OnChanges {
     if (this.card) {
       this.emitClose();
     }
+  }
+
+  private setPageScrollLocked(locked: boolean): void {
+    if (typeof document === 'undefined' || locked === this.pageScrollLocked) {
+      return;
+    }
+
+    if (locked) {
+      this.previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      this.pageScrollLocked = true;
+      return;
+    }
+
+    document.body.style.overflow = this.previousBodyOverflow;
+    this.pageScrollLocked = false;
   }
 
   emitSave(): void {

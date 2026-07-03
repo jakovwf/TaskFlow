@@ -1,6 +1,6 @@
 @if (card) {
-  <div class="modal modal-open items-start overflow-hidden bg-slate-950/40 p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center sm:p-6" (click)="emitClose()">
-    <div class="modal-box flex h-[calc(100dvh-7rem)] max-h-[calc(100dvh-7rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-0 shadow-2xl sm:h-[calc(100dvh-3rem)] sm:max-h-[calc(100dvh-3rem)]" (click)="$event.stopPropagation()">
+  <div class="card-detail-overlay" role="dialog" aria-modal="true" aria-label="Detalji kartice" (click)="emitClose()">
+    <div class="card-detail-panel" (click)="$event.stopPropagation()">
       <button
         type="button"
         class="btn btn-circle btn-sm absolute right-3 top-3 z-20 border border-base-300 bg-base-100 shadow-sm hover:bg-base-200"
@@ -10,11 +10,11 @@
         x
       </button>
 
-      <header class="shrink-0 border-b border-base-300 bg-base-100 p-5 pr-14 sm:p-6 sm:pr-16">
+      <header class="card-detail-header shrink-0 border-b border-base-300 p-5 pr-14 sm:p-6 sm:pr-16">
         <h2 class="mt-1 text-xl font-bold">Kartica</h2>
       </header>
 
-      <main class="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-base-100 px-5 py-4 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-5 sm:pb-6">
+      <main class="card-detail-content min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-5 sm:pb-6">
       <form class="grid gap-3" [formGroup]="form" (ngSubmit)="emitSave()">
         <label class="form-control">
           <span class="label-text mb-1">Naslov</span>
@@ -493,13 +493,5 @@
       </main>
     </div>
 
-    <button
-      type="button"
-      class="modal-backdrop"
-      aria-label="Zatvori detalje kartice"
-      (click)="emitClose()"
-    >
-      close
-    </button>
   </div>
 }

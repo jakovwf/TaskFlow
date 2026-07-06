@@ -109,9 +109,3 @@
   background: #ffffff;
   box-shadow: 0 3px 10px rgb(15 23 42 / 0.06);
 }
-
-.load-more-button:hover:not(:disabled) {
-  border-color: hsl(var(--p));
-  background: hsl(var(--p));
-  color: hsl(var(--pc));
-}

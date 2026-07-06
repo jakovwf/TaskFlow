@@ -9,6 +9,11 @@
   flex: 0 0 auto;
 }
 
+.board-members-button:hover {
+  border-color: color-mix(in srgb, hsl(var(--p)) 82%, #000000);
+  background: color-mix(in srgb, hsl(var(--p)) 82%, #000000);
+}
+
 .board-action-menu-wrapper {
   position: relative;
   z-index: 10001;

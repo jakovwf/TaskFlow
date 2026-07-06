@@ -23,7 +23,18 @@
         <div class="alert alert-success text-sm">{{ successMessage }}</div>
       }
 
-      @if (invite) {
+      @if (acceptedBoardId) {
+        <div class="tf-card bg-base-100 p-4 text-center">
+          <p class="text-sm text-base-content/60">Sada imaš pristup boardu:</p>
+          <p class="mt-1 text-xl font-semibold">{{ acceptedBoardTitle }}</p>
+          <div class="mt-4 flex flex-col gap-2 sm:flex-row">
+            <button type="button" class="btn btn-primary flex-1" (click)="openAcceptedBoard()">Otvori board</button>
+            <button type="button" class="btn btn-outline flex-1" (click)="goHome()">Nazad na početnu</button>
+          </div>
+        </div>
+      }
+
+      @if (invite && !acceptedBoardId) {
         <div class="tf-card bg-base-100 p-4">
           <p class="text-sm text-base-content/60">Board</p>
           <p class="text-xl font-semibold">{{ invite.board?.title ?? 'Board' }}</p>

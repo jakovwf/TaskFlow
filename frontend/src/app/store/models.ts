@@ -73,6 +73,10 @@ export interface BoardInvite {
 export interface AcceptInviteResponse {
   invite: BoardInvite;
   boardMember: BoardMember;
+  boardId: string;
+  boardTitle: string;
+  workspaceId?: string;
+  workspaceName?: string;
 }
 
 export type ActivityType =

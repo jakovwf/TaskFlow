@@ -10,6 +10,7 @@ import {
   BoardMemberRole,
   InviteStatus,
   NotificationType,
+  WorkspaceMemberRole,
 } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { ActivityService } from '../activity/activity.service';
@@ -125,27 +126,37 @@ export class InvitesService {
 
   async accept(token: string, currentUser: CurrentUser) {
     const invite = await this.findInviteByToken(token);
-    await this.ensureInviteCanBeUsed(invite, currentUser);
-
-    const existingMember = await this.prisma.boardMember.findUnique({
-      where: {
-        boardId_userId: {
-          boardId: invite.boardId,
-          userId: currentUser.userId,
-        },
-      },
-    });
-
-    if (existingMember) {
-      throw new BadRequestException('User is already a board member');
-    }
+    await this.ensureInviteCanBeAccepted(invite, currentUser);
+    const isFirstAcceptance = invite.status === InviteStatus.PENDING;
 
     const result = await this.prisma.$transaction(async (tx) => {
-      const boardMember = await tx.boardMember.create({
-        data: {
+      const boardMember = await tx.boardMember.upsert({
+        where: {
+          boardId_userId: {
+            boardId: invite.boardId,
+            userId: currentUser.userId,
+          },
+        },
+        update: {},
+        create: {
           boardId: invite.boardId,
           userId: currentUser.userId,
-          role: BoardMemberRole.MEMBER,
+          role: invite.role,
+        },
+      });
+
+      await tx.workspaceMember.upsert({
+        where: {
+          workspaceId_userId: {
+            workspaceId: invite.board.workspace.id,
+            userId: currentUser.userId,
+          },
+        },
+        update: {},
+        create: {
+          workspaceId: invite.board.workspace.id,
+          userId: currentUser.userId,
+          role: WorkspaceMemberRole.MEMBER,
         },
       });
 
@@ -161,12 +172,14 @@ export class InvitesService {
       };
     });
 
-    await this.activityService.logActivity({
-      type: ActivityType.MEMBER_JOINED,
-      boardId: invite.boardId,
-      userId: currentUser.userId,
-      payload: { email: currentUser.email },
-    });
+    if (isFirstAcceptance) {
+      await this.activityService.logActivity({
+        type: ActivityType.MEMBER_JOINED,
+        boardId: invite.boardId,
+        userId: currentUser.userId,
+        payload: { email: currentUser.email },
+      });
+    }
 
     const user = await this.prisma.user.findUnique({
       where: { id: currentUser.userId },
@@ -181,7 +194,7 @@ export class InvitesService {
       select: { userId: true },
     });
 
-    if (user && owner) {
+    if (isFirstAcceptance && user && owner) {
       await this.notificationsService.createNotification({
         userId: owner.userId,
         type: NotificationType.MEMBER_JOINED,
@@ -190,7 +203,7 @@ export class InvitesService {
       });
     }
 
-    if (user) {
+    if (isFirstAcceptance && user) {
       this.appGateway.emitToBoard(invite.boardId, 'member:joined', {
         user,
         role: result.boardMember.role,
@@ -198,7 +211,13 @@ export class InvitesService {
       });
     }
 
-    return result;
+    return {
+      ...result,
+      boardId: invite.board.id,
+      boardTitle: invite.board.title,
+      workspaceId: invite.board.workspace.id,
+      workspaceName: invite.board.workspace.name,
+    };
   }
 
   async decline(token: string, currentUser: CurrentUser) {
@@ -246,6 +265,21 @@ export class InvitesService {
     }
   }
 
+  private async ensureInviteCanBeAccepted(
+    invite: Awaited<ReturnType<InvitesService['findInviteByToken']>>,
+    currentUser: CurrentUser,
+  ) {
+    if (invite.invitedEmail.toLowerCase() !== currentUser.email.toLowerCase()) {
+      throw new ForbiddenException('Invite email does not match current user');
+    }
+
+    if (invite.status === InviteStatus.ACCEPTED) {
+      return;
+    }
+
+    await this.ensureInviteCanBeUsed(invite, currentUser);
+  }
+
   private async sendInviteEmail(
     invitedEmail: string,
     boardTitle: string,
@@ -284,6 +318,12 @@ export class InvitesService {
       select: {
         id: true,
         title: true,
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     },
     invitedBy: {

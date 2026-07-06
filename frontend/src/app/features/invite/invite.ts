@@ -7,6 +7,7 @@ import { distinctUntilChanged, finalize, map, take } from 'rxjs';
 import { AuthService } from '../../core/services/auth';
 import { InviteService } from '../../core/services/invite';
 import { loadMyBoards } from '../../store/boards/boards.actions';
+import { loadWorkspaces } from '../../store/workspaces/workspaces.actions';
 import { BoardInvite } from '../../store/models';
 
 @Component({
@@ -29,6 +30,8 @@ export class Invite {
   actionLoading = false;
   error: string | null = null;
   successMessage: string | null = null;
+  acceptedBoardId: string | null = null;
+  acceptedBoardTitle: string | null = null;
 
   constructor() {
     this.route.paramMap
@@ -78,15 +81,27 @@ export class Invite {
       )
       .subscribe({
         next: (response) => {
-          const boardId = response.invite.board?.id ?? this.invite?.board?.id;
+          const boardId = response.boardId ?? response.invite.board?.id ?? this.invite?.board?.id;
 
           this.store.dispatch(loadMyBoards());
-          this.successMessage = 'Invite je prihvacen.';
+          this.store.dispatch(loadWorkspaces());
+          this.acceptedBoardId = boardId ?? null;
+          this.acceptedBoardTitle = response.boardTitle ?? response.invite.board?.title ?? this.invite?.board?.title ?? 'Board';
+          this.successMessage = 'Pozivnica je prihvaćena.';
           this.cdr.markForCheck();
-          void this.router.navigate(boardId ? ['/b', boardId] : ['/home']);
         },
         error: (error: unknown) => this.handleInviteActionError(error, 'Invite nije prihvacen.'),
       });
+  }
+
+  openAcceptedBoard(): void {
+    if (this.acceptedBoardId) {
+      void this.router.navigate(['/b', this.acceptedBoardId]);
+    }
+  }
+
+  goHome(): void {
+    void this.router.navigate(['/home']);
   }
 
   declineInvite(): void {

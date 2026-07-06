@@ -41,14 +41,14 @@
 }
 
 .member-row {
-  border-color: hsl(var(--bc) / 0.1);
+  border-color: #e2e8f0;
   background: #ffffff;
   box-shadow: 0 3px 12px rgb(15 23 42 / 0.06);
 }
 
 .invites-empty-state {
   padding: 0.875rem 1rem;
-  border: 1px solid hsl(var(--bc) / 0.09);
+  border: 1px solid #e2e8f0;
   border-radius: var(--rounded-box, 1rem);
   background: #f8fafc;
 }

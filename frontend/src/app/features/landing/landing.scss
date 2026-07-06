@@ -57,7 +57,7 @@
   position: relative;
   margin-inline: auto;
   width: min(100%, 760px);
-  border: 1px solid hsl(var(--bc) / 0.12);
+  border: 1px solid #e2e8f0;
   border-radius: 1rem;
   background: hsl(var(--b1) / 0.9);
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
@@ -76,14 +76,14 @@
 
 .mock-column {
   min-width: 0;
-  border: 1px solid hsl(var(--bc) / 0.1);
+  border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   background: hsl(var(--b2) / 0.88);
   padding: 0.75rem;
 }
 
 .mock-card {
-  border: 1px solid hsl(var(--bc) / 0.1);
+  border: 1px solid #e2e8f0;
   border-radius: 0.65rem;
   background: hsl(var(--b1));
   padding: 0.75rem;

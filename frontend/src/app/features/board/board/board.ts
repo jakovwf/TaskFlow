@@ -477,7 +477,11 @@ export class Board {
       });
   }
 
-  removeList(listId: string): void {
+  async removeList(listId: string): Promise<void> {
+    if (!(await this.confirmModalService.confirm('Brisanje liste', 'Da li ste sigurni da želite da obrišete listu?'))) {
+      return;
+    }
+
     this.store.dispatch(deleteList({ listId }));
   }
 

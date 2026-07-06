@@ -20,6 +20,7 @@ export class BoardActivity {
 
   boardId: string | null = null;
   activities: BoardActivityItem[] = [];
+  visibleActivityCount = 10;
   loading = false;
   error: string | null = null;
 
@@ -88,10 +89,15 @@ export class BoardActivity {
     }
   }
 
+  loadMoreActivities(): void {
+    this.visibleActivityCount += 10;
+  }
+
   private loadActivity(boardId: string): void {
     this.loading = true;
     this.error = null;
     this.activities = [];
+    this.visibleActivityCount = 10;
     this.cdr.markForCheck();
 
     this.boardService

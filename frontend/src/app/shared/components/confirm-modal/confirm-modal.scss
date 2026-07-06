@@ -1,0 +1,14 @@
+.confirm-modal {
+  z-index: 3000;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.confirm-modal-box {
+  margin: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgb(15 23 42 / 0.24);
+}

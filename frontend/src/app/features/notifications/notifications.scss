@@ -1,6 +1,6 @@
 .notification-item {
   position: relative;
-  border-color: hsl(var(--bc) / 0.1);
+  border-color: #e2e8f0;
   box-shadow: 0 3px 12px rgb(15 23 42 / 0.06);
   background: #ffffff;
   transition: border-color 150ms ease, background-color 150ms ease;
@@ -53,7 +53,7 @@
 }
 
 .mark-all-button:disabled {
-  border: 1px solid hsl(var(--bc) / 0.08);
+  border: 1px solid #e2e8f0;
   background: #f8fafc;
   color: hsl(var(--bc) / 0.58);
   opacity: 1;

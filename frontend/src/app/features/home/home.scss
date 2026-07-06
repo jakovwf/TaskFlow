@@ -30,17 +30,30 @@
   box-shadow: 0 6px 18px hsl(var(--p) / 0.1);
 }
 
-.workspace-panel { overflow: visible; }
+.workspace-panel {
+  position: relative;
+  overflow: visible;
+  border-color: #e2e8f0;
+  background: #ffffff;
+}
+
+.workspace-panel.is-menu-open {
+  z-index: 110;
+}
 
 .workspace-header { border-bottom-color: hsl(var(--p) / 0.11); }
 
 .home-board-card {
   position: relative;
-  overflow: hidden;
-  border-color: hsl(var(--bc) / 0.1);
+  overflow: visible;
+  border-color: #e2e8f0;
   box-shadow: 0 5px 16px rgb(15 23 42 / 0.07);
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
   background: #ffffff;
+}
+
+.home-board-card.is-menu-open {
+  z-index: 100;
 }
 
 .home-board-card::before {

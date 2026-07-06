@@ -22,7 +22,7 @@
 
   @if (activities.length > 0) {
     <ul class="space-y-3">
-      @for (activity of activities; track activity.id) {
+      @for (activity of activities.slice(0, visibleActivityCount); track activity.id) {
         <li class="tf-card p-4">
           <div class="flex gap-3">
             <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary"></div>
@@ -46,6 +46,13 @@
         </li>
       }
     </ul>
+    @if (visibleActivityCount < activities.length) {
+      <div class="mt-5 flex justify-center">
+        <button type="button" class="btn btn-outline bg-white" (click)="loadMoreActivities()">
+          Učitaj još aktivnosti
+        </button>
+      </div>
+    }
   } @else if (!loading && !error) {
     <div class="tf-empty text-sm">
       Nema aktivnosti za ovaj board.

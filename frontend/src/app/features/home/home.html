@@ -65,7 +65,7 @@
       @if (workspaces.length > 0) {
         <section class="space-y-6">
           @for (workspace of workspaces; track workspace.id) {
-            <article class="workspace-panel card tf-panel">
+            <article class="workspace-panel card tf-panel" [class.is-menu-open]="activeDropdownId === 'ws-' + workspace.id">
               <div class="card-body gap-4 p-4 sm:p-5">
                 <header class="workspace-header flex flex-wrap items-center justify-between gap-3 border-b border-base-300 pb-3">
                   @if (editingWorkspaceId === workspace.id) {
@@ -109,7 +109,7 @@
                   @if (workspaceBoards.length > 0) {
                     <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
                       @for (board of workspaceBoards; track board.id) {
-                        <article class="home-board-card tf-card min-w-0 cursor-pointer p-4" role="link" tabindex="0" (click)="openBoard(board.id)" (keydown.enter)="openBoard(board.id)">
+                        <article class="home-board-card tf-card min-w-0 cursor-pointer p-4" [class.is-menu-open]="activeDropdownId === 'board-' + board.id" role="link" tabindex="0" (click)="openBoard(board.id)" (keydown.enter)="openBoard(board.id)">
                           @if (editingBoardId === board.id) {
                             <form class="grid gap-2" [formGroup]="boardEditForm" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" (ngSubmit)="saveBoardEdit()">
                               <input type="text" formControlName="title" class="input input-bordered input-sm w-full" placeholder="Naziv boarda" />

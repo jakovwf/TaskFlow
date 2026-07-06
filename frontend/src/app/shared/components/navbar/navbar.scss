@@ -50,6 +50,7 @@
   font-weight: 800;
   line-height: 1;
   box-shadow: 0 2px 5px rgb(15 23 42 / 0.18);
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
 }
 
 .notification-icon-wrap {
@@ -113,8 +114,10 @@
   }
 }
 
-.notification-tab-active .notification-badge {
-  border-color:  #2563eb;
+.notification-tab-active .notification-badge,
+.nav-notifications:hover .notification-badge,
+.nav-notifications:active .notification-badge {
+  border-color: #2563eb;
   background: #ffffff;
-  color:  #2563eb;
+  color: #2563eb;
 }

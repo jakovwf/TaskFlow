@@ -1,4 +1,76 @@
-.tf-card {
-  border-color: #e2e8f0;
+.activity-card {
+  border: 1px solid #dbe3ee;
+  border-radius: 0.85rem;
   background: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 5px 16px rgb(15 23 42 / 0.06);
+}
+
+.activity-card-content {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.activity-marker {
+  width: 0.6rem;
+  height: 0.6rem;
+  flex: 0 0 auto;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: hsl(var(--p));
+  box-shadow: 0 0 0 4px hsl(var(--p) / 0.1);
+}
+
+.activity-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.activity-type-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid hsl(var(--p) / 0.2);
+  border-radius: 999px;
+  background: hsl(var(--p) / 0.08);
+  padding: 0.2rem 0.55rem;
+  color: hsl(var(--p));
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.035em;
+}
+
+.activity-message {
+  margin-top: 0.55rem;
+  color: hsl(var(--bc) / 0.88);
+  font-size: 0.925rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.activity-date {
+  color: hsl(var(--bc) / 0.5);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .activity-card {
+    padding: 1.1rem 1.2rem;
+  }
+
+  .activity-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .activity-date {
+    padding-top: 0.15rem;
+    text-align: right;
+  }
 }

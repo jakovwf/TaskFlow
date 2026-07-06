@@ -107,7 +107,7 @@
 
                 @if (boardsForWorkspace(boards, workspace.id); as workspaceBoards) {
                   @if (workspaceBoards.length > 0) {
-                    <div class="workspace-board-grid grid grid-cols-2 gap-4" [class.is-paginated]="workspaceBoards.length > 4">
+                    <div class="workspace-board-grid grid grid-cols-1 gap-4 sm:grid-cols-2" [class.is-paginated]="workspaceBoards.length > 4">
                       @for (board of visibleBoardsForWorkspace(boards, workspace.id); track board.id) {
                         <article class="home-board-card tf-card min-w-0 cursor-pointer p-4" [class.is-editing]="editingBoardId === board.id" [class.is-menu-open]="activeDropdownId === 'board-' + board.id" role="link" tabindex="0" (click)="openBoard(board.id)" (keydown.enter)="openBoard(board.id)">
                           @if (editingBoardId === board.id) {
@@ -120,11 +120,11 @@
                               </div>
                             </form>
                           } @else {
-                            <h3 class="truncate font-semibold">{{ board.title }}</h3>
+                            <h3 class="home-board-title font-semibold">{{ board.title }}</h3>
                             @if (board.description) {
-                              <p class="mt-1 line-clamp-2 text-sm text-base-content/70">{{ board.description }}</p>
+                              <p class="home-board-description mt-1 line-clamp-2 text-sm text-base-content/70">{{ board.description }}</p>
                             }
-                            <div class="mt-5 flex items-center justify-between gap-2 border-t border-base-300/70 pt-2.5">
+                            <div class="home-board-footer flex items-center justify-between gap-2 border-t border-base-300/70 pt-2.5">
                               <span class="open-board-chip">Otvori board <span aria-hidden="true">→</span></span>
                               <div class="relative" (click)="$event.stopPropagation()">
                                 <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za board" (click)="toggleDropdown('board-' + board.id, $event)">...</button>

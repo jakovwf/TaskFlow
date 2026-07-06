@@ -1,5 +1,5 @@
 <main class="tf-page tf-page-narrow">
-  <header class="tf-hero-card mb-5 sm:p-6">
+  <header class="notifications-header tf-hero-card mb-5 sm:p-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
         
@@ -7,7 +7,7 @@
         <p class="mt-2 text-base-content/70">Pregled sistemskih obavestenja za tvoj nalog.</p>
       </div>
 
-      <button type="button" class="mark-all-button btn btn-ghost btn-sm" [disabled]="(loading$ | async) || !(unreadCount$ | async)" (click)="markAllAsRead()">
+      <button type="button" class="mark-all-button btn btn-outline btn-sm" [disabled]="(loading$ | async) || !(unreadCount$ | async)" (click)="markAllAsRead()">
         Označi sve kao pročitano
       </button>
     </div>
@@ -39,16 +39,16 @@
                 </span>
                 <div class="min-w-0">
                 <div class="mb-1.5 flex flex-wrap items-center gap-1.5">
-                  <span class="notification-type badge badge-outline badge-sm">{{ notificationLabel(notification) }}</span>
+                  <span class="notification-type notification-pill">{{ notificationLabel(notification) }}</span>
                   @if (notification.isRead) {
-                    <span class="read-badge badge badge-ghost badge-sm">Pročitano</span>
+                    <span class="read-badge notification-pill">Pročitano</span>
                   } @else {
-                    <span class="badge badge-primary badge-sm">Novo</span>
+                    <span class="new-badge notification-pill">Novo</span>
                   }
                 </div>
-                <p class="text-sm font-medium">{{ notification.message }}</p>
+                <p class="notification-message">{{ notification.message }}</p>
                 @if (notification.createdAt) {
-                  <p class="mt-1 text-xs text-base-content/60">
+                  <p class="notification-date">
                     {{ notification.createdAt | date: 'short' }}
                   </p>
                 }

@@ -23,21 +23,21 @@
   @if (activities.length > 0) {
     <ul class="space-y-3">
       @for (activity of activities.slice(0, visibleActivityCount); track activity.id) {
-        <li class="tf-card p-4">
-          <div class="flex gap-3">
-            <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary"></div>
+        <li class="activity-card">
+          <div class="activity-card-content">
+            <span class="activity-marker" aria-hidden="true"></span>
             <div class="min-w-0 flex-1">
-              <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p class="text-sm">
+              <div class="activity-layout">
+                <div class="min-w-0">
+                  <span class="activity-type-badge">{{ activity.type }}</span>
+                  <p class="activity-message">
                     <span class="font-semibold">
                       {{ activity.user?.displayName ?? activity.user?.email ?? 'Korisnik' }}
                     </span>
                     {{ describeActivity(activity) }}
                   </p>
-                  <p class="mt-1 text-xs text-base-content/60">{{ activity.type }}</p>
                 </div>
-                <time class="text-xs text-base-content/60">
+                <time class="activity-date" [attr.datetime]="activity.createdAt">
                   {{ activity.createdAt | date: 'short' }}
                 </time>
               </div>

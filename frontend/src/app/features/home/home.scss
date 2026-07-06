@@ -66,7 +66,22 @@
 }
 
 .home-board-card:not(.is-editing) {
+  display: flex;
+  flex-direction: column;
   height: 10rem;
+}
+
+.home-board-title,
+.home-board-description {
+  overflow-wrap: anywhere;
+}
+
+.home-board-title {
+  line-height: 1.4;
+}
+
+.home-board-footer {
+  margin-top: auto;
 }
 
 .home-board-card.is-menu-open {
@@ -119,6 +134,20 @@
 }
 
 @media (max-width: 639px) {
+  .workspace-board-grid.is-paginated {
+    min-height: 0;
+    grid-template-rows: none;
+  }
+
+  .home-board-card:not(.is-editing) {
+    min-height: 10rem;
+    height: auto;
+  }
+
+  .home-board-footer {
+    margin-top: 1.25rem;
+  }
+
   .board-empty-state {
     align-items: flex-start;
     flex-direction: column;

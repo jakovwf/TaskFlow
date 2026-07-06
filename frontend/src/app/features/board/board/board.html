@@ -104,16 +104,18 @@
                 type="button"
                 class="board-more-button btn btn-ghost btn-sm"
                 aria-label="Dodatne board akcije"
+                aria-haspopup="menu"
                 [attr.aria-expanded]="mobileToolbarOpen"
                 (click)="toggleMobileToolbar($event)"
               >
                 <span aria-hidden="true">&#8943;</span>
               </button>
               @if (mobileToolbarOpen) {
-                <div class="board-action-menu" (click)="$event.stopPropagation()">
+                <div class="board-action-menu" role="menu" aria-label="Dodatne board akcije" (click)="$event.stopPropagation()">
                   <button
                     type="button"
                     class="board-menu-action"
+                    role="menuitem"
                     [disabled]="loading$ | async"
                     (click)="startBoardEdit(board)"
                   >
@@ -122,6 +124,7 @@
                   <button
                     type="button"
                     class="board-delete-action"
+                    role="menuitem"
                     [disabled]="loading$ | async"
                     (click)="deleteCurrentBoard(board.id)"
                   >

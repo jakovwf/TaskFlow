@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://razvoj-web-aplikacija.onrender.com',
-  socketUrl: 'https://razvoj-web-aplikacija.onrender.com',
+  apiUrl: '/api',
+  socketUrl: '',
   cloudinaryCloudName: 'dkdgy6r9c',
   cloudinaryUploadPreset: 'ml_default',
 };

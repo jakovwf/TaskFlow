@@ -19,7 +19,7 @@ export class SocketService {
     }
 
     this.disconnect();
-    this.socket = io(environment.apiUrl, {
+    this.socket = io(environment.socketUrl || undefined, {
       auth: { token: authToken },
       transports: ['websocket'],
     });

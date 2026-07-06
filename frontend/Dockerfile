@@ -11,7 +11,9 @@ RUN npm run build -- --configuration=$BUILD_CONFIGURATION
 
 FROM nginx:alpine
 
+ARG NGINX_CONF=nginx.production.conf
+
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY ${NGINX_CONF} /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

@@ -1,5 +1,6 @@
 import { EntityState, createEntityAdapter } from '@ngrx/entity';
 import { createReducer, on } from '@ngrx/store';
+import { logout } from '../auth/auth.actions';
 import { Board, BoardList, Card } from '../models';
 import {
   addBoard,
@@ -79,7 +80,6 @@ export const boardsReducer = createReducer(
   initialBoardsState,
   on(
     loadMyBoards,
-    loadBoard,
     createBoard,
     updateBoardDetails,
     deleteBoard,
@@ -91,6 +91,12 @@ export const boardsReducer = createReducer(
     deleteCard,
     (state) => ({ ...state, loading: true, error: null }),
   ),
+  on(loadBoard, (state) => ({
+    ...state,
+    selectedBoardId: null,
+    loading: true,
+    error: null,
+  })),
   on(loadMyBoardsSuccess, (state, { boards }) =>
     boardsAdapter.setAll(boards, { ...state, loading: false, error: null }),
   ),
@@ -246,6 +252,7 @@ export const boardsReducer = createReducer(
   ),
   on(updateBoard, (state, { board }) => boardsAdapter.upsertOne(board, state)),
   on(removeBoard, (state, { boardId }) => boardsAdapter.removeOne(boardId, state)),
+  on(logout, () => initialBoardsState),
 );
 
 function updateSelectedBoard(state: BoardsState, update: (board: Board) => Board): BoardsState {

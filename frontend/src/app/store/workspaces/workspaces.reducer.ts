@@ -1,5 +1,6 @@
 import { EntityState, createEntityAdapter } from '@ngrx/entity';
 import { createReducer, on } from '@ngrx/store';
+import { logout } from '../auth/auth.actions';
 import { Workspace } from '../models';
 import {
   createWorkspace,
@@ -52,4 +53,5 @@ export const workspacesReducer = createReducer(
     loading: false,
     error,
   })),
+  on(logout, () => initialWorkspacesState),
 );

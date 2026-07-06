@@ -75,12 +75,16 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(logout),
         tap(() => this.socketService.disconnect()),
-        exhaustMap(() =>
-          this.authService.logout().pipe(
+        exhaustMap(() => {
+          const logoutRequest$ = this.authService.getToken()
+            ? this.authService.logout()
+            : of(null);
+
+          return logoutRequest$.pipe(
             catchError(() => of(null)),
             tap(() => this.router.navigate(['/login'])),
-          ),
-        ),
+          );
+        }),
       ),
     { dispatch: false },
   );

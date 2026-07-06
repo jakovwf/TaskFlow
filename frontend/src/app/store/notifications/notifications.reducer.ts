@@ -1,5 +1,6 @@
 import { EntityState, createEntityAdapter } from '@ngrx/entity';
 import { createReducer, on } from '@ngrx/store';
+import { logout } from '../auth/auth.actions';
 import { Notification } from '../models';
 import {
   addNotification,
@@ -101,4 +102,5 @@ export const notificationsReducer = createReducer(
       total: state.total + (existingNotification ? 0 : 1),
     });
   }),
+  on(logout, () => initialNotificationsState),
 );

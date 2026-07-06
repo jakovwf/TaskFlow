@@ -78,12 +78,19 @@
           </div>
         </form>
       } @else {
+        @let cardStats = getBoardCardStats(board);
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div class="min-w-0">
             <h1 class="mt-1 text-3xl font-black tracking-tight">{{ board.title }}</h1>
             @if (board.description) {
               <p class="mt-2 max-w-2xl text-base-content/70">{{ board.description }}</p>
             }
+            <span
+              class="badge badge-ghost mt-3 whitespace-nowrap text-xs font-medium text-base-content/70"
+              [attr.title]="'Završenost boarda: ' + cardStats.percentage + '%'"
+            >
+              Završeno: {{ cardStats.done }}/{{ cardStats.total }}
+            </span>
           </div>
           <div class="hidden shrink-0 flex-wrap gap-2 lg:flex">
             <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">

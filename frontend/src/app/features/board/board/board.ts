@@ -569,6 +569,28 @@ export class Board {
     return this.boardBackgrounds.find((option) => option.value === (value ?? null))?.preview ?? null;
   }
 
+  getBoardCardStats(board: BoardModel): { total: number; done: number; percentage: number } {
+    const stats = (board.lists ?? []).reduce(
+      (acc, list) => {
+        const cards = list.cards ?? [];
+
+        acc.total += cards.length;
+        acc.done += cards.reduce(
+          (doneCount, card) => doneCount + (card.isDone ? 1 : 0),
+          0,
+        );
+
+        return acc;
+      },
+      { total: 0, done: 0 },
+    );
+
+    return {
+      ...stats,
+      percentage: stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0,
+    };
+  }
+
   removeCard(event: { cardId: string; listId: string }): void {
     this.store.dispatch(deleteCard({ cardId: event.cardId }));
     this.closeCard();

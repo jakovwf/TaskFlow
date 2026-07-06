@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CdkDragHandle } from '@angular/cdk/drag-drop';
 import { Card } from '../../../../store/models';
 
 @Component({
   selector: 'app-board-card',
-  imports: [],
+  imports: [CdkDragHandle],
   templateUrl: './board-card.html',
   styleUrl: './board-card.scss',
 })

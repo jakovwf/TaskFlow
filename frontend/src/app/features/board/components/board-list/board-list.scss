@@ -130,6 +130,8 @@
   scrollbar-color: hsl(var(--bc) / 0.22) transparent;
   scrollbar-width: thin;
   background: #f8fafc;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .card-drop-zone app-board-card {

@@ -1,9 +1,49 @@
 .board-card-tile {
+  position: relative;
   border-top-style: solid;
   background: #ffffff;
   border-color: #e2e8f0;
   box-shadow: 0 5px 14px rgb(15 23 42 / 0.08);
   transition: box-shadow 150ms ease, opacity 150ms ease;
+  touch-action: pan-y;
+}
+
+.card-drag-handle {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 2;
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: hsl(var(--bc) / 0.48);
+  cursor: grab;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.25rem;
+  line-height: 1;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.card-drag-handle:hover,
+.card-drag-handle:focus-visible {
+  background: hsl(var(--bc) / 0.07);
+  color: hsl(var(--bc) / 0.72);
+}
+
+.card-drag-handle:active {
+  cursor: grabbing;
+}
+
+.board-card-tile > :not(.card-drag-handle) {
+  padding-right: 1.75rem;
 }
 
 .board-card-tile.is-done {
@@ -30,4 +70,16 @@
   text-decoration: line-through;
   text-decoration-thickness: 1px;
   color: hsl(var(--bc) / 0.66);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-drag-handle {
+    opacity: 0.55;
+    transition: opacity 150ms ease, background-color 150ms ease, color 150ms ease;
+  }
+
+  .board-card-tile:hover .card-drag-handle,
+  .card-drag-handle:focus-visible {
+    opacity: 1;
+  }
 }

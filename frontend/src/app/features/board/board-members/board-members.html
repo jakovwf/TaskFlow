@@ -54,8 +54,8 @@
                     [disabled]="memberRoleLoadingUserId === member.userId || memberRemoveLoadingUserId === member.userId"
                     (change)="updateMemberRole(member, $any($event.target).value)"
                   >
-                    <option value="MEMBER">MEMBER</option>
-                    <option value="ADMIN">ADMIN</option>
+                    <option value="MEMBER">Član</option>
+                    <option value="ADMIN">Admin</option>
                   </select>
                   @if (memberRoleLoadingUserId === member.userId) {
                     <span class="loading loading-spinner loading-xs"></span>
@@ -72,7 +72,13 @@
                     Ukloni
                   </button>
                 } @else {
-                  <span class="badge badge-outline badge-lg">{{ member.role }}</span>
+                  <span class="badge badge-outline badge-lg">
+                    @switch (member.role) {
+                      @case ('OWNER') { Vlasnik }
+                      @case ('ADMIN') { Admin }
+                      @case ('MEMBER') { Član }
+                    }
+                  </span>
                 }
               </div>
             </li>
@@ -171,7 +177,13 @@
                 <div class="min-w-0">
                   <p class="truncate font-medium">{{ invite.invitedEmail }}</p>
                   <div class="mt-2 flex flex-wrap gap-2">
-                    <span class="badge badge-outline">{{ invite.role }}</span>
+                    <span class="badge badge-outline">
+                      @switch (invite.role) {
+                        @case ('OWNER') { Vlasnik }
+                        @case ('ADMIN') { Admin }
+                        @case ('MEMBER') { Član }
+                      }
+                    </span>
                     <span class="badge badge-ghost">{{ invite.status }}</span>
                   </div>
                   <a [routerLink]="['/invite', invite.token]" class="link link-primary text-xs">
@@ -199,8 +211,9 @@
           }
         </ul>
       } @else {
-        <div class="tf-empty text-sm">
-          Nema pozivnica na čekanju.
+        <div class="invites-empty-state">
+          <p class="text-sm font-medium">Nema pozivnica na čekanju.</p>
+          <p class="mt-1 text-xs text-base-content/55">Kada pošalješ pozivnicu, pojaviće se ovde.</p>
         </div>
       }
       </div>

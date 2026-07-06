@@ -35,7 +35,11 @@
             </p>
             <p>
               <span class="text-base-content/60">Role:</span>
-              {{ invite.role }}
+              @switch (invite.role) {
+                @case ('OWNER') { Vlasnik }
+                @case ('ADMIN') { Admin }
+                @case ('MEMBER') { Član }
+              }
             </p>
             <p>
               <span class="text-base-content/60">Status:</span>

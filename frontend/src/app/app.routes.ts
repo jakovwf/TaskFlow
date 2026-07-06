@@ -39,7 +39,7 @@ export const routes: Routes = [
     path: '',
     canActivate: [AuthGuard],
     children: [
-      { path: 'home', component: Home, data: { title: 'Dashboard | TaskFlow' } },
+      { path: 'home', component: Home, data: { title: 'Početna | TaskFlow' } },
       { path: 'w/:workspaceId', component: Workspace, data: { title: 'Workspace | TaskFlow' } },
       { path: 'b/:boardId', component: Board, data: { title: 'Board | TaskFlow' } },
       { path: 'b/:boardId/members', component: BoardMembers, data: { title: 'Članovi boarda | TaskFlow' } },

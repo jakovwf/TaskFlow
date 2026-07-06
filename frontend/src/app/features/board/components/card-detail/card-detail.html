@@ -231,7 +231,7 @@
 
       <section class="mt-6 border-t border-base-300 pt-4">
         <div class="mb-3 flex items-center justify-between gap-3">
-          <h3 class="text-lg font-semibold">Clanovi</h3>
+          <h3 class="text-lg font-semibold">Članovi</h3>
           @if (memberAssignmentSaving) {
             <span class="loading loading-spinner loading-sm text-primary"></span>
           }
@@ -271,8 +271,8 @@
             }
           </div>
         } @else {
-          <p class="tf-empty mb-4 p-3 text-sm">
-            Kartica nema dodeljene clanove.
+          <p class="mb-4 text-sm text-base-content/55">
+            Nema dodeljenih članova.
           </p>
         }
 
@@ -284,7 +284,7 @@
               [ngModelOptions]="{ standalone: true }"
               [disabled]="memberAssignmentSaving || availableBoardMembers().length === 0"
             >
-              <option value="">Dodaj clana</option>
+              <option value="">Dodaj člana</option>
               @for (member of availableBoardMembers(); track member.userId) {
                 <option [value]="member.userId">
                   {{ displayUser(member.user) }}{{ member.user?.email ? ' - ' + member.user?.email : '' }}

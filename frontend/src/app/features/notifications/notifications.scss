@@ -15,8 +15,10 @@
 }
 
 .mark-all-button:disabled {
-  background: transparent;
-  opacity: 0.38;
+  border: 1px solid hsl(var(--bc) / 0.08);
+  background: hsl(var(--b2) / 0.55);
+  color: hsl(var(--bc) / 0.58);
+  opacity: 1;
 }
 
 .load-more-button {

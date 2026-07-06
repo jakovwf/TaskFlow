@@ -3,47 +3,38 @@
   background: #ffffff;
 }
 
-.notification-item {
-  position: relative;
+.notification-card {
   border: 1px solid #dbe3ee;
+  border-radius: 0.85rem;
   background: #ffffff;
+  padding: 1rem;
   box-shadow: 0 5px 16px rgb(15 23 42 / 0.06);
-  transition: border-color 150ms ease, background-color 150ms ease;
 }
 
-.notification-item.is-unread {
-  border-left: 3px solid hsl(var(--p));
-  background: #ffffff;
+.notification-card-content {
+  display: flex;
+  gap: 0.8rem;
 }
 
-.notification-item.is-unread::after {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  width: 0.4rem;
-  height: 0.4rem;
+.notification-marker {
+  width: 0.6rem;
+  height: 0.6rem;
+  flex: 0 0 auto;
+  margin-top: 0.35rem;
   border-radius: 999px;
+  background: hsl(var(--bc) / 0.28);
+  box-shadow: 0 0 0 4px hsl(var(--bc) / 0.06);
+}
+
+.notification-card.is-unread .notification-marker {
   background: hsl(var(--p));
-  box-shadow: 0 0 0 3px hsl(var(--p) / 0.1);
-  content: '';
+  box-shadow: 0 0 0 4px hsl(var(--p) / 0.1);
 }
 
-.notification-icon {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  flex: none;
-  place-items: center;
-  border-radius: 0.65rem;
-  background: hsl(var(--p) / 0.1);
-  color: hsl(var(--p));
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.notification-icon svg {
-  width: 1rem;
-  height: 1rem;
+.notification-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .notification-pill {
@@ -77,6 +68,7 @@
 }
 
 .notification-message {
+  margin-top: 0.55rem;
   color: hsl(var(--bc) / 0.88);
   font-size: 0.9rem;
   font-weight: 600;
@@ -85,10 +77,18 @@
 }
 
 .notification-date {
-  margin-top: 0.3rem;
   color: hsl(var(--bc) / 0.5);
   font-size: 0.75rem;
   line-height: 1.4;
+  white-space: nowrap;
+}
+
+.notification-meta,
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
 .mark-all-button {
@@ -103,4 +103,27 @@
   background: #f8fafc;
   color: #64748b;
   opacity: 1;
+}
+
+@media (min-width: 640px) {
+  .notification-card {
+    padding: 1.1rem 1.2rem;
+  }
+
+  .notification-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .notification-meta,
+  .notification-actions {
+    align-items: flex-end;
+  }
+
+  .notification-date {
+    padding-top: 0.15rem;
+    text-align: right;
+  }
 }

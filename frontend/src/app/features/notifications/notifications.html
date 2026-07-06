@@ -2,7 +2,7 @@
   <header class="notifications-header tf-hero-card mb-5 sm:p-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        
+        <p class="tf-kicker">Notification center</p>
         <h1 class="mt-1 text-3xl font-black tracking-tight">Notifikacije</h1>
         <p class="mt-2 text-base-content/70">Pregled sistemskih obavestenja za tvoj nalog.</p>
       </div>
@@ -26,53 +26,53 @@
 
   @if (notifications$ | async; as notifications) {
     @if (notifications.length > 0) {
-      <ul class="space-y-2">
+      <ul class="space-y-3">
         @for (notification of notifications; track notification.id) {
-          <li class="notification-item tf-card p-3 sm:px-4" [class.is-unread]="!notification.isRead">
-            <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex min-w-0 items-start gap-3">
-                <span class="notification-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-                    <path d="M10 21h4" />
-                  </svg>
-                </span>
-                <div class="min-w-0">
-                <div class="mb-1.5 flex flex-wrap items-center gap-1.5">
-                  <span class="notification-type notification-pill">{{ notificationLabel(notification) }}</span>
-                  @if (notification.isRead) {
-                    <span class="read-badge notification-pill">Pročitano</span>
-                  } @else {
-                    <span class="new-badge notification-pill">Novo</span>
-                  }
-                </div>
-                <p class="notification-message">{{ notification.message }}</p>
-                @if (notification.createdAt) {
-                  <p class="notification-date">
-                    {{ notification.createdAt | date: 'short' }}
-                  </p>
-                }
-                </div>
-              </div>
+          <li class="notification-card" [class.is-unread]="!notification.isRead">
+            <div class="notification-card-content">
+              <span class="notification-marker" aria-hidden="true"></span>
+              <div class="min-w-0 flex-1">
+                <div class="notification-layout">
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <span class="notification-type notification-pill">{{ notificationLabel(notification) }}</span>
+                      @if (notification.isRead) {
+                        <span class="read-badge notification-pill">Pročitano</span>
+                      } @else {
+                        <span class="new-badge notification-pill">Novo</span>
+                      }
+                    </div>
+                    <p class="notification-message">{{ notification.message }}</p>
+                  </div>
 
-              <div class="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-end">
-                @if (inviteLink(notification); as link) {
-                  <a
-                    [routerLink]="link"
-                    class="btn btn-primary btn-xs"
-                    (click)="openInvite(notification)"
-                  >
-                    Otvori pozivnicu
-                  </a>
-                } @else if (notification.type === 'BOARD_INVITE') {
-                  <p class="text-xs text-base-content/60">Link pozivnice nije dostupan.</p>
-                }
+                  <div class="notification-meta">
+                    @if (notification.createdAt) {
+                      <time class="notification-date" [attr.datetime]="notification.createdAt">
+                        {{ notification.createdAt | date: 'short' }}
+                      </time>
+                    }
 
-                @if (!notification.isRead) {
-                  <button type="button" class="btn btn-outline btn-xs" [disabled]="loading$ | async" (click)="markAsRead(notification.id)">
-                    Označi kao pročitano
-                  </button>
-                }
+                    <div class="notification-actions">
+                      @if (inviteLink(notification); as link) {
+                        <a
+                          [routerLink]="link"
+                          class="btn btn-primary btn-xs"
+                          (click)="openInvite(notification)"
+                        >
+                          Otvori pozivnicu
+                        </a>
+                      } @else if (notification.type === 'BOARD_INVITE') {
+                        <p class="text-xs text-base-content/60">Link pozivnice nije dostupan.</p>
+                      }
+
+                      @if (!notification.isRead) {
+                        <button type="button" class="btn btn-outline btn-xs" [disabled]="loading$ | async" (click)="markAsRead(notification.id)">
+                          Označi kao pročitano
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </li>

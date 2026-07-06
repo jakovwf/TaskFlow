@@ -25,7 +25,7 @@
   padding-top: 0.85rem;
 }
 
-.workspace-board-grid.is-paginated {
+.workspace-board-grid {
   min-height: 21rem;
   grid-template-rows: repeat(2, 10rem);
   align-content: start;
@@ -142,9 +142,9 @@
 }
 
 @media (max-width: 639px) {
-  .workspace-board-grid.is-paginated {
-    min-height: 0;
-    grid-template-rows: none;
+  .workspace-board-grid {
+    min-height: 21rem;
+    grid-template-rows: repeat(2, 10rem);
   }
 
   .home-board-card:not(.is-editing) {

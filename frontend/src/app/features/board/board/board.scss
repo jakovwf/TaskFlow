@@ -30,6 +30,7 @@
   z-index: 10002;
   width: 12rem;
   max-width: calc(100vw - 2rem);
+  box-sizing: border-box;
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   background: #ffffff;
@@ -39,7 +40,10 @@
 
 .board-menu-action,
 .board-delete-action {
+  display: flex;
   width: 100%;
+  min-height: 2.5rem;
+  align-items: center;
   border-radius: 0.5rem;
   padding: 0.65rem 0.75rem;
   border: 0;
@@ -47,6 +51,8 @@
   text-align: left;
   font-size: 0.875rem;
   font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
   transition: background-color 150ms ease;
 }
 
@@ -202,6 +208,11 @@
 @media (max-width: 639px) {
   .board-header-panel {
     padding: 1rem;
+    transition: padding-bottom 150ms ease;
+  }
+
+  .board-header-panel.has-action-menu-open {
+    padding-bottom: 8rem;
   }
 
   .board-header-actions {
@@ -221,6 +232,13 @@
 
   .board-action-menu-wrapper {
     margin-left: auto;
+  }
+
+  .board-action-menu {
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: min(12rem, calc(100vw - 4rem));
+    max-width: none;
   }
 
   .board-scroll-shell::before,
@@ -261,6 +279,7 @@
 }
 .board-page {
   position: relative;
+  overflow: visible;
   border-radius: 1rem;
 }
 

@@ -28,7 +28,7 @@
       [style.background]="boardBackgroundPreview(board.backgroundColor)"
       aria-hidden="true"
     ></div>
-    <header class="board-header-panel tf-hero-card mb-5 sm:p-6">
+    <header class="board-header-panel tf-hero-card mb-5 sm:p-6" [class.has-action-menu-open]="mobileToolbarOpen">
       @if (editingBoardHeader) {
         <form class="board-edit-panel mb-4 grid max-w-2xl gap-3" [formGroup]="boardEditForm" (ngSubmit)="saveBoardEdit(board.id)">
           <input

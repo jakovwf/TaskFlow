@@ -1,0 +1,11 @@
+.member-row {
+  border-color: hsl(var(--bc) / 0.1);
+  box-shadow: 0 3px 12px rgb(15 23 42 / 0.06);
+}
+
+@media (max-width: 639px) {
+  .member-row select,
+  .member-row button {
+    min-height: 2.25rem;
+  }
+}

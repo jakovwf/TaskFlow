@@ -2,13 +2,13 @@
   <header class="tf-hero-card mb-5 sm:p-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <p class="tf-kicker">Inbox</p>
+        <p class="tf-kicker">Prijemno sanduče</p>
         <h1 class="mt-1 text-3xl font-black tracking-tight">Notifikacije</h1>
         <p class="mt-2 text-base-content/70">Pregled sistemskih obavestenja za tvoj nalog.</p>
       </div>
 
-      <button type="button" class="btn btn-outline btn-sm" [disabled]="(loading$ | async) || !(unreadCount$ | async)" (click)="markAllAsRead()">
-        Oznaci sve kao procitano
+      <button type="button" class="mark-all-button btn btn-ghost btn-sm" [disabled]="(loading$ | async) || !(unreadCount$ | async)" (click)="markAllAsRead()">
+        Označi sve kao pročitano
       </button>
     </div>
   </header>
@@ -26,17 +26,17 @@
 
   @if (notifications$ | async; as notifications) {
     @if (notifications.length > 0) {
-      <ul class="space-y-3">
+      <ul class="space-y-2">
         @for (notification of notifications; track notification.id) {
-          <li class="tf-card p-4">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <li class="notification-item tf-card p-3 sm:px-4">
+            <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
               <div class="min-w-0">
-                <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <span class="badge badge-outline">{{ notificationLabel(notification) }}</span>
+                <div class="mb-1.5 flex flex-wrap items-center gap-1.5">
+                  <span class="notification-type badge badge-outline badge-sm">{{ notificationLabel(notification) }}</span>
                   @if (notification.isRead) {
-                    <span class="badge badge-ghost">Procitano</span>
+                    <span class="read-badge badge badge-ghost badge-sm">Pročitano</span>
                   } @else {
-                    <span class="badge badge-primary">Novo</span>
+                    <span class="badge badge-primary badge-sm">Novo</span>
                   }
                 </div>
                 <p class="text-sm font-medium">{{ notification.message }}</p>
@@ -57,12 +57,12 @@
                     Otvori pozivnicu
                   </a>
                 } @else if (notification.type === 'BOARD_INVITE') {
-                  <p class="text-xs text-base-content/60">Invite link nije dostupan.</p>
+                  <p class="text-xs text-base-content/60">Link pozivnice nije dostupan.</p>
                 }
 
                 @if (!notification.isRead) {
                   <button type="button" class="btn btn-outline btn-xs" [disabled]="loading$ | async" (click)="markAsRead(notification.id)">
-                    Oznaci procitano
+                    Označi kao pročitano
                   </button>
                 }
               </div>
@@ -76,15 +76,15 @@
           <div class="mt-5 flex justify-center">
             <button
               type="button"
-              class="btn btn-outline btn-sm min-w-36"
+              class="load-more-button btn btn-outline btn-sm min-w-36"
               [disabled]="loadingMore$ | async"
               (click)="loadMore(page)"
             >
               @if (loadingMore$ | async) {
                 <span class="loading loading-spinner loading-xs"></span>
-                Ucitavanje...
+                Učitavanje...
               } @else {
-                Ucitaj jos
+                Učitaj još
               }
             </button>
           </div>

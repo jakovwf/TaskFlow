@@ -42,12 +42,9 @@
           <textarea formControlName="description" class="textarea textarea-bordered min-h-28"></textarea>
         </label>
 
-        <div class="flex flex-col gap-2 sm:flex-row">
+        <div class="flex">
           <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
             Sacuvaj opis
-          </button>
-          <button type="button" class="btn btn-error" [disabled]="loading" (click)="emitDelete()">
-            Obrisi karticu
           </button>
         </div>
       </form>
@@ -308,7 +305,7 @@
 
       <section class="mt-6 border-t border-base-300 pt-4">
         <div class="mb-3 flex items-center justify-between gap-3">
-          <h3 class="text-lg font-semibold">Attachments</h3>
+          <h3 class="text-lg font-semibold">Prilozi</h3>
           @if (attachmentUploading) {
             <span class="loading loading-spinner loading-sm text-primary"></span>
           }
@@ -481,6 +478,18 @@
             Nema komentara za ovu karticu.
           </p>
         }
+      </section>
+
+      <section class="danger-zone mt-8 border-t border-error/20 pt-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 class="text-sm font-semibold text-base-content/75">Brisanje kartice</h3>
+            <p class="mt-0.5 text-xs text-base-content/50">Ova radnja se ne može poništiti.</p>
+          </div>
+          <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading" (click)="emitDelete()">
+            Obriši karticu
+          </button>
+        </div>
       </section>
       </main>
     </div>

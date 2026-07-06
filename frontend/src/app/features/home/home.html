@@ -107,7 +107,7 @@
                   @if (workspaceBoards.length > 0) {
                     <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
                       @for (board of workspaceBoards; track board.id) {
-                        <article class="tf-card min-w-0 cursor-pointer p-4" role="link" tabindex="0" (click)="openBoard(board.id)" (keydown.enter)="openBoard(board.id)">
+                        <article class="home-board-card tf-card min-w-0 cursor-pointer p-4" role="link" tabindex="0" (click)="openBoard(board.id)" (keydown.enter)="openBoard(board.id)">
                           @if (editingBoardId === board.id) {
                             <form class="grid gap-2" [formGroup]="boardEditForm" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" (ngSubmit)="saveBoardEdit()">
                               <input type="text" formControlName="title" class="input input-bordered input-sm w-full" placeholder="Naziv boarda" />
@@ -122,7 +122,8 @@
                             @if (board.description) {
                               <p class="mt-1 line-clamp-2 text-sm text-base-content/70">{{ board.description }}</p>
                             }
-                            <div class="mt-4 flex items-center justify-end gap-2">
+                            <div class="mt-5 flex items-center justify-between gap-2 border-t border-base-300/70 pt-2.5">
+                              <span class="text-xs font-medium text-base-content/45">Otvori board</span>
                               <div class="relative" (click)="$event.stopPropagation()">
                                 <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za board" (click)="toggleDropdown('board-' + board.id, $event)">...</button>
                                 @if (activeDropdownId === 'board-' + board.id) {
@@ -138,8 +139,11 @@
                       }
                     </div>
                   } @else if (!(boardsLoading$ | async)) {
-                    <div class="alert">
-                      <span>Nema boardova</span>
+                    <div class="board-empty-state">
+                      <div>
+                        <p class="font-semibold">Nema boardova</p>
+                        <p class="mt-1 text-sm text-base-content/60">Dodaj prvi board u ovaj workspace.</p>
+                      </div>
                       <button type="button" class="btn btn-primary btn-sm" (click)="toggleBoardCreate(workspace.id)">Kreiraj board</button>
                     </div>
                   }

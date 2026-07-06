@@ -94,10 +94,10 @@
           </div>
           <div class="hidden shrink-0 flex-wrap gap-2 lg:flex">
             <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">
-              Members
+              Članovi
             </a>
             <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">
-              Activity
+              Aktivnost
             </a>
             <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">
               Izmeni
@@ -107,8 +107,8 @@
             </button>
           </div>
           <div class="board-mobile-actions flex lg:hidden" aria-label="Board akcije">
-            <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">Members</a>
-            <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">Activity</a>
+            <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">Članovi</a>
+            <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">Aktivnost</a>
             <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
             <div class="board-action-menu-wrapper ml-auto">
               <button

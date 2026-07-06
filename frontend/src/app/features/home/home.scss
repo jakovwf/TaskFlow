@@ -1,0 +1,36 @@
+.home-board-card {
+  border-color: hsl(var(--bc) / 0.1);
+  box-shadow: 0 5px 16px rgb(15 23 42 / 0.07);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.home-board-card:focus-visible {
+  outline: 2px solid hsl(var(--p));
+  outline-offset: 3px;
+}
+
+.board-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px dashed hsl(var(--bc) / 0.18);
+  border-radius: var(--rounded-box, 1rem);
+  background: hsl(var(--b2) / 0.55);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .home-board-card:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--p) / 0.22);
+    box-shadow: 0 10px 24px rgb(15 23 42 / 0.11);
+  }
+}
+
+@media (max-width: 639px) {
+  .board-empty-state {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

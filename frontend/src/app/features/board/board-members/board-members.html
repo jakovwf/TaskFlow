@@ -4,8 +4,8 @@
   </a>
 
   <header class="tf-hero-card mb-5 sm:p-6">
-    <p class="tf-kicker">Board access</p>
-    <h1 class="mt-1 text-3xl font-black tracking-tight">Clanovi boarda</h1>
+    <p class="tf-kicker">Pristup boardu</p>
+    <h1 class="mt-1 text-3xl font-black tracking-tight">Članovi boarda</h1>
     @if (board) {
       <p class="mt-2 text-base-content/70">{{ board.title }}</p>
     }
@@ -14,7 +14,7 @@
   @if (loading) {
     <div class="tf-loading mb-4 text-sm">
       <span class="loading loading-spinner loading-sm"></span>
-      Ucitavanje clanova i invite-ova...
+      Učitavanje članova i pozivnica...
     </div>
   }
 
@@ -30,14 +30,14 @@
     <div class="card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-5">
       <div>
-        <h2 class="text-xl font-semibold">Clanovi</h2>
-        <p class="mt-1 text-sm text-base-content/60">Pregled clanova i njihovih rola na ovom boardu.</p>
+        <h2 class="text-xl font-semibold">Članovi</h2>
+        <p class="mt-1 text-sm text-base-content/60">Pregled članova i njihovih uloga na ovom boardu.</p>
       </div>
 
       @if (members.length > 0) {
-        <ul class="space-y-3">
+        <ul class="members-list space-y-2.5">
           @for (member of members; track member.id) {
-            <li class="tf-card flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <li class="member-row tf-card flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between">
               <div class="min-w-0">
                 <p class="truncate font-medium">
                   {{ member.user?.displayName ?? member.user?.email ?? member.userId }}
@@ -69,7 +69,7 @@
                     @if (memberRemoveLoadingUserId === member.userId) {
                       <span class="loading loading-spinner loading-xs"></span>
                     }
-                    Remove
+                    Ukloni
                   </button>
                 } @else {
                   <span class="badge badge-outline badge-lg">{{ member.role }}</span>
@@ -80,7 +80,7 @@
         </ul>
       } @else if (!loading) {
         <div class="tf-empty text-sm">
-          Nema dodatnih clanova za prikaz.
+          Nema dodatnih članova za prikaz.
         </div>
       }
       </div>
@@ -89,7 +89,7 @@
     <aside class="card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-5">
       <div>
-        <h2 class="text-xl font-semibold">Invite</h2>
+        <h2 class="text-xl font-semibold">Pozovi članove</h2>
         <p class="mt-1 text-sm text-base-content/60">Pretrazi korisnika ili unesi email rucno.</p>
       </div>
 
@@ -155,13 +155,13 @@
           @if (inviteSaving) {
             <span class="loading loading-spinner loading-sm"></span>
           }
-          Posalji invite
+          Pošalji pozivnicu
         </button>
       </form>
 
       <div class="divider my-1"></div>
 
-      <h3 class="font-semibold">Pending invite-ovi</h3>
+      <h3 class="font-semibold">Pozivnice na čekanju</h3>
 
       @if (invites.length > 0) {
         <ul class="space-y-3">
@@ -175,12 +175,12 @@
                     <span class="badge badge-ghost">{{ invite.status }}</span>
                   </div>
                   <a [routerLink]="['/invite', invite.token]" class="link link-primary text-xs">
-                    Otvori invite link
+                    Otvori link pozivnice
                   </a>
                 </div>
                 <div class="flex shrink-0 flex-wrap gap-2 sm:flex-col">
                   <button type="button" class="btn btn-outline btn-xs" (click)="copyInviteLink(invite)">
-                    Copy invite link
+                    Kopiraj link
                   </button>
                   <button
                     type="button"
@@ -200,7 +200,7 @@
         </ul>
       } @else {
         <div class="tf-empty text-sm">
-          Nema pending pozivnica.
+          Nema pozivnica na čekanju.
         </div>
       }
       </div>

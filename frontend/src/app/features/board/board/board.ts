@@ -4,7 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { catchError, combineLatest, distinctUntilChanged, finalize, forkJoin, map, of, take } from 'rxjs';
 import { CommentService } from '../../../core/services/comment';
@@ -13,6 +13,7 @@ import { CardService } from '../../../core/services/card';
 import { ListService } from '../../../core/services/list';
 import { LabelService } from '../../../core/services/label.service';
 import { ConfirmModalService } from '../../../shared/services/confirm-modal.service';
+import { ToastService } from '../../../shared/services/toast.service';
 import {
   createCard,
   createList,
@@ -56,7 +57,9 @@ export class Board {
   private readonly listService = inject(ListService);
   private readonly labelService = inject(LabelService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly store = inject(Store);
+  private readonly toastService = inject(ToastService);
 
   readonly board$ = this.store.select(selectSelectedBoard);
   readonly loading$ = this.store.select(selectBoardsLoading);
@@ -101,6 +104,10 @@ export class Board {
   private activeCommentsLoadCardId: string | null = null;
   private commentsMutationVersion = 0;
   private currentBoard: BoardModel | null = null;
+  private activeBoardId: string | null = null;
+  private requestedCardId: string | null = null;
+  private invalidCardIdNotified: string | null = null;
+  private cardDeepLinkBoardReady = false;
   private labelHydrationBoardId: string | null = null;
   private readonly requestedLabelCardIds = new Set<string>();
   readonly boardBackgrounds = BOARD_BACKGROUNDS;
@@ -133,6 +140,7 @@ export class Board {
       .pipe(takeUntilDestroyed())
       .subscribe((board) => {
         this.currentBoard = board;
+        this.cardDeepLinkBoardReady = !!board && board.id === this.activeBoardId;
         this.boardLabels = [...(board?.labels ?? [])];
         this.syncMobileListIndex(board?.lists ?? []);
         this.scheduleScrollStateUpdate();
@@ -149,6 +157,7 @@ export class Board {
         }
 
         this.hydrateCardLabels(board);
+        this.syncCardDetailFromQuery();
         this.cdr.markForCheck();
       });
 
@@ -308,6 +317,8 @@ export class Board {
         takeUntilDestroyed(),
       )
       .subscribe((boardId) => {
+        this.activeBoardId = boardId;
+        this.cardDeepLinkBoardReady = false;
         if (boardId) {
           this.hasBoardRoute = true;
           if (boardId !== this.lastCommentsBoardId) {
@@ -321,6 +332,24 @@ export class Board {
         this.hasBoardRoute = false;
         this.resetBoardComments();
         this.cdr.markForCheck();
+      });
+
+    this.route.queryParamMap
+      .pipe(
+        map((params) => params.get('card')),
+        distinctUntilChanged(),
+        takeUntilDestroyed(),
+      )
+      .subscribe((cardId) => {
+        this.requestedCardId = cardId;
+
+        if (!cardId) {
+          this.invalidCardIdNotified = null;
+          this.closeCardDetail();
+          return;
+        }
+
+        this.syncCardDetailFromQuery();
       });
   }
 
@@ -457,6 +486,16 @@ export class Board {
   }
 
   openCard(card: Card): void {
+    this.requestedCardId = card.id;
+    this.openCardDetail(card);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { card: card.id },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  private openCardDetail(card: Card): void {
     this.selectedCard = card;
     this.cardTitleSaving = false;
     this.cardTitleError = null;
@@ -471,6 +510,17 @@ export class Board {
   }
 
   closeCard(): void {
+    this.requestedCardId = null;
+    this.closeCardDetail();
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { card: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  private closeCardDetail(): void {
     this.selectedCard = null;
     this.activeCommentsLoadCardId = null;
     this.commentsLoading = false;
@@ -485,6 +535,47 @@ export class Board {
     this.labelError = null;
     this.cardAppearanceError = null;
     this.cdr.markForCheck();
+  }
+
+  private syncCardDetailFromQuery(): void {
+    const cardId = this.requestedCardId;
+    const board = this.currentBoard;
+
+    if (!cardId || !board || !this.cardDeepLinkBoardReady || board.id !== this.activeBoardId) {
+      return;
+    }
+
+    const card = (board.lists ?? [])
+      .flatMap((list) => list.cards ?? [])
+      .find((item) => item.id === cardId);
+
+    if (card) {
+      this.invalidCardIdNotified = null;
+
+      if (this.selectedCard?.id === card.id) {
+        this.selectedCard = card;
+        this.cdr.markForCheck();
+        return;
+      }
+
+      this.openCardDetail(card);
+      return;
+    }
+
+    if (this.invalidCardIdNotified === cardId) {
+      return;
+    }
+
+    this.invalidCardIdNotified = cardId;
+    this.toastService.warning('Kartica nije pronađena');
+    this.requestedCardId = null;
+    this.closeCardDetail();
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { card: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   saveCard(event: { cardId: string; title: string; description?: string }): void {

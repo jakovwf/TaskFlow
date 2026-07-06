@@ -51,6 +51,7 @@ export class Home {
   creatingBoardWorkspaceId: string | null = null;
   activeDropdownId: string | null = null;
   readonly workspaceBoardPage: Record<string, number> = {};
+  boardPageSize = this.getBoardPageSize();
   showNewWorkspaceForm = false;
 
   readonly workspaceForm = this.formBuilder.nonNullable.group({
@@ -143,16 +144,17 @@ export class Home {
   visibleBoardsForWorkspace(boards: Board[], workspaceId: string): Board[] {
     const workspaceBoards = this.boardsForWorkspace(boards, workspaceId);
     const page = this.workspaceBoardPageIndex(workspaceBoards.length, workspaceId);
-    return workspaceBoards.slice(page * 4, page * 4 + 4);
+    const start = page * this.boardPageSize;
+    return workspaceBoards.slice(start, start + this.boardPageSize);
   }
 
   workspaceBoardPageIndex(boardCount: number, workspaceId: string): number {
-    const lastPage = Math.max(0, Math.ceil(boardCount / 4) - 1);
+    const lastPage = Math.max(0, Math.ceil(boardCount / this.boardPageSize) - 1);
     return Math.min(this.workspaceBoardPage[workspaceId] ?? 0, lastPage);
   }
 
   workspaceBoardPageCount(boardCount: number): number {
-    return Math.ceil(boardCount / 4);
+    return Math.ceil(boardCount / this.boardPageSize);
   }
 
   changeWorkspaceBoardPage(workspaceId: string, boardCount: number, direction: -1 | 1): void {
@@ -201,6 +203,27 @@ export class Home {
   @HostListener('document:click')
   closeDropdown(): void {
     this.activeDropdownId = null;
+  }
+
+  @HostListener('window:resize')
+  handleViewportResize(): void {
+    const nextPageSize = this.getBoardPageSize();
+
+    if (nextPageSize === this.boardPageSize) {
+      return;
+    }
+
+    const previousPageSize = this.boardPageSize;
+    Object.keys(this.workspaceBoardPage).forEach((workspaceId) => {
+      const firstVisibleBoardIndex = this.workspaceBoardPage[workspaceId] * previousPageSize;
+      this.workspaceBoardPage[workspaceId] = Math.floor(firstVisibleBoardIndex / nextPageSize);
+    });
+    this.boardPageSize = nextPageSize;
+    this.closeDropdown();
+  }
+
+  private getBoardPageSize(): number {
+    return typeof window !== 'undefined' && window.innerWidth < 640 ? 2 : 4;
   }
 
   openBoard(boardId: string): void {

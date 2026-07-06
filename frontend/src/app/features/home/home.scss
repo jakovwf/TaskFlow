@@ -77,7 +77,15 @@
 }
 
 .home-board-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   line-height: 1.4;
+}
+
+.home-board-content {
+  min-height: 4.5rem;
 }
 
 .home-board-footer {
@@ -140,8 +148,7 @@
   }
 
   .home-board-card:not(.is-editing) {
-    min-height: 10rem;
-    height: auto;
+    height: 10rem;
   }
 
   .home-board-footer {

@@ -1,9 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
-import { CardService } from '../../../../core/services/card';
-import { ToastService } from '../../../../shared/services/toast.service';
 import { Attachment, BoardMember, Card, CardComment, CardLabel, CardMember, Label, User } from '../../../../store/models';
 import { CARD_COVER_COLORS } from '../../appearance-options';
 
@@ -15,8 +12,6 @@ import { CARD_COVER_COLORS } from '../../appearance-options';
 })
 export class CardDetailComponent implements OnChanges, OnDestroy {
   private readonly formBuilder = inject(FormBuilder);
-  private readonly cardService = inject(CardService);
-  private readonly toastService = inject(ToastService);
   private previousBodyOverflow = '';
   private pageScrollLocked = false;
 
@@ -71,7 +66,6 @@ export class CardDetailComponent implements OnChanges, OnDestroy {
   editLabelName = '';
   editLabelColor = '#2563eb';
   failedAttachmentPreviewIds = new Set<string>();
-  attachmentDownloadingId: string | null = null;
   readonly coverColors = CARD_COVER_COLORS;
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -447,80 +441,6 @@ export class CardDetailComponent implements OnChanges, OnDestroy {
     this.failedAttachmentPreviewIds = new Set([...this.failedAttachmentPreviewIds, attachmentId]);
   }
 
-  async downloadAttachment(attachment: Attachment): Promise<void> {
-    if (this.attachmentDownloadingId) {
-      return;
-    }
-
-    this.attachmentDownloadingId = attachment.id;
-    const isImage = this.isImageFile(attachment);
-    const mimeType = attachment.mimeType || this.inferAttachmentMimeType(attachment);
-    const shareCandidate = new File([], attachment.filename, { type: mimeType });
-    const fallbackWindow = isImage && this.isMobileBrowser() && !this.supportsFileShare(shareCandidate)
-      ? window.open('', '_blank')
-      : null;
-
-    try {
-      const blob = await firstValueFrom(this.cardService.downloadAttachment(attachment.id));
-      const file = new File([blob], attachment.filename, { type: blob.type || mimeType });
-
-      if (isImage && this.supportsFileShare(file)) {
-        fallbackWindow?.close();
-        try {
-          await navigator.share({ files: [file], title: attachment.filename });
-          return;
-        } catch (error) {
-          if (error instanceof DOMException && error.name === 'AbortError') {
-            return;
-          }
-
-          if (this.isMobileBrowser()) {
-            this.handleMobileImageFallback(blob, attachment.filename, null);
-            return;
-          }
-
-          throw error;
-        }
-      }
-
-      if (isImage && this.isMobileBrowser()) {
-        this.handleMobileImageFallback(blob, attachment.filename, fallbackWindow);
-        return;
-      }
-
-      fallbackWindow?.close();
-      this.saveBlob(blob, attachment.filename);
-    } catch (error) {
-      fallbackWindow?.close();
-
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        return;
-      }
-
-      this.toastService.error('Attachment nije moguće preuzeti. Pokušajte ponovo.');
-    } finally {
-      this.attachmentDownloadingId = null;
-    }
-  }
-
-  openAttachment(attachment: Attachment): void {
-    if (attachment.mimeType?.startsWith('image/')) {
-      window.open(attachment.url, '_blank');
-      return;
-    }
-
-    if (attachment.mimeType === 'application/pdf') {
-      const viewerUrl = attachment.url.replace(
-        '/raw/upload/',
-        '/raw/upload/fl_attachment:false/',
-      );
-      window.open(viewerUrl, '_blank');
-      return;
-    }
-
-    window.open(attachment.url, '_blank');
-  }
-
   availableBoardMembers(): BoardMember[] {
     const assignedUserIds = new Set(this.assignedMembers().map((member) => member.userId));
 
@@ -545,66 +465,6 @@ export class CardDetailComponent implements OnChanges, OnDestroy {
     }
 
     return ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(this.attachmentExtension(attachment));
-  }
-
-  private inferAttachmentMimeType(attachment: Attachment): string {
-    const extension = this.attachmentExtension(attachment);
-    const mimeTypes: Record<string, string> = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      webp: 'image/webp',
-      gif: 'image/gif',
-      pdf: 'application/pdf',
-    };
-
-    return mimeTypes[extension] ?? 'application/octet-stream';
-  }
-
-  private isMobileBrowser(): boolean {
-    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  }
-
-  private supportsFileShare(file: File): boolean {
-    return typeof navigator.share === 'function' &&
-      typeof navigator.canShare === 'function' &&
-      navigator.canShare({ files: [file] });
-  }
-
-  private saveBlob(blob: Blob, filename: string): void {
-    const blobUrl = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = blobUrl;
-    anchor.download = filename;
-    anchor.style.display = 'none';
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-  }
-
-  private handleMobileImageFallback(
-    blob: Blob,
-    filename: string,
-    targetWindow: Window | null,
-  ): void {
-    const blobUrl = URL.createObjectURL(blob);
-    const imageWindow = targetWindow ?? window.open(blobUrl, '_blank', 'noopener,noreferrer');
-
-    if (imageWindow) {
-      if (targetWindow) {
-        imageWindow.location.href = blobUrl;
-      }
-      this.toastService.info(
-        'Ako se slika otvori u novom prozoru, zadržite prst na njoj i izaberite Save Image.',
-      );
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-      return;
-    }
-
-    URL.revokeObjectURL(blobUrl);
-    this.saveBlob(blob, filename);
-    this.toastService.info('Slika je prosleđena browseru za preuzimanje.');
   }
 
   private attachmentExtension(attachment: Attachment): string {

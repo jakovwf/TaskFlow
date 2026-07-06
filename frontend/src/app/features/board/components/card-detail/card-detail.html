@@ -357,25 +357,15 @@
                   </p>
                 </div>
 
-                <div class="flex shrink-0 gap-2">
-                  <button
-                    type="button"
+                <div class="flex shrink-0 flex-wrap gap-2">
+                  <a
                     class="btn btn-outline btn-sm"
-                    (click)="openAttachment(attachment)"
+                    [href]="attachment.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Otvori
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline btn-sm"
-                    [disabled]="attachmentDownloadingId === attachment.id"
-                    (click)="downloadAttachment(attachment)"
-                  >
-                    @if (attachmentDownloadingId === attachment.id) {
-                      <span class="loading loading-spinner loading-xs"></span>
-                    }
-                    Preuzmi
-                  </button>
+                  </a>
                   @if (canDeleteAttachment(attachment)) {
                     <button
                       type="button"

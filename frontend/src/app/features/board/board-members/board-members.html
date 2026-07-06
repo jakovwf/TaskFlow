@@ -38,13 +38,22 @@
         <ul class="members-list space-y-2.5">
           @for (member of members; track member.id) {
             <li class="member-row tf-card flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0">
-                <p class="truncate font-medium">
-                  {{ member.user?.displayName ?? member.user?.email ?? member.userId }}
-                </p>
-                @if (member.user?.email; as email) {
-                  <p class="text-sm text-base-content/60">{{ email }}</p>
-                }
+              <div class="flex min-w-0 items-center gap-3">
+                <div class="member-avatar" aria-hidden="true">
+                  @if (member.user?.avatarUrl) {
+                    <img [src]="member.user?.avatarUrl" alt="" />
+                  } @else {
+                    <span>{{ (member.user?.displayName ?? member.user?.email ?? '?').charAt(0).toUpperCase() }}</span>
+                  }
+                </div>
+                <div class="min-w-0">
+                  <p class="truncate font-medium">
+                    {{ member.user?.displayName ?? member.user?.email ?? member.userId }}
+                  </p>
+                  @if (member.user?.email; as email) {
+                    <p class="truncate text-sm text-base-content/60">{{ email }}</p>
+                  }
+                </div>
               </div>
               <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
                 @if (canManageMember(member)) {
@@ -72,7 +81,7 @@
                     Ukloni
                   </button>
                 } @else {
-                  <span class="badge badge-outline badge-lg">
+                  <span class="owner-role-pill badge badge-lg">
                     @switch (member.role) {
                       @case ('OWNER') { Vlasnik }
                       @case ('ADMIN') { Admin }
@@ -92,7 +101,7 @@
       </div>
     </div>
 
-    <aside class="card tf-panel">
+    <aside class="invite-panel card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-5">
       <div>
         <h2 class="text-xl font-semibold">Pozovi članove</h2>

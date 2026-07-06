@@ -1,7 +1,9 @@
 <main class="tf-page">
-  <div class="tf-hero-card mb-6 sm:p-6">
+  <div class="home-hero tf-hero-card mb-6 sm:p-6">
     <div class="flex items-start gap-3">
-      <img src="logo/taskflow-icon.png" alt="TaskFlow" class="h-11 w-11 shrink-0 object-contain" />
+      <span class="home-hero-icon">
+        <img src="logo/taskflow-icon.png" alt="TaskFlow" class="h-9 w-9 object-contain" />
+      </span>
       <div class="min-w-0">
         <h1 class="text-3xl font-black tracking-tight">Početna</h1>
       </div>
@@ -63,9 +65,9 @@
       @if (workspaces.length > 0) {
         <section class="space-y-6">
           @for (workspace of workspaces; track workspace.id) {
-            <article class="card tf-panel">
+            <article class="workspace-panel card tf-panel">
               <div class="card-body gap-4 p-4 sm:p-5">
-                <header class="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 pb-3">
+                <header class="workspace-header flex flex-wrap items-center justify-between gap-3 border-b border-base-300 pb-3">
                   @if (editingWorkspaceId === workspace.id) {
                     <form class="grid flex-1 gap-2 sm:grid-cols-[1fr_auto_auto]" [formGroup]="workspaceEditForm" (ngSubmit)="saveWorkspaceEdit()">
                       <input type="text" formControlName="name" class="input input-bordered input-sm w-full" placeholder="Naziv workspace-a" />
@@ -123,7 +125,7 @@
                               <p class="mt-1 line-clamp-2 text-sm text-base-content/70">{{ board.description }}</p>
                             }
                             <div class="mt-5 flex items-center justify-between gap-2 border-t border-base-300/70 pt-2.5">
-                              <span class="text-xs font-medium text-base-content/45">Otvori board</span>
+                              <span class="open-board-chip">Otvori board <span aria-hidden="true">→</span></span>
                               <div class="relative" (click)="$event.stopPropagation()">
                                 <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za board" (click)="toggleDropdown('board-' + board.id, $event)">...</button>
                                 @if (activeDropdownId === 'board-' + board.id) {

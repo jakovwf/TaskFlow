@@ -1,5 +1,5 @@
 <main class="tf-page tf-page-form">
-  <header class="tf-hero-card mb-5 sm:p-6">
+  <header class="profile-hero tf-hero-card mb-5 sm:p-6">
     <p class="tf-kicker">Nalog</p>
     <h1 class="mt-1 text-3xl font-black tracking-tight">Profil</h1>
     <p class="mt-2 text-base-content/70">Pregledaj i izmeni osnovne podatke naloga.</p>
@@ -19,7 +19,7 @@
         <div class="flex flex-col items-center gap-2">
           <button
             type="button"
-            class="avatar relative cursor-pointer rounded-full transition hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-primary/25"
+            class="profile-avatar avatar relative cursor-pointer rounded-full transition hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-primary/25"
             aria-label="Promeni profilnu sliku"
             [disabled]="uploadLoading"
             (click)="fileInput.click()"
@@ -85,11 +85,19 @@
           </div>
         </form>
 
-        <div class="border-t border-base-content/10 pt-4">
-          <div class="flex items-center justify-between gap-4 rounded-lg bg-base-200/60 p-4">
-            <div>
+        <div class="border-t border-base-content/10 pt-5">
+          <div class="push-card flex items-center justify-between gap-4 rounded-lg p-4 sm:p-5">
+            <div class="flex min-w-0 items-center gap-3">
+              <span class="push-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                  <path d="M10 21h4" />
+                </svg>
+              </span>
+              <div class="min-w-0">
               <p class="font-semibold">Push notifikacije</p>
               <p class="text-sm text-base-content/60">Primaj obaveštenja i kada aplikacija nije otvorena.</p>
+              </div>
             </div>
 
             <div class="flex items-center gap-2">

@@ -1,6 +1,43 @@
 .notification-item {
+  position: relative;
   border-color: hsl(var(--bc) / 0.1);
   box-shadow: 0 3px 12px rgb(15 23 42 / 0.06);
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.notification-item.is-unread {
+  border-left: 3px solid hsl(var(--p));
+  background: linear-gradient(90deg, hsl(var(--p) / 0.055), hsl(var(--b1)) 24%);
+}
+
+.notification-item.is-unread::after {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: hsl(var(--p));
+  box-shadow: 0 0 0 3px hsl(var(--p) / 0.1);
+  content: '';
+}
+
+.notification-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: hsl(var(--p) / 0.1);
+  color: hsl(var(--p));
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.notification-icon svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .notification-type {

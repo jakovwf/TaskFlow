@@ -28,9 +28,16 @@
     @if (notifications.length > 0) {
       <ul class="space-y-2">
         @for (notification of notifications; track notification.id) {
-          <li class="notification-item tf-card p-3 sm:px-4">
+          <li class="notification-item tf-card p-3 sm:px-4" [class.is-unread]="!notification.isRead">
             <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0">
+              <div class="flex min-w-0 items-start gap-3">
+                <span class="notification-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                    <path d="M10 21h4" />
+                  </svg>
+                </span>
+                <div class="min-w-0">
                 <div class="mb-1.5 flex flex-wrap items-center gap-1.5">
                   <span class="notification-type badge badge-outline badge-sm">{{ notificationLabel(notification) }}</span>
                   @if (notification.isRead) {
@@ -45,6 +52,7 @@
                     {{ notification.createdAt | date: 'short' }}
                   </p>
                 }
+                </div>
               </div>
 
               <div class="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-end">

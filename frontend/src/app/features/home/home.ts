@@ -50,6 +50,7 @@ export class Home {
   editingBoardId: string | null = null;
   creatingBoardWorkspaceId: string | null = null;
   activeDropdownId: string | null = null;
+  readonly workspaceBoardPage: Record<string, number> = {};
   showNewWorkspaceForm = false;
 
   readonly workspaceForm = this.formBuilder.nonNullable.group({
@@ -137,6 +138,28 @@ export class Home {
 
   boardsForWorkspace(boards: Board[], workspaceId: string): Board[] {
     return boards.filter((board) => board.workspaceId === workspaceId);
+  }
+
+  visibleBoardsForWorkspace(boards: Board[], workspaceId: string): Board[] {
+    const workspaceBoards = this.boardsForWorkspace(boards, workspaceId);
+    const page = this.workspaceBoardPageIndex(workspaceBoards.length, workspaceId);
+    return workspaceBoards.slice(page * 4, page * 4 + 4);
+  }
+
+  workspaceBoardPageIndex(boardCount: number, workspaceId: string): number {
+    const lastPage = Math.max(0, Math.ceil(boardCount / 4) - 1);
+    return Math.min(this.workspaceBoardPage[workspaceId] ?? 0, lastPage);
+  }
+
+  workspaceBoardPageCount(boardCount: number): number {
+    return Math.ceil(boardCount / 4);
+  }
+
+  changeWorkspaceBoardPage(workspaceId: string, boardCount: number, direction: -1 | 1): void {
+    const currentPage = this.workspaceBoardPageIndex(boardCount, workspaceId);
+    const lastPage = Math.max(0, this.workspaceBoardPageCount(boardCount) - 1);
+    this.workspaceBoardPage[workspaceId] = Math.min(lastPage, Math.max(0, currentPage + direction));
+    this.closeDropdown();
   }
 
   toggleBoardCreate(workspaceId: string): void {

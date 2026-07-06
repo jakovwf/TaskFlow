@@ -107,8 +107,8 @@
 
                 @if (boardsForWorkspace(boards, workspace.id); as workspaceBoards) {
                   @if (workspaceBoards.length > 0) {
-                    <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
-                      @for (board of workspaceBoards; track board.id) {
+                    <div class="grid grid-cols-2 gap-4">
+                      @for (board of visibleBoardsForWorkspace(boards, workspace.id); track board.id) {
                         <article class="home-board-card tf-card min-w-0 cursor-pointer p-4" [class.is-menu-open]="activeDropdownId === 'board-' + board.id" role="link" tabindex="0" (click)="openBoard(board.id)" (keydown.enter)="openBoard(board.id)">
                           @if (editingBoardId === board.id) {
                             <form class="grid gap-2" [formGroup]="boardEditForm" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" (ngSubmit)="saveBoardEdit()">
@@ -140,6 +140,31 @@
                         </article>
                       }
                     </div>
+                    @if (workspaceBoards.length > 4) {
+                      <nav class="workspace-board-pager" aria-label="Stranice boardova">
+                        <button
+                          type="button"
+                          class="btn btn-circle btn-outline btn-sm"
+                          aria-label="Prethodni boardovi"
+                          [disabled]="workspaceBoardPageIndex(workspaceBoards.length, workspace.id) === 0"
+                          (click)="changeWorkspaceBoardPage(workspace.id, workspaceBoards.length, -1)"
+                        >
+                          ←
+                        </button>
+                        <span class="text-xs font-semibold text-slate-500">
+                          {{ workspaceBoardPageIndex(workspaceBoards.length, workspace.id) + 1 }}/{{ workspaceBoardPageCount(workspaceBoards.length) }}
+                        </span>
+                        <button
+                          type="button"
+                          class="btn btn-circle btn-outline btn-sm"
+                          aria-label="Sledeći boardovi"
+                          [disabled]="workspaceBoardPageIndex(workspaceBoards.length, workspace.id) >= workspaceBoardPageCount(workspaceBoards.length) - 1"
+                          (click)="changeWorkspaceBoardPage(workspace.id, workspaceBoards.length, 1)"
+                        >
+                          →
+                        </button>
+                      </nav>
+                    }
                   } @else if (!(boardsLoading$ | async)) {
                     <div class="board-empty-state">
                       <div>

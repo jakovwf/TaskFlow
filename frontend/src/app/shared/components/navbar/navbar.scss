@@ -1,4 +1,8 @@
 .notification-badge {
+  position: absolute;
+  top: -0.55rem;
+  right: -0.7rem;
+  z-index: 2;
   display: inline-flex;
   min-width: 1.15rem;
   height: 1.15rem;
@@ -13,6 +17,44 @@
   font-weight: 800;
   line-height: 1;
   box-shadow: 0 2px 5px rgb(15 23 42 / 0.18);
+}
+
+.notification-icon-wrap {
+  overflow: visible;
+}
+
+.nav-item {
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid hsl(var(--p));
+  outline-offset: 2px;
+}
+
+.nav-item:active {
+  transform: scale(0.96);
+  filter: brightness(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+
+  .nav-logout:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .notification-tab-active:hover,
+  .nav-item.bg-primary:hover {
+    background: hsl(var(--p));
+    color: hsl(var(--pc));
+  }
 }
 
 .notification-tab-active .notification-badge {

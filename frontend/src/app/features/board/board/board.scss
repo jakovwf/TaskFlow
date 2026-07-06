@@ -269,6 +269,10 @@
   isolation: isolate;
 }
 
+.board-page > .board-header-panel {
+  z-index: 300;
+}
+
 .board-edit-panel,
 .board-add-list-panel {
   border-radius: 0.65rem;

@@ -25,6 +25,12 @@
   padding-top: 0.85rem;
 }
 
+.workspace-board-grid.is-paginated {
+  min-height: 21rem;
+  grid-template-rows: repeat(2, 10rem);
+  align-content: start;
+}
+
 .home-hero-icon {
   display: grid;
   width: 3rem;
@@ -57,6 +63,10 @@
   box-shadow: 0 5px 16px rgb(15 23 42 / 0.07);
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
   background: #ffffff;
+}
+
+.home-board-card:not(.is-editing) {
+  height: 10rem;
 }
 
 .home-board-card.is-menu-open {

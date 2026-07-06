@@ -1,3 +1,36 @@
+.nav-track {
+  --nav-index: 0;
+  position: relative;
+  isolation: isolate;
+}
+
+.nav-track:has(.nav-notifications.is-active) {
+  --nav-index: 1;
+}
+
+.nav-track:has(.nav-profile.is-active) {
+  --nav-index: 2;
+}
+
+.nav-highlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  width: calc((100% - 0.75rem) / 4);
+  border-radius: 1rem;
+  background: #2563eb;
+  box-shadow: 0 5px 14px rgb(37 99 235 / 0.24);
+  opacity: 0;
+  transform: translateX(calc(var(--nav-index) * (100% + 0.25rem)));
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 120ms ease;
+}
+
+.nav-track:has(.nav-route.is-active) .nav-highlight {
+  opacity: 1;
+}
+
 .notification-badge {
   position: absolute;
   top: -0.55rem;
@@ -24,9 +57,20 @@
 }
 
 .nav-item {
+  position: relative;
+  z-index: 1;
   overflow: visible;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+.nav-route {
+  color: #475569;
+  transition: color 180ms ease, background-color 180ms ease, transform 120ms ease;
+}
+
+.nav-route.is-active {
+  color: #ffffff;
 }
 
 .nav-item:focus-visible {
@@ -40,9 +84,9 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .nav-item:hover {
-    background: #f1f5f9;
-    color: #0f172a;
+  .nav-route:hover {
+    background: #2563eb;
+    color: #ffffff;
   }
 
   .nav-logout:hover {
@@ -50,10 +94,22 @@
     color: #b91c1c;
   }
 
-  .notification-tab-active:hover,
-  .nav-item.bg-primary:hover {
-    background: hsl(var(--p));
-    color: hsl(var(--pc));
+  .nav-route.is-active:hover {
+    background: transparent;
+    color: #ffffff;
+  }
+}
+
+@media (pointer: coarse) {
+  .nav-route:active {
+    background: #2563eb;
+    color: #ffffff;
+  }
+}
+
+@media (min-width: 768px) {
+  .nav-highlight {
+    border-radius: 999px;
   }
 }
 

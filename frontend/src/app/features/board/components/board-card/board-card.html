@@ -8,16 +8,18 @@
   (click)="selectCard()"
   (keydown)="handleKeydown($event)"
 >
-  <button
-    type="button"
-    class="card-drag-handle"
-    cdkDragHandle
-    aria-label="Prevuci karticu"
-    title="Prevuci karticu"
-    (click)="$event.stopPropagation()"
-  >
-    <span aria-hidden="true">⋮⋮</span>
-  </button>
+  @if (showDragHandle) {
+    <button
+      type="button"
+      class="card-drag-handle"
+      cdkDragHandle
+      aria-label="Prevuci karticu"
+      title="Prevuci karticu"
+      (click)="$event.stopPropagation()"
+    >
+      <span aria-hidden="true">⋮⋮</span>
+    </button>
+  }
   @if (card.labels?.length) {
     <div class="mb-2.5 flex flex-wrap gap-1" aria-label="Labele kartice">
       @for (cardLabel of card.labels; track cardLabel.id) {

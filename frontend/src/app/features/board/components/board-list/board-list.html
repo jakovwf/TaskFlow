@@ -91,6 +91,7 @@
         <app-board-card
           cdkDrag
           [card]="card"
+          [showDragHandle]="mobileDragHandle"
           (selected)="cardSelected.emit($event)"
           (doneChange)="cardDoneChange.emit($event)"
         />

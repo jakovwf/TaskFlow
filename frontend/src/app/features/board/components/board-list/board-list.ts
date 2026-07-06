@@ -17,6 +17,7 @@ export class BoardListComponent implements OnChanges {
   @Input({ required: true }) list!: BoardList;
   @Input() connectedDropLists: string[] = [];
   @Input() loading: boolean | null = false;
+  @Input() mobileDragHandle = false;
   @Input() renaming = false;
   @Input() renameError: string | null = null;
 

@@ -215,6 +215,7 @@
             [renaming]="renamingListId === list.id"
             [renameError]="listRenameErrors[list.id] ?? null"
             [connectedDropLists]="cardDropListIds(board.lists??[])"
+            [mobileDragHandle]="isMobileViewport"
             (renameList)="renameList($event)"
             (deleteList)="removeList($event)"
             (createCard)="createCard($event)"

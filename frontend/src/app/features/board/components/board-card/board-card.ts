@@ -10,6 +10,7 @@ import { Card } from '../../../../store/models';
 })
 export class BoardCard {
   @Input({ required: true }) card!: Card;
+  @Input() showDragHandle = false;
 
   @Output() selected = new EventEmitter<Card>();
   @Output() doneChange = new EventEmitter<{ cardId: string; isDone: boolean }>();

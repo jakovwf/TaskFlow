@@ -8,6 +8,7 @@ import { EMPTY, catchError, finalize, switchMap, take } from 'rxjs';
 import { CloudinaryService } from '../../core/services/cloudinary.service';
 import { PushNotificationService } from '../../core/services/push-notification.service';
 import { UserService } from '../../core/services/user';
+import { ToastService } from '../../shared/services/toast.service';
 import { loadMe } from '../../store/auth/auth.actions';
 import { selectCurrentUser } from '../../store/auth/auth.selectors';
 import { User } from '../../store/models';
@@ -24,14 +25,13 @@ export class Profile {
   private readonly formBuilder = inject(FormBuilder);
   private readonly pushService = inject(PushNotificationService);
   private readonly store = inject(Store);
+  private readonly toastService = inject(ToastService);
   private readonly userService = inject(UserService);
 
   readonly currentUser$ = this.store.select(selectCurrentUser);
   readonly pushSubscription$ = this.pushService.subscription$;
   readonly pushSupported = this.pushService.isEnabled;
   loading = false;
-  error: string | null = null;
-  successMessage: string | null = null;
   uploadLoading = false;
   uploadError: string | null = null;
   pushLoading = false;
@@ -75,8 +75,6 @@ export class Profile {
     }
 
     this.loading = true;
-    this.error = null;
-    this.successMessage = null;
     this.cdr.markForCheck();
 
     this.userService
@@ -98,12 +96,12 @@ export class Profile {
             displayName: user.displayName ?? '',
             avatarUrl: user.avatarUrl ?? '',
           });
-          this.successMessage = 'Profil je sacuvan.';
+          this.toastService.success('Profil je sačuvan.');
           this.store.dispatch(loadMe());
           this.cdr.markForCheck();
         },
-        error: (error: unknown) => {
-          this.error = this.getErrorMessage(error);
+        error: () => {
+          this.toastService.error('Profil nije sačuvan. Pokušaj ponovo.');
           this.cdr.markForCheck();
         },
       });
@@ -228,21 +226,4 @@ export class Profile {
     return 'Promena push notifikacija nije uspela. Pokušaj ponovo.';
   }
 
-  private getErrorMessage(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      if (error.status === 401) {
-        return 'Morate biti prijavljeni da biste izmenili profil.';
-      }
-
-      if (error.status === 403) {
-        return 'Mozete menjati samo svoj profil.';
-      }
-
-      if (error.status === 404) {
-        return 'Korisnik nije pronadjen.';
-      }
-    }
-
-    return 'Profil nije sacuvan. Pokusaj ponovo.';
-  }
 }

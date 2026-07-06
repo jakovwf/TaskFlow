@@ -92,25 +92,14 @@
               Završeno: {{ cardStats.done }}/{{ cardStats.total }}
             </span>
           </div>
-          <div class="hidden shrink-0 flex-wrap gap-2 lg:flex">
+          <div class="board-header-actions flex shrink-0 flex-wrap items-center gap-2" aria-label="Board akcije">
             <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">
               Članovi
             </a>
             <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">
               Aktivnost
             </a>
-            <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">
-              Izmeni
-            </button>
-            <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading$ | async" (click)="deleteCurrentBoard(board.id)">
-              Obrisi
-            </button>
-          </div>
-          <div class="board-mobile-actions flex lg:hidden" aria-label="Board akcije">
-            <a [routerLink]="['/b', board.id, 'members']" class="btn btn-primary btn-sm">Članovi</a>
-            <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">Aktivnost</a>
-            <button type="button" class="btn btn-outline btn-sm" [disabled]="loading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
-            <div class="board-action-menu-wrapper ml-auto">
+            <div class="board-action-menu-wrapper">
               <button
                 type="button"
                 class="board-more-button btn btn-ghost btn-sm"
@@ -122,6 +111,14 @@
               </button>
               @if (mobileToolbarOpen) {
                 <div class="board-action-menu" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="board-menu-action"
+                    [disabled]="loading$ | async"
+                    (click)="startBoardEdit(board)"
+                  >
+                    Izmeni board
+                  </button>
                   <button
                     type="button"
                     class="board-delete-action"

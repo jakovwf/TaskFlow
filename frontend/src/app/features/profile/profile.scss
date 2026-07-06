@@ -1,7 +1,7 @@
 .profile-hero {
   background:
     radial-gradient(circle at 92% 8%, hsl(var(--a) / 0.1), transparent 35%),
-    linear-gradient(135deg, hsl(var(--b1)) 60%, hsl(var(--p) / 0.05));
+    linear-gradient(135deg, #ffffff 60%, #f8faff);
 }
 
 .profile-avatar {
@@ -10,7 +10,8 @@
 
 .push-card {
   border: 1px solid hsl(var(--p) / 0.11);
-  background: linear-gradient(135deg, hsl(var(--b2) / 0.7), hsl(var(--p) / 0.045));
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 0.05);
 }
 
 .push-icon {

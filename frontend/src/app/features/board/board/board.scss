@@ -1,11 +1,9 @@
-.board-mobile-actions {
-  width: 100%;
+.board-header-actions {
   gap: 0.5rem;
   align-items: center;
-  flex-wrap: nowrap;
 }
 
-.board-mobile-actions .btn {
+.board-header-actions .btn {
   flex: 0 0 auto;
 }
 
@@ -26,7 +24,7 @@
   position: absolute;
   top: calc(100% + 0.4rem);
   right: 0;
-  z-index: 100;
+  z-index: 200;
   width: 11rem;
   border: 1px solid hsl(var(--bc) / 0.12);
   border-radius: 0.75rem;
@@ -35,6 +33,7 @@
   box-shadow: 0 16px 36px rgb(15 23 42 / 0.16);
 }
 
+.board-menu-action,
 .board-delete-action {
   width: 100%;
   border-radius: 0.5rem;
@@ -46,10 +45,15 @@
   transition: background-color 150ms ease;
 }
 
+.board-menu-action:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
 .board-delete-action:hover:not(:disabled) {
   background: #fef2f2;
 }
 
+.board-menu-action:disabled,
 .board-delete-action:disabled {
   cursor: not-allowed;
   opacity: 0.55;
@@ -187,17 +191,23 @@
     padding: 1rem;
   }
 
-  .board-mobile-actions {
+  .board-header-actions {
+    width: 100%;
     gap: 0.35rem;
+    flex-wrap: nowrap;
   }
 
-  .board-mobile-actions .btn {
+  .board-header-actions .btn {
     min-height: 2rem;
     padding-inline: 0.65rem;
   }
 
-  .board-mobile-actions .board-more-button {
+  .board-header-actions .board-more-button {
     padding-inline: 0;
+  }
+
+  .board-action-menu-wrapper {
+    margin-left: auto;
   }
 
   .board-scroll-shell::before,

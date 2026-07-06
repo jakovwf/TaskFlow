@@ -2,12 +2,13 @@
   position: relative;
   border-color: hsl(var(--bc) / 0.1);
   box-shadow: 0 3px 12px rgb(15 23 42 / 0.06);
+  background: #ffffff;
   transition: border-color 150ms ease, background-color 150ms ease;
 }
 
 .notification-item.is-unread {
   border-left: 3px solid hsl(var(--p));
-  background: linear-gradient(90deg, hsl(var(--p) / 0.055), hsl(var(--b1)) 24%);
+  background: #ffffff;
 }
 
 .notification-item.is-unread::after {
@@ -53,12 +54,12 @@
 
 .mark-all-button:disabled {
   border: 1px solid hsl(var(--bc) / 0.08);
-  background: hsl(var(--b2) / 0.55);
+  background: #f8fafc;
   color: hsl(var(--bc) / 0.58);
   opacity: 1;
 }
 
 .load-more-button {
-  background: hsl(var(--b1));
+  background: #ffffff;
   box-shadow: 0 3px 10px rgb(15 23 42 / 0.06);
 }

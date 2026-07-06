@@ -1,6 +1,7 @@
 .invite-panel {
   position: relative;
   overflow: hidden;
+  background: #ffffff;
 }
 
 .invite-panel::before {
@@ -41,6 +42,7 @@
 
 .member-row {
   border-color: hsl(var(--bc) / 0.1);
+  background: #ffffff;
   box-shadow: 0 3px 12px rgb(15 23 42 / 0.06);
 }
 
@@ -48,7 +50,7 @@
   padding: 0.875rem 1rem;
   border: 1px solid hsl(var(--bc) / 0.09);
   border-radius: var(--rounded-box, 1rem);
-  background: hsl(var(--b2) / 0.5);
+  background: #f8fafc;
 }
 
 @media (max-width: 639px) {

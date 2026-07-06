@@ -4,6 +4,7 @@
   border-top-style: solid;
   background: #ffffff;
   box-shadow: 0 16px 34px rgb(15 23 42 / 0.13);
+  overflow: visible;
 }
 
 .board-list-header,
@@ -47,7 +48,7 @@
   position: absolute;
   top: calc(100% + 0.35rem);
   right: 0;
-  z-index: 100;
+  z-index: 200;
   width: min(13rem, calc(100vw - 2rem));
   border: 1px solid hsl(var(--bc) / 0.13);
   border-radius: 0.65rem;

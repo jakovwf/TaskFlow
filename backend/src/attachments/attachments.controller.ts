@@ -5,13 +5,15 @@ import {
   Param,
   Post,
   Req,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BoardMemberRole } from '@prisma/client';
-import { Request } from 'express';
+import type { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../boards/decorators/roles.decorator';
 import { AttachmentBoardRoleGuard } from './guards/attachment-board-role.guard';
@@ -65,6 +67,33 @@ export class AttachmentsController {
   @Get('cards/:cardId/attachments')
   findAll(@Param('cardId') cardId: string) {
     return this.attachmentsService.findAll(cardId);
+  }
+
+  @Roles(
+    BoardMemberRole.OWNER,
+    BoardMemberRole.ADMIN,
+    BoardMemberRole.MEMBER,
+  )
+  @UseGuards(AttachmentBoardRoleGuard)
+  @Get('attachments/:id/download')
+  async download(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const file = await this.attachmentsService.download(id);
+    const asciiFilename = file.filename
+      .replace(/[^\x20-\x7E]/g, '_')
+      .replace(/["\\]/g, '_');
+
+    response.setHeader('Content-Type', file.contentType);
+    response.setHeader('Content-Length', file.buffer.length);
+    response.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${asciiFilename}"; filename*=UTF-8''${encodeURIComponent(file.filename)}`,
+    );
+    response.setHeader('Cache-Control', 'private, no-store');
+
+    return new StreamableFile(file.buffer);
   }
 
   @UseGuards(AttachmentBoardRoleGuard)

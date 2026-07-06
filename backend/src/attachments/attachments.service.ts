@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -99,6 +100,55 @@ export class AttachmentsService {
     return attachments.map((attachment) =>
       this.withAttachmentMetadata(attachment),
     );
+  }
+
+  async download(id: string) {
+    const attachment = await this.prisma.attachment.findUnique({
+      where: { id },
+      select: {
+        filename: true,
+        url: true,
+      },
+    });
+
+    if (!attachment) {
+      throw new NotFoundException('Attachment not found');
+    }
+
+    let cloudinaryUrl: URL;
+
+    try {
+      cloudinaryUrl = new URL(attachment.url);
+    } catch {
+      throw new BadGatewayException('Attachment source is not available');
+    }
+
+    if (cloudinaryUrl.protocol !== 'https:' || cloudinaryUrl.hostname !== 'res.cloudinary.com') {
+      throw new BadGatewayException('Attachment source is not available');
+    }
+
+    let cloudinaryResponse: globalThis.Response;
+
+    try {
+      cloudinaryResponse = await fetch(cloudinaryUrl);
+    } catch {
+      throw new BadGatewayException('Attachment download failed');
+    }
+
+    if (!cloudinaryResponse.ok) {
+      throw new BadGatewayException('Attachment download failed');
+    }
+
+    const contentType =
+      cloudinaryResponse.headers.get('content-type') ??
+      this.inferMimeType(attachment.filename) ??
+      'application/octet-stream';
+
+    return {
+      filename: attachment.filename,
+      contentType,
+      buffer: Buffer.from(await cloudinaryResponse.arrayBuffer()),
+    };
   }
 
   async remove(id: string, currentUserId: string) {

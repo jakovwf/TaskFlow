@@ -365,15 +365,17 @@
                   >
                     Otvori
                   </button>
-                  <a
+                  <button
+                    type="button"
                     class="btn btn-outline btn-sm"
-                    [href]="getAttachmentDownloadUrl(attachment)"
-                    [attr.download]="attachment.filename"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    [disabled]="attachmentDownloadingId === attachment.id"
+                    (click)="downloadAttachment(attachment)"
                   >
-                    Download
-                  </a>
+                    @if (attachmentDownloadingId === attachment.id) {
+                      <span class="loading loading-spinner loading-xs"></span>
+                    }
+                    Preuzmi
+                  </button>
                   @if (canDeleteAttachment(attachment)) {
                     <button
                       type="button"

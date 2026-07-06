@@ -57,6 +57,12 @@ export class CardService {
     return this.http.get<Attachment[]>(`${environment.apiUrl}/cards/${cardId}/attachments`);
   }
 
+  downloadAttachment(attachmentId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/attachments/${attachmentId}/download`, {
+      responseType: 'blob',
+    });
+  }
+
   deleteAttachment(attachmentId: string): Observable<Attachment> {
     return this.http.delete<Attachment>(`${environment.apiUrl}/attachments/${attachmentId}`);
   }

@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.5rem;
+  gap: 0.4rem;
   pointer-events: none;
 }
 
@@ -16,14 +16,14 @@
   width: fit-content;
   max-width: calc(100vw - 2rem);
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   border: 1px solid hsl(var(--bc) / 0.12);
-  border-radius: 0.75rem;
-  padding: 0.65rem 0.75rem;
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.6rem;
   color: hsl(var(--bc));
   background: hsl(var(--b1) / 0.97);
-  box-shadow: 0 12px 30px rgb(15 23 42 / 0.14);
-  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 22px rgb(15 23 42 / 0.12);
+  backdrop-filter: blur(10px);
   pointer-events: auto;
 }
 
@@ -34,26 +34,39 @@
 
 .tf-toast-icon {
   display: inline-flex;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
   flex: none;
   align-items: center;
   justify-content: center;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  font-size: 0.7rem;
+  border-radius: 0.25rem;
+  font-size: 0.68rem;
   font-weight: 800;
 }
 
+.tf-toast-icon svg {
+  width: 1rem;
+  height: 1rem;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tf-toast.alert-success .tf-toast-icon { color: #15803d; }
+.tf-toast.alert-error .tf-toast-icon { color: #b91c1c; }
+.tf-toast.alert-warning .tf-toast-icon { color: #b45309; }
+.tf-toast.alert-info .tf-toast-icon { color: #1d4ed8; }
+
 .tf-toast-close {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
   flex: none;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: hsl(var(--bc) / 0.55);
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1;
 }
 
@@ -68,10 +81,10 @@
     right: 1rem;
     bottom: auto;
     left: auto;
-    width: min(22rem, calc(100vw - 2rem));
+    width: min(20rem, calc(100vw - 2rem));
   }
 
   .tf-toast {
-    max-width: 22rem;
+    max-width: 20rem;
   }
 }

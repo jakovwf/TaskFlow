@@ -3,7 +3,7 @@
   [style.borderTopColor]="list.accentColor || null"
   [style.borderTopWidth]="list.accentColor ? '4px' : null"
 >
-  <div class="board-list-header mb-3 shrink-0 grid gap-2 sm:grid-cols-[1fr_auto]">
+  <div class="board-list-header mb-3 grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
     <div class="min-w-0">
       <input
         type="text"
@@ -22,26 +22,59 @@
         }
       </div>
     </div>
-    <div class="flex items-center justify-end gap-1 sm:flex-col sm:items-end">
-      <details #colorPicker class="dropdown dropdown-end">
-        <summary class="btn btn-ghost btn-sm" aria-label="Boja liste">Boja</summary>
-        <div class="list-color-picker dropdown-content z-30 mt-2 grid w-44 grid-cols-4 gap-2 rounded-box border border-base-300 p-3 shadow-xl">
-          @for (color of accentColors; track color.label) {
-            <button
-              type="button"
-              class="color-swatch"
-              [class.is-selected]="list.accentColor === color.value"
-              [style.background]="color.preview"
-              [attr.aria-label]="color.label"
-              [attr.title]="color.label"
-              (click)="setAccentColor(color.value)"
-            ></button>
-          }
-        </div>
-      </details>
-      <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading" (click)="emitDelete()">
-        Obrisi
+    <div #actionsMenu class="list-actions-wrapper">
+      <button
+        type="button"
+        class="list-actions-trigger"
+        aria-label="Akcije liste"
+        [attr.aria-expanded]="actionsMenuOpen"
+        [disabled]="loading"
+        (click)="toggleActionsMenu($event)"
+      >
+        <span aria-hidden="true">&#8943;</span>
       </button>
+
+      @if (actionsMenuOpen) {
+        <div class="list-actions-menu" role="menu">
+          <button type="button" class="list-action-item" role="menuitem" (click)="toggleColorPicker()">
+            <span>Promeni boju</span>
+            <span class="list-action-chevron" aria-hidden="true">
+              @if (colorPickerOpen) {
+                &#9652;
+              } @else {
+                &#9662;
+              }
+            </span>
+          </button>
+
+          @if (colorPickerOpen) {
+            <div class="list-color-picker" aria-label="Boja liste">
+              @for (color of accentColors; track color.label) {
+                <button
+                  type="button"
+                  class="color-swatch"
+                  [class.is-selected]="list.accentColor === color.value"
+                  [style.background]="color.preview"
+                  [attr.aria-label]="color.label"
+                  [attr.title]="color.label"
+                  (click)="setAccentColor(color.value)"
+                ></button>
+              }
+            </div>
+          }
+
+          <div class="list-actions-divider"></div>
+          <button
+            type="button"
+            class="list-action-item list-action-danger"
+            role="menuitem"
+            [disabled]="loading"
+            (click)="emitDelete()"
+          >
+            Obriši listu
+          </button>
+        </div>
+      }
     </div>
   </div>
 

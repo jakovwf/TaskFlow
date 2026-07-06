@@ -10,7 +10,15 @@
       [class.opacity-0]="!toast.visible"
     >
       <span class="tf-toast-icon" aria-hidden="true">
-        {{ icon(toast.type) }}
+        @if (toast.type === 'success') {
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="m5 10 3 3 7-7" />
+          </svg>
+        } @else if (toast.type === 'info') {
+          <span>i</span>
+        } @else {
+          <span>!</span>
+        }
       </span>
       <span class="min-w-0 flex-1 text-sm leading-5">{{ toast.message }}</span>
       <button type="button" class="tf-toast-close" aria-label="Zatvori" (click)="toastService.dismiss(toast.id)">&times;</button>

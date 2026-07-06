@@ -1,5 +1,5 @@
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BoardList, Card } from '../../../../store/models';
 import { BoardCard } from '../board-card/board-card';
@@ -12,9 +12,8 @@ import { LIST_ACCENT_COLORS } from '../../appearance-options';
   styleUrl: './board-list.scss',
 })
 export class BoardListComponent implements OnChanges {
-  private readonly elementRef = inject(ElementRef<HTMLElement>);
+  @ViewChild('actionsMenu') private actionsMenu?: ElementRef<HTMLElement>;
 
-  @ViewChild('colorPicker') private colorPicker?: ElementRef<HTMLDetailsElement>;
   @Input({ required: true }) list!: BoardList;
   @Input() connectedDropLists: string[] = [];
   @Input() loading: boolean | null = false;
@@ -38,6 +37,8 @@ export class BoardListComponent implements OnChanges {
   editableListTitle = '';
   cardTitle = '';
   cardDescription = '';
+  actionsMenuOpen = false;
+  colorPickerOpen = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if ('list' in changes || 'renameError' in changes) {
@@ -85,7 +86,18 @@ export class BoardListComponent implements OnChanges {
   }
 
   emitDelete(): void {
+    this.closeActionsMenu();
     this.deleteList.emit(this.list.id);
+  }
+
+  toggleActionsMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.actionsMenuOpen = !this.actionsMenuOpen;
+    this.colorPickerOpen = false;
+  }
+
+  toggleColorPicker(): void {
+    this.colorPickerOpen = !this.colorPickerOpen;
   }
 
   emitCreateCard(): void {
@@ -113,20 +125,19 @@ export class BoardListComponent implements OnChanges {
     if (this.list.accentColor !== accentColor) {
       this.accentColorChange.emit({ listId: this.list.id, accentColor });
     }
-    this.closeColorPicker();
+    this.closeActionsMenu();
   }
 
   @HostListener('document:click', ['$event'])
-  closeColorPickerOnOutsideClick(event: MouseEvent): void {
-    if (!this.elementRef.nativeElement.contains(event.target as Node)) {
-      this.closeColorPicker();
+  closeActionsMenuOnOutsideClick(event: MouseEvent): void {
+    if (!this.actionsMenu?.nativeElement.contains(event.target as Node)) {
+      this.closeActionsMenu();
     }
   }
 
   @HostListener('document:keydown.escape')
-  closeColorPicker(): void {
-    if (this.colorPicker?.nativeElement.open) {
-      this.colorPicker.nativeElement.open = false;
-    }
+  closeActionsMenu(): void {
+    this.actionsMenuOpen = false;
+    this.colorPickerOpen = false;
   }
 }

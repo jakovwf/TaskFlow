@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { ToastService, ToastType } from '../../services/toast.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-toast',
@@ -9,8 +9,4 @@ import { ToastService, ToastType } from '../../services/toast.service';
 })
 export class ToastComponent {
   readonly toastService = inject(ToastService);
-
-  icon(type: ToastType): string {
-    return { success: 'OK', error: '!', warning: '!', info: 'i' }[type];
-  }
 }

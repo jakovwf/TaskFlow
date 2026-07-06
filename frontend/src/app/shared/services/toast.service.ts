@@ -49,6 +49,6 @@ export class ToastService {
         toasts.map((item) => (item.id === toast.id ? { ...item, visible: true } : item)),
       );
     });
-    setTimeout(() => this.dismiss(toast.id), 3700);
+    setTimeout(() => this.dismiss(toast.id), 3000);
   }
 }

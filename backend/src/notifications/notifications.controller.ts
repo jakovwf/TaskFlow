@@ -1,6 +1,5 @@
 import {
   Controller,
-  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -39,16 +38,10 @@ export class NotificationsController {
   }
 
   @Patch(':id/read')
-  async markAsRead(
+  markAsRead(
     @Param('id') id: string,
     @Req() request: AuthenticatedRequest,
   ) {
-    const notification = await this.notificationsService.findOne(id);
-
-    if (notification.userId !== request.user.userId) {
-      throw new ForbiddenException('Notification does not belong to you');
-    }
-
-    return this.notificationsService.markAsRead(id);
+    return this.notificationsService.markAsRead(id, request.user.userId);
   }
 }

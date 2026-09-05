@@ -58,7 +58,7 @@
               <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
                 @if (canManageMember(member)) {
                   <select
-                    class="select select-bordered select-sm w-full sm:w-auto"
+                    class="select select-bordered select-sm"
                     [value]="member.role"
                     [disabled]="memberRoleLoadingUserId === member.userId || memberRemoveLoadingUserId === member.userId"
                     (change)="updateMemberRole(member, $any($event.target).value)"
@@ -81,7 +81,7 @@
                     Ukloni
                   </button>
                 } @else {
-                  <span class="owner-role-pill badge badge-lg">
+                  <span class="owner-role-pill badge">
                     @switch (member.role) {
                       @case ('OWNER') { Vlasnik }
                       @case ('ADMIN') { Admin }

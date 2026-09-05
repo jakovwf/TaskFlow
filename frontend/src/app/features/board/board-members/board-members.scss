@@ -34,10 +34,19 @@
 }
 
 .owner-role-pill {
-  border: 1px solid hsl(var(--p) / 0.15);
-  background: hsl(var(--p) / 0.08);
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  padding-inline: 0.9rem;
+  border: 1px solid hsl(var(--p) / 0.35);
+  background: hsl(var(--p) / 0.12);
   color: hsl(var(--p));
+  font-size: 0.8rem;
   font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .member-row {
@@ -55,6 +64,8 @@
 
 .member-row select,
 .member-row button {
+  flex: none;
+  width: auto;
   min-height: 2.25rem;
   height: 2.25rem;
   line-height: 1;

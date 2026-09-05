@@ -81,7 +81,7 @@
         @let cardStats = getBoardCardStats(board);
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div class="min-w-0">
-            <h1 class="mt-1 text-3xl font-black tracking-tight">{{ board.title }}</h1>
+            <h1 class="mt-1 break-words text-3xl font-black tracking-tight">{{ board.title }}</h1>
             @if (board.description) {
               <p class="mt-2 max-w-2xl text-base-content/70">{{ board.description }}</p>
             }

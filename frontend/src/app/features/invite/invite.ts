@@ -201,7 +201,7 @@ export class Invite {
       }
 
       if (error.status === 404) {
-        return 'Invite link nije pronadjen.';
+        return 'Pozivnica više nije dostupna.';
       }
 
       if (error.status === 400) {

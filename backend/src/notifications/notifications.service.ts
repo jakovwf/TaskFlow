@@ -84,7 +84,7 @@ export class NotificationsService {
     await this.pushService.sendPushNotification(data.userId, {
       title: this.getPushTitle(data.type),
       body: data.message,
-      url: data.relatedBoardId ? `/b/${data.relatedBoardId}` : '/notifications',
+      url: this.getPushUrl(data.type, notification.relatedInvite?.token, data.relatedBoardId),
     });
 
     return notification;
@@ -99,6 +99,20 @@ export class NotificationsService {
       default:
         return 'Obaveštenje';
     }
+  }
+
+  private getPushUrl(
+    type: NotificationType,
+    relatedInviteToken: string | undefined,
+    relatedBoardId: string | undefined,
+  ): string {
+    // Dok je pozivnica pending, korisnik nema pristup boardu - klik mora da
+    // vodi na invite ekran (prihvati/odbij), ne direktno na board.
+    if (type === NotificationType.BOARD_INVITE && relatedInviteToken) {
+      return `/invite/${relatedInviteToken}`;
+    }
+
+    return relatedBoardId ? `/b/${relatedBoardId}` : '/notifications';
   }
 
   private readonly notificationInclude = {

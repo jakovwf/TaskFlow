@@ -86,20 +86,29 @@ export class BoardMembers {
     this.boardSocketService.memberJoined$
       .pipe(takeUntilDestroyed())
       .subscribe(({ user, role, boardId }) => {
-        if (this.boardId !== boardId || this.members.some((member) => member.userId === user.id)) {
+        if (this.boardId !== boardId) {
           return;
         }
 
-        this.members = [
-          ...this.members,
-          {
-            id: `${boardId}:${user.id}`,
-            boardId,
-            userId: user.id,
-            role,
-            user,
-          },
-        ];
+        if (!this.members.some((member) => member.userId === user.id)) {
+          this.members = [
+            ...this.members,
+            {
+              id: `${boardId}:${user.id}`,
+              boardId,
+              userId: user.id,
+              role,
+              user,
+            },
+          ];
+        }
+
+        // Pozivnica koja je upravo prihvaćena više ne treba da stoji kao
+        // "na čekanju" - server je već emitovao member:joined za nju.
+        this.invites = this.invites.filter(
+          (invite) => invite.invitedEmail.toLowerCase() !== user.email.toLowerCase(),
+        );
+
         this.cdr.markForCheck();
       });
 

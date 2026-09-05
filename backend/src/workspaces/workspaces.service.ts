@@ -17,7 +17,17 @@ export class WorkspacesService {
   findAllForUser(userId: string) {
     return this.prisma.workspace.findMany({
       where: {
-        OR: [{ ownerId: userId }, { members: { some: { userId } } }],
+        OR: [
+          { ownerId: userId },
+          {
+            // A non-owner workspace membership only counts if the user can
+            // still see at least one board there. This guards against stale
+            // WorkspaceMember rows (e.g. leftover from board invites) that
+            // would otherwise surface as an empty "ghost" workspace.
+            members: { some: { userId } },
+            boards: { some: { members: { some: { userId } } } },
+          },
+        ],
       },
       include: this.workspaceInclude,
       orderBy: { createdAt: 'asc' },

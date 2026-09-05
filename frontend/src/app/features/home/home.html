@@ -192,6 +192,64 @@
       } @else if (!(workspacesLoading$ | async)) {
         <div class="tf-empty text-sm">Nema workspace-ova. Kreiraj prvi workspace da bi mogao da dodas board.</div>
       }
+
+      @if (sharedBoards(workspaces, boards); as shared) {
+        @if (shared.length > 0) {
+          <section class="workspace-panel card tf-panel mt-6">
+            <div class="card-body gap-4 p-4 sm:p-5">
+              <div>
+                <h2 class="text-xl font-semibold">Deljeno sa mnom</h2>
+                <p class="mt-1 text-sm text-base-content/60">Boardovi kojima imaš pristup u tuđim workspace-ovima.</p>
+              </div>
+
+              <div class="workspace-board-grid grid grid-cols-1 gap-4 sm:grid-cols-2">
+                @for (board of shared; track board.id) {
+                  <article class="home-board-card tf-card min-w-0 cursor-pointer p-4" [class.is-editing]="editingBoardId === board.id" [class.is-menu-open]="activeDropdownId === 'shared-' + board.id" role="link" tabindex="0" (click)="openBoard(board.id)" (keydown.enter)="openBoard(board.id)">
+                    @if (editingBoardId === board.id) {
+                      <form class="grid gap-2" [formGroup]="boardEditForm" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" (ngSubmit)="saveBoardEdit()">
+                        <input type="text" formControlName="title" class="input input-bordered input-sm w-full" placeholder="Naziv boarda" />
+                        <input type="text" formControlName="description" class="input input-bordered input-sm w-full" placeholder="Opis, opciono" />
+                        <div class="flex flex-wrap gap-2">
+                          <button type="submit" class="btn btn-primary btn-sm" [disabled]="boardEditForm.invalid || (boardsLoading$ | async)">Sacuvaj</button>
+                          <button type="button" class="btn btn-ghost btn-sm" (click)="cancelBoardEdit()">Odustani</button>
+                        </div>
+                      </form>
+                    } @else {
+                      <div class="home-board-content">
+                        <h3 class="home-board-title font-semibold">{{ board.title }}</h3>
+                        @if (board.description) {
+                          <p class="home-board-description mt-1 line-clamp-2 text-sm text-base-content/70">{{ board.description }}</p>
+                        }
+                        @if (boardOwner(board); as owner) {
+                          <p class="mt-1 truncate text-xs text-base-content/50">Vlasnik: {{ owner.displayName || owner.email }}</p>
+                        }
+                      </div>
+                      <div class="home-board-footer flex items-center justify-between gap-2 border-t border-base-300/70 pt-2.5">
+                        <span class="open-board-chip">Otvori board <span aria-hidden="true">→</span></span>
+                        @if (canEditBoard(board) || canDeleteBoard(board)) {
+                          <div class="relative" (click)="$event.stopPropagation()">
+                            <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za board" (click)="toggleDropdown('shared-' + board.id, $event)">...</button>
+                            @if (activeDropdownId === 'shared-' + board.id) {
+                              <div class="absolute bottom-8 right-0 z-50 w-32 rounded-box border border-base-200 bg-base-100 p-1 shadow-lg">
+                                @if (canEditBoard(board)) {
+                                  <button type="button" class="btn btn-ghost btn-sm w-full text-left" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
+                                }
+                                @if (canDeleteBoard(board)) {
+                                  <button type="button" class="btn btn-ghost btn-sm w-full text-left text-error" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">Obrisi</button>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </article>
+                }
+              </div>
+            </div>
+          </section>
+        }
+      }
     }
   }
 </main>

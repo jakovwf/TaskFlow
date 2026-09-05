@@ -167,6 +167,16 @@ export class Home {
     return boards.filter((board) => board.workspaceId === workspaceId);
   }
 
+  sharedBoards(workspaces: Workspace[], boards: Board[]): Board[] {
+    const workspaceIds = new Set(workspaces.map((workspace) => workspace.id));
+
+    return boards.filter((board) => !workspaceIds.has(board.workspaceId));
+  }
+
+  boardOwner(board: Board): User | null {
+    return board.members?.find((member) => member.role === 'OWNER')?.user ?? null;
+  }
+
   visibleBoardsForWorkspace(boards: Board[], workspaceId: string): Board[] {
     const workspaceBoards = this.boardsForWorkspace(boards, workspaceId);
     const page = this.workspaceBoardPageIndex(workspaceBoards.length, workspaceId);

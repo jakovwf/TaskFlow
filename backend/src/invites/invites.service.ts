@@ -11,7 +11,6 @@ import {
   BoardMemberRole,
   InviteStatus,
   NotificationType,
-  WorkspaceMemberRole,
 } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { ActivityService } from '../activity/activity.service';
@@ -172,21 +171,6 @@ export class InvitesService {
           boardId: invite.boardId,
           userId: currentUser.userId,
           role: invite.role,
-        },
-      });
-
-      await tx.workspaceMember.upsert({
-        where: {
-          workspaceId_userId: {
-            workspaceId: invite.board.workspace.id,
-            userId: currentUser.userId,
-          },
-        },
-        update: {},
-        create: {
-          workspaceId: invite.board.workspace.id,
-          userId: currentUser.userId,
-          role: WorkspaceMemberRole.MEMBER,
         },
       });
 

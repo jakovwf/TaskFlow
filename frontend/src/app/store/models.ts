@@ -106,6 +106,11 @@ export interface BoardActivityItem {
   user?: User;
 }
 
+export interface BoardActivityPage {
+  items: BoardActivityItem[];
+  hasMore: boolean;
+}
+
 export interface WorkspaceMember {
   id: string;
   workspaceId: string;
@@ -191,6 +196,7 @@ export interface Notification {
   relatedInvite?: {
     id: string;
     token: string;
+    status: InviteStatus;
   } | null;
 }
 

@@ -72,9 +72,30 @@ export class Notifications {
   }
 
   inviteLink(notification: Notification): string | null {
-    const token = notification.relatedInvite?.token;
+    const invite = notification.relatedInvite;
 
-    return notification.type === 'BOARD_INVITE' && token ? `/invite/${token}` : null;
+    return notification.type === 'BOARD_INVITE' && invite?.token && invite.status === 'PENDING'
+      ? `/invite/${invite.token}`
+      : null;
+  }
+
+  inviteStatusLabel(notification: Notification): string | null {
+    if (notification.type !== 'BOARD_INVITE') {
+      return null;
+    }
+
+    switch (notification.relatedInvite?.status) {
+      case 'PENDING':
+        return null;
+      case 'ACCEPTED':
+        return 'Prihvaćeno';
+      case 'DECLINED':
+        return 'Odbijeno';
+      case 'EXPIRED':
+        return 'Isteklo';
+      default:
+        return 'Više nije dostupno';
+    }
   }
 
   openInvite(notification: Notification): void {

@@ -1,9 +1,11 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ConfirmModalService } from '../../shared/services/confirm-modal.service';
+import { selectCurrentUser } from '../../store/auth/auth.selectors';
 import {
   createBoard,
   deleteBoard,
@@ -15,7 +17,7 @@ import {
   selectBoardsError,
   selectBoardsLoading,
 } from '../../store/boards/boards.selectors';
-import { Board, Workspace } from '../../store/models';
+import { Board, User, Workspace } from '../../store/models';
 import {
   createWorkspace,
   deleteWorkspace,
@@ -46,6 +48,7 @@ export class Home {
   readonly boardsLoading$ = this.store.select(selectBoardsLoading);
   readonly workspacesError$ = this.store.select(selectWorkspacesError);
   readonly boardsError$ = this.store.select(selectBoardsError);
+  private currentUser: User | null = null;
   editingWorkspaceId: string | null = null;
   editingBoardId: string | null = null;
   creatingBoardWorkspaceId: string | null = null;
@@ -75,6 +78,29 @@ export class Home {
   constructor() {
     this.store.dispatch(loadWorkspaces());
     this.store.dispatch(loadMyBoards());
+
+    this.store
+      .select(selectCurrentUser)
+      .pipe(takeUntilDestroyed())
+      .subscribe((user) => {
+        this.currentUser = user;
+      });
+  }
+
+  canManageWorkspace(workspace: Workspace): boolean {
+    return !!this.currentUser && workspace.ownerId === this.currentUser.id;
+  }
+
+  canEditBoard(board: Board): boolean {
+    const role = board.members?.find((member) => member.userId === this.currentUser?.id)?.role;
+
+    return role === 'OWNER' || role === 'ADMIN';
+  }
+
+  canDeleteBoard(board: Board): boolean {
+    const role = board.members?.find((member) => member.userId === this.currentUser?.id)?.role;
+
+    return role === 'OWNER';
   }
 
   createWorkspace(): void {

@@ -18,10 +18,13 @@ export class BoardActivity {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
 
+  private static readonly PAGE_SIZE = 20;
+
   boardId: string | null = null;
   activities: BoardActivityItem[] = [];
-  visibleActivityCount = 10;
+  hasMore = false;
   loading = false;
+  loadingMore = false;
   error: string | null = null;
 
   constructor() {
@@ -90,18 +93,55 @@ export class BoardActivity {
   }
 
   loadMoreActivities(): void {
-    this.visibleActivityCount += 10;
+    if (!this.boardId || this.loadingMore || !this.hasMore) {
+      return;
+    }
+
+    const boardId = this.boardId;
+    this.loadingMore = true;
+    this.cdr.markForCheck();
+
+    this.boardService
+      .getBoardActivity(boardId, BoardActivity.PAGE_SIZE, this.activities.length)
+      .pipe(
+        take(1),
+        finalize(() => {
+          if (this.boardId === boardId) {
+            this.loadingMore = false;
+            this.cdr.markForCheck();
+          }
+        }),
+      )
+      .subscribe({
+        next: (page) => {
+          if (this.boardId !== boardId) {
+            return;
+          }
+
+          this.activities = [...this.activities, ...page.items];
+          this.hasMore = page.hasMore;
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          if (this.boardId !== boardId) {
+            return;
+          }
+
+          this.error = this.getErrorMessage(error);
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   private loadActivity(boardId: string): void {
     this.loading = true;
     this.error = null;
     this.activities = [];
-    this.visibleActivityCount = 10;
+    this.hasMore = false;
     this.cdr.markForCheck();
 
     this.boardService
-      .getBoardActivity(boardId)
+      .getBoardActivity(boardId, BoardActivity.PAGE_SIZE, 0)
       .pipe(
         take(1),
         finalize(() => {
@@ -112,12 +152,13 @@ export class BoardActivity {
         }),
       )
       .subscribe({
-        next: (activities) => {
+        next: (page) => {
           if (this.boardId !== boardId) {
             return;
           }
 
-          this.activities = activities;
+          this.activities = page.items;
+          this.hasMore = page.hasMore;
           this.cdr.markForCheck();
         },
         error: (error: unknown) => {

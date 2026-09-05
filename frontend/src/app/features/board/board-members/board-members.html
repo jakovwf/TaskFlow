@@ -101,6 +101,7 @@
       </div>
     </div>
 
+    @if (canManageInvites()) {
     <aside class="invite-panel card tf-panel">
       <div class="card-body gap-4 p-4 sm:p-5">
       <div>
@@ -186,14 +187,14 @@
                 <div class="min-w-0">
                   <p class="truncate font-medium">{{ invite.invitedEmail }}</p>
                   <div class="mt-2 flex flex-wrap gap-2">
-                    <span class="badge badge-outline">
+                    <span class="badge badge-primary badge-outline">
                       @switch (invite.role) {
                         @case ('OWNER') { Vlasnik }
                         @case ('ADMIN') { Admin }
                         @case ('MEMBER') { Član }
                       }
                     </span>
-                    <span class="badge badge-ghost">{{ invite.status }}</span>
+                    <span class="badge" [ngClass]="inviteStatusBadgeClass(invite.status)">{{ invite.status }}</span>
                   </div>
                   <a [routerLink]="['/invite', invite.token]" class="link link-primary text-xs">
                     Otvori link pozivnice
@@ -227,5 +228,6 @@
       }
       </div>
     </aside>
+    }
   </section>
 </main>

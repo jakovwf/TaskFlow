@@ -77,15 +77,17 @@
                   } @else {
                     <div class="flex min-w-0 items-center gap-1">
                       <h2 class="truncate text-lg font-bold">{{ workspace.name }}</h2>
-                      <div class="relative">
-                        <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za workspace" (click)="toggleDropdown('ws-' + workspace.id, $event)">...</button>
-                        @if (activeDropdownId === 'ws-' + workspace.id) {
-                          <div class="absolute left-0 top-8 z-50 w-32 rounded-box border border-base-200 bg-base-100 p-1 shadow-lg" (click)="$event.stopPropagation()">
-                            <button type="button" class="btn btn-ghost btn-sm w-full text-left" [disabled]="workspacesLoading$ | async" (click)="startWorkspaceEdit(workspace)">Izmeni</button>
-                            <button type="button" class="btn btn-ghost btn-sm w-full text-left text-error" [disabled]="workspacesLoading$ | async" (click)="deleteWorkspace(workspace.id)">Obrisi</button>
-                          </div>
-                        }
-                      </div>
+                      @if (canManageWorkspace(workspace)) {
+                        <div class="relative">
+                          <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za workspace" (click)="toggleDropdown('ws-' + workspace.id, $event)">...</button>
+                          @if (activeDropdownId === 'ws-' + workspace.id) {
+                            <div class="absolute left-0 top-8 z-50 w-32 rounded-box border border-base-200 bg-base-100 p-1 shadow-lg" (click)="$event.stopPropagation()">
+                              <button type="button" class="btn btn-ghost btn-sm w-full text-left" [disabled]="workspacesLoading$ | async" (click)="startWorkspaceEdit(workspace)">Izmeni</button>
+                              <button type="button" class="btn btn-ghost btn-sm w-full text-left text-error" [disabled]="workspacesLoading$ | async" (click)="deleteWorkspace(workspace.id)">Obrisi</button>
+                            </div>
+                          }
+                        </div>
+                      }
                     </div>
                     <div class="flex items-center gap-2">
                       <button type="button" class="btn btn-primary btn-sm" (click)="toggleBoardCreate(workspace.id)">
@@ -128,15 +130,21 @@
                             </div>
                             <div class="home-board-footer flex items-center justify-between gap-2 border-t border-base-300/70 pt-2.5">
                               <span class="open-board-chip">Otvori board <span aria-hidden="true">→</span></span>
-                              <div class="relative" (click)="$event.stopPropagation()">
-                                <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za board" (click)="toggleDropdown('board-' + board.id, $event)">...</button>
-                                @if (activeDropdownId === 'board-' + board.id) {
-                                  <div class="absolute bottom-8 right-0 z-50 w-32 rounded-box border border-base-200 bg-base-100 p-1 shadow-lg">
-                                    <button type="button" class="btn btn-ghost btn-sm w-full text-left" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
-                                    <button type="button" class="btn btn-ghost btn-sm w-full text-left text-error" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">Obrisi</button>
-                                  </div>
-                                }
-                              </div>
+                              @if (canEditBoard(board) || canDeleteBoard(board)) {
+                                <div class="relative" (click)="$event.stopPropagation()">
+                                  <button type="button" class="btn btn-ghost btn-sm" aria-label="Akcije za board" (click)="toggleDropdown('board-' + board.id, $event)">...</button>
+                                  @if (activeDropdownId === 'board-' + board.id) {
+                                    <div class="absolute bottom-8 right-0 z-50 w-32 rounded-box border border-base-200 bg-base-100 p-1 shadow-lg">
+                                      @if (canEditBoard(board)) {
+                                        <button type="button" class="btn btn-ghost btn-sm w-full text-left" [disabled]="boardsLoading$ | async" (click)="startBoardEdit(board)">Izmeni</button>
+                                      }
+                                      @if (canDeleteBoard(board)) {
+                                        <button type="button" class="btn btn-ghost btn-sm w-full text-left text-error" [disabled]="boardsLoading$ | async" (click)="deleteBoard(board.id)">Obrisi</button>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                              }
                             </div>
                           }
                         </article>

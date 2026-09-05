@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -15,7 +16,7 @@ import { ConfirmModalService } from '../../../shared/services/confirm-modal.serv
 
 @Component({
   selector: 'app-board-members',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [NgClass, ReactiveFormsModule, RouterLink],
   templateUrl: './board-members.html',
   styleUrl: './board-members.scss',
 })
@@ -335,12 +336,33 @@ export class BoardMembers {
     return this.currentUserBoardRole() === 'OWNER' && member.role !== 'OWNER';
   }
 
+  canManageInvites(): boolean {
+    const role = this.currentUserBoardRole();
+
+    return role === 'OWNER' || role === 'ADMIN';
+  }
+
   currentUserBoardRole(): BoardMemberRole | null {
     if (!this.currentUser) {
       return null;
     }
 
     return this.members.find((member) => member.userId === this.currentUser?.id)?.role ?? null;
+  }
+
+  inviteStatusBadgeClass(status: BoardInvite['status']): string {
+    switch (status) {
+      case 'PENDING':
+        return 'badge-warning';
+      case 'ACCEPTED':
+        return 'badge-success';
+      case 'DECLINED':
+        return 'badge-error';
+      case 'EXPIRED':
+        return 'badge-neutral';
+      default:
+        return 'badge-ghost';
+    }
   }
 
   private loadBoardMembers(boardId: string): void {
@@ -412,6 +434,11 @@ export class BoardMembers {
 
       if (error.status === 404) {
         return 'Board ili invite nisu pronadjeni.';
+      }
+
+      if (error.status === 409) {
+        const serverMessage = error.error?.message;
+        return typeof serverMessage === 'string' ? serverMessage : fallbackMessage;
       }
 
       return fallbackMessage;

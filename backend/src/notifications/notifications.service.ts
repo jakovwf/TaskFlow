@@ -112,6 +112,7 @@ export class NotificationsService {
       select: {
         id: true,
         token: true,
+        status: true,
       },
     },
   };

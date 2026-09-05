@@ -5,6 +5,7 @@ import { ChangeDetectorRef, Component, ElementRef, HostListener, ViewChild, inje
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { catchError, combineLatest, distinctUntilChanged, finalize, forkJoin, map, of, take } from 'rxjs';
 import { CommentService } from '../../../core/services/comment';
@@ -17,6 +18,8 @@ import { ToastService } from '../../../shared/services/toast.service';
 import {
   createCard,
   createList,
+  createListFailure,
+  createListSuccess,
   deleteBoard,
   deleteCard,
   deleteList,
@@ -48,6 +51,7 @@ import { BOARD_BACKGROUNDS } from '../appearance-options';
   styleUrl: './board.scss',
 })
 export class Board {
+  private readonly actions$ = inject(Actions);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly cardService = inject(CardService);
   private readonly boardSocketService = inject(BoardSocketService);
@@ -94,6 +98,7 @@ export class Board {
   editingBoardHeader = false;
   pendingBoardBackgroundColor: string | null = null;
   showNewListForm = false;
+  creatingList = false;
   mobileToolbarOpen = false;
   activeMobileListIndex = 0;
   canScrollBoardLeft = false;
@@ -129,6 +134,13 @@ export class Board {
   });
 
   constructor() {
+    this.actions$
+      .pipe(ofType(createListSuccess, createListFailure), takeUntilDestroyed())
+      .subscribe(() => {
+        this.creatingList = false;
+        this.cdr.markForCheck();
+      });
+
     this.currentUser$
       .pipe(takeUntilDestroyed())
       .subscribe((user) => {
@@ -360,6 +372,7 @@ export class Board {
     }
 
     const { title } = this.listForm.getRawValue();
+    this.creatingList = true;
     this.store.dispatch(createList({ boardId, title }));
     this.listForm.reset();
     this.showNewListForm = false;
@@ -860,6 +873,24 @@ export class Board {
   }
 
   canManageBoardLabels(board: BoardModel): boolean {
+    const role = board.members?.find((member) => member.userId === this.currentUser?.id)?.role;
+
+    return role === 'OWNER' || role === 'ADMIN';
+  }
+
+  canEditBoard(board: BoardModel): boolean {
+    const role = board.members?.find((member) => member.userId === this.currentUser?.id)?.role;
+
+    return role === 'OWNER' || role === 'ADMIN';
+  }
+
+  canDeleteBoard(board: BoardModel): boolean {
+    const role = board.members?.find((member) => member.userId === this.currentUser?.id)?.role;
+
+    return role === 'OWNER';
+  }
+
+  canManageLists(board: BoardModel): boolean {
     const role = board.members?.find((member) => member.userId === this.currentUser?.id)?.role;
 
     return role === 'OWNER' || role === 'ADMIN';

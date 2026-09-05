@@ -13,21 +13,28 @@ interface LogActivityData {
 export class ActivityService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(boardId: string) {
-    return this.prisma.activity.findMany({
-      where: { boardId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            displayName: true,
-            email: true,
-            avatarUrl: true,
+  async findAll(boardId: string, limit: number, offset: number) {
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.activity.findMany({
+        where: { boardId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              displayName: true,
+              email: true,
+              avatarUrl: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+      this.prisma.activity.count({ where: { boardId } }),
+    ]);
+
+    return { items, hasMore: offset + items.length < total };
   }
 
   logActivity(data: LogActivityData) {

@@ -99,40 +99,46 @@
             <a [routerLink]="['/b', board.id, 'activity']" class="btn btn-outline btn-sm">
               Aktivnost
             </a>
-            <div class="board-action-menu-wrapper">
-              <button
-                type="button"
-                class="board-more-button btn btn-ghost btn-sm"
-                aria-label="Dodatne board akcije"
-                aria-haspopup="menu"
-                [attr.aria-expanded]="mobileToolbarOpen"
-                (click)="toggleMobileToolbar($event)"
-              >
-                <span aria-hidden="true">&#8943;</span>
-              </button>
-              @if (mobileToolbarOpen) {
-                <div class="board-action-menu" role="menu" aria-label="Dodatne board akcije" (click)="$event.stopPropagation()">
-                  <button
-                    type="button"
-                    class="board-menu-action"
-                    role="menuitem"
-                    [disabled]="loading$ | async"
-                    (click)="startBoardEdit(board)"
-                  >
-                    Izmeni board
-                  </button>
-                  <button
-                    type="button"
-                    class="board-delete-action"
-                    role="menuitem"
-                    [disabled]="loading$ | async"
-                    (click)="deleteCurrentBoard(board.id)"
-                  >
-                    Obriši board
-                  </button>
-                </div>
-              }
-            </div>
+            @if (canEditBoard(board) || canDeleteBoard(board)) {
+              <div class="board-action-menu-wrapper">
+                <button
+                  type="button"
+                  class="board-more-button btn btn-ghost btn-sm"
+                  aria-label="Dodatne board akcije"
+                  aria-haspopup="menu"
+                  [attr.aria-expanded]="mobileToolbarOpen"
+                  (click)="toggleMobileToolbar($event)"
+                >
+                  <span aria-hidden="true">&#8943;</span>
+                </button>
+                @if (mobileToolbarOpen) {
+                  <div class="board-action-menu" role="menu" aria-label="Dodatne board akcije" (click)="$event.stopPropagation()">
+                    @if (canEditBoard(board)) {
+                      <button
+                        type="button"
+                        class="board-menu-action"
+                        role="menuitem"
+                        [disabled]="loading$ | async"
+                        (click)="startBoardEdit(board)"
+                      >
+                        Izmeni board
+                      </button>
+                    }
+                    @if (canDeleteBoard(board)) {
+                      <button
+                        type="button"
+                        class="board-delete-action"
+                        role="menuitem"
+                        [disabled]="loading$ | async"
+                        (click)="deleteCurrentBoard(board.id)"
+                      >
+                        Obriši board
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
       }
@@ -214,6 +220,7 @@
             [loading]="loading$ | async"
             [renaming]="renamingListId === list.id"
             [renameError]="listRenameErrors[list.id] ?? null"
+            [canDelete]="canManageLists(board)"
             [connectedDropLists]="cardDropListIds(board.lists??[])"
             [mobileDragHandle]="isMobileViewport"
             (renameList)="renameList($event)"
@@ -224,6 +231,13 @@
             (accentColorChange)="updateListAccent($event)"
             (cardDropped)="dropCard($event, board.id)"
           />
+        }
+        @if (creatingList) {
+          <div class="board-list-host list-skeleton tf-panel" aria-hidden="true">
+            <div class="list-skeleton-line list-skeleton-title"></div>
+            <div class="list-skeleton-line"></div>
+            <div class="list-skeleton-line"></div>
+          </div>
         }
       </section>
       <button

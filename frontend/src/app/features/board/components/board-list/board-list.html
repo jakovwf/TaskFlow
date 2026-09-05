@@ -63,16 +63,18 @@
             </div>
           }
 
-          <div class="list-actions-divider"></div>
-          <button
-            type="button"
-            class="list-action-item list-action-danger"
-            role="menuitem"
-            [disabled]="loading"
-            (click)="emitDelete()"
-          >
-            Obriši listu
-          </button>
+          @if (canDelete) {
+            <div class="list-actions-divider"></div>
+            <button
+              type="button"
+              class="list-action-item list-action-danger"
+              role="menuitem"
+              [disabled]="loading"
+              (click)="emitDelete()"
+            >
+              Obriši listu
+            </button>
+          }
         </div>
       }
     </div>

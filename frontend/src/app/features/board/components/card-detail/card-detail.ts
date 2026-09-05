@@ -391,6 +391,12 @@ export class CardDetailComponent implements OnChanges, OnDestroy {
     return this.card?.attachments ?? [];
   }
 
+  canDeleteCard(): boolean {
+    const role = this.boardMembers.find((member) => member.userId === this.currentUser?.id)?.role;
+
+    return role === 'OWNER' || role === 'ADMIN';
+  }
+
   canDeleteAttachment(attachment: Attachment): boolean {
     if (!this.currentUser) {
       return false;

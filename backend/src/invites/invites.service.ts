@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -39,6 +40,40 @@ export class InvitesService {
     invitedByUserId: string,
     createInviteDto: CreateInviteDto,
   ) {
+    const invitedEmail = createInviteDto.inviteeEmail.toLowerCase().trim();
+
+    const invitedUser = await this.prisma.user.findUnique({
+      where: { email: invitedEmail },
+      select: { id: true },
+    });
+
+    if (invitedUser) {
+      const existingMember = await this.prisma.boardMember.findUnique({
+        where: {
+          boardId_userId: {
+            boardId,
+            userId: invitedUser.id,
+          },
+        },
+      });
+
+      if (existingMember) {
+        throw new ConflictException('Korisnik je već član ovog boarda');
+      }
+    }
+
+    const existingPendingInvite = await this.prisma.boardInvite.findFirst({
+      where: {
+        boardId,
+        invitedEmail,
+        status: InviteStatus.PENDING,
+      },
+    });
+
+    if (existingPendingInvite) {
+      throw new ConflictException('Pozivnica je već poslata i čeka odgovor');
+    }
+
     const token = randomUUID();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
@@ -46,7 +81,7 @@ export class InvitesService {
       data: {
         boardId,
         invitedByUserId,
-        invitedEmail: createInviteDto.inviteeEmail,
+        invitedEmail,
         token,
         expiresAt,
         status: InviteStatus.PENDING,
@@ -62,11 +97,6 @@ export class InvitesService {
       boardId,
       userId: invitedByUserId,
       payload: { invitedEmail: invite.invitedEmail },
-    });
-
-    const invitedUser = await this.prisma.user.findUnique({
-      where: { email: invite.invitedEmail },
-      select: { id: true },
     });
 
     if (invitedUser) {

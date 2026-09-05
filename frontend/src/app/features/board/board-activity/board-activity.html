@@ -22,7 +22,7 @@
 
   @if (activities.length > 0) {
     <ul class="space-y-3">
-      @for (activity of activities.slice(0, visibleActivityCount); track activity.id) {
+      @for (activity of activities; track activity.id) {
         <li class="activity-card">
           <div class="activity-card-content">
             <span class="activity-marker" aria-hidden="true"></span>
@@ -46,9 +46,17 @@
         </li>
       }
     </ul>
-    @if (visibleActivityCount < activities.length) {
+    @if (hasMore) {
       <div class="mt-5 flex justify-center">
-        <button type="button" class="btn btn-outline bg-white" (click)="loadMoreActivities()">
+        <button
+          type="button"
+          class="btn btn-outline bg-white"
+          [disabled]="loadingMore"
+          (click)="loadMoreActivities()"
+        >
+          @if (loadingMore) {
+            <span class="loading loading-spinner loading-xs"></span>
+          }
           Učitaj još aktivnosti
         </button>
       </div>

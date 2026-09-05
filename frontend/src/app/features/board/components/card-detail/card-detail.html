@@ -480,17 +480,19 @@
         }
       </section>
 
-      <section class="danger-zone mt-8 border-t border-error/20 pt-4">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 class="text-sm font-semibold text-base-content/75">Brisanje kartice</h3>
-            <p class="mt-0.5 text-xs text-base-content/50">Ova radnja se ne može poništiti.</p>
+      @if (canDeleteCard()) {
+        <section class="danger-zone mt-8 border-t border-error/20 pt-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-base-content/75">Brisanje kartice</h3>
+              <p class="mt-0.5 text-xs text-base-content/50">Ova radnja se ne može poništiti.</p>
+            </div>
+            <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading" (click)="emitDelete()">
+              Obriši karticu
+            </button>
           </div>
-          <button type="button" class="btn btn-error btn-outline btn-sm" [disabled]="loading" (click)="emitDelete()">
-            Obriši karticu
-          </button>
-        </div>
-      </section>
+        </section>
+      }
       </main>
     </div>
 

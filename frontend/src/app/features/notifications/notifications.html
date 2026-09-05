@@ -61,8 +61,8 @@
                         >
                           Otvori pozivnicu
                         </a>
-                      } @else if (notification.type === 'BOARD_INVITE') {
-                        <p class="text-xs text-base-content/60">Link pozivnice nije dostupan.</p>
+                      } @else if (inviteStatusLabel(notification); as statusLabel) {
+                        <p class="text-xs text-base-content/60">{{ statusLabel }}</p>
                       }
 
                       @if (!notification.isRead) {

@@ -20,6 +20,7 @@ export class BoardListComponent implements OnChanges {
   @Input() mobileDragHandle = false;
   @Input() renaming = false;
   @Input() renameError: string | null = null;
+  @Input() canDelete = true;
 
   @Output() renameList = new EventEmitter<{ listId: string; title: string }>();
   @Output() deleteList = new EventEmitter<string>();

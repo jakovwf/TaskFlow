@@ -177,6 +177,7 @@ export class Profile {
         await this.pushService.cancelSubscription();
       }
     } catch (error: unknown) {
+      console.error('Push notifikacije: promena stanja nije uspela.', error);
       this.pushError = this.getPushErrorMessage(error);
     } finally {
       this.pushLoading = false;
@@ -208,6 +209,14 @@ export class Profile {
 
       if (error.message === 'SERVICE_WORKER_UNSUPPORTED') {
         return 'Ovaj browser ne podržava service worker.';
+      }
+
+      if (error.message === 'PERMISSION_DENIED') {
+        return 'Dozvola za notifikacije je blokirana. Omogući je u podešavanjima browsera.';
+      }
+
+      if (error.message === 'PERMISSION_TIMEOUT' || error.message === 'SUBSCRIPTION_TIMEOUT') {
+        return 'Browser nije odgovorio na zahtev za dozvolu. Proveri podešavanja notifikacija i pokušaj ponovo.';
       }
 
       if (error.name === 'NotAllowedError') {

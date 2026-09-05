@@ -45,7 +45,7 @@
 
 .workspace-panel {
   position: relative;
-  overflow: visible;
+  overflow: visible !important;
   border-color: #e2e8f0;
   background: #ffffff;
 }
@@ -58,7 +58,7 @@
 
 .home-board-card {
   position: relative;
-  overflow: visible;
+  overflow: visible !important;
   border-color: #e2e8f0;
   box-shadow: 0 5px 16px rgb(15 23 42 / 0.07);
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;

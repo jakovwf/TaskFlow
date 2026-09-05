@@ -209,7 +209,12 @@ export class BoardsService {
       throw new BadRequestException('Owner cannot be removed from the board');
     }
 
-    return this.prisma.boardMember.delete({
+    const board = await this.prisma.board.findUnique({
+      where: { id: boardId },
+      select: { workspaceId: true },
+    });
+
+    const removedMember = await this.prisma.boardMember.delete({
       where: {
         boardId_userId: {
           boardId,
@@ -221,6 +226,46 @@ export class BoardsService {
           select: this.safeUserSelect,
         },
       },
+    });
+
+    if (board) {
+      await this.cleanupDanglingWorkspaceAccess(board.workspaceId, userId);
+    }
+
+    return removedMember;
+  }
+
+  /**
+   * Accepting a board invite also grants workspace membership so the shared
+   * board can be grouped/displayed under its workspace. Once a user no longer
+   * has access to any board in that workspace, that leftover workspace
+   * membership must be cleaned up too, otherwise the (often "Personal")
+   * workspace keeps showing up for a user who no longer has any reason to see it.
+   */
+  private async cleanupDanglingWorkspaceAccess(workspaceId: string, userId: string) {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { ownerId: true },
+    });
+
+    if (!workspace || workspace.ownerId === userId) {
+      return;
+    }
+
+    const remainingBoardAccess = await this.prisma.boardMember.findFirst({
+      where: {
+        userId,
+        board: { workspaceId },
+      },
+      select: { id: true },
+    });
+
+    if (remainingBoardAccess) {
+      return;
+    }
+
+    await this.prisma.workspaceMember.deleteMany({
+      where: { workspaceId, userId },
     });
   }
 

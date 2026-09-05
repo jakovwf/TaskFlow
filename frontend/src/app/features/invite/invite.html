@@ -26,7 +26,7 @@
       @if (acceptedBoardId) {
         <div class="tf-card bg-base-100 p-4 text-center">
           <p class="text-sm text-base-content/60">Sada imaš pristup boardu:</p>
-          <p class="mt-1 text-xl font-semibold">{{ acceptedBoardTitle }}</p>
+          <p class="mt-1 break-words text-xl font-semibold">{{ acceptedBoardTitle }}</p>
           <div class="mt-4 flex flex-col gap-2 sm:flex-row">
             <button type="button" class="btn btn-primary flex-1" (click)="openAcceptedBoard()">Otvori board</button>
             <button type="button" class="btn btn-outline flex-1" (click)="goHome()">Nazad na početnu</button>
@@ -37,10 +37,10 @@
       @if (invite && !acceptedBoardId) {
         <div class="tf-card bg-base-100 p-4">
           <p class="text-sm text-base-content/60">Board</p>
-          <p class="text-xl font-semibold">{{ invite.board?.title ?? 'Board' }}</p>
+          <p class="break-words text-xl font-semibold">{{ invite.board?.title ?? 'Board' }}</p>
 
           <div class="mt-4 grid gap-2 text-sm">
-            <p>
+            <p class="break-words">
               <span class="text-base-content/60">Invite za:</span>
               {{ invite.invitedEmail }}
             </p>
@@ -57,7 +57,7 @@
               {{ invite.status }}
             </p>
             @if (invite.invitedBy) {
-              <p>
+              <p class="break-words">
                 <span class="text-base-content/60">Pozvao:</span>
                 {{ invite.invitedBy.displayName || invite.invitedBy.email }}
               </p>

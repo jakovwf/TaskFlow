@@ -5,7 +5,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ActivityType, BoardMemberRole, NotificationType } from '@prisma/client';
+import {
+  ActivityType,
+  BoardMemberRole,
+  NotificationType,
+} from '@prisma/client';
 import { ActivityService } from '../activity/activity.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AppGateway } from '../gateway/app.gateway';
@@ -34,6 +38,38 @@ export class BoardsService {
       include: this.boardListInclude,
       orderBy: { createdAt: 'asc' },
     });
+  }
+
+  async findAllForAdmin(page: number, limit: number, search: string) {
+    const normalizedSearch = search.trim();
+    const where = normalizedSearch
+      ? { title: { contains: normalizedSearch, mode: 'insensitive' as const } }
+      : undefined;
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.board.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          workspaceId: true,
+          createdAt: true,
+          workspace: {
+            select: {
+              id: true,
+              name: true,
+              owner: { select: this.safeUserSelect },
+            },
+          },
+          _count: { select: { members: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.board.count({ where }),
+    ]);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async create(
@@ -242,7 +278,10 @@ export class BoardsService {
    * membership must be cleaned up too, otherwise the (often "Personal")
    * workspace keeps showing up for a user who no longer has any reason to see it.
    */
-  private async cleanupDanglingWorkspaceAccess(workspaceId: string, userId: string) {
+  private async cleanupDanglingWorkspaceAccess(
+    workspaceId: string,
+    userId: string,
+  ) {
     const workspace = await this.prisma.workspace.findUnique({
       where: { id: workspaceId },
       select: { ownerId: true },

@@ -6,11 +6,15 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UserRole } from '@prisma/client';
+import { UserRoles } from '../users/guards/user-roles.decorator';
+import { UserRolesGuard } from '../users/guards/user-roles.guard';
 import { AddWorkspaceMemberDto } from './dto/add-workspace-member.dto';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
@@ -31,6 +35,21 @@ export class WorkspacesController {
   @Get()
   findAll(@Req() request: AuthenticatedRequest) {
     return this.workspacesService.findAllForUser(request.user.userId);
+  }
+
+  @Get('admin')
+  @UserRoles(UserRole.ADMIN)
+  @UseGuards(UserRolesGuard)
+  findAllForAdmin(
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+    @Query('search') search = '',
+  ) {
+    return this.workspacesService.findAllForAdmin(
+      this.paginationValue(page, 1),
+      this.paginationValue(limit, 10, 100),
+      search,
+    );
   }
 
   @Post()
@@ -67,6 +86,13 @@ export class WorkspacesController {
     return this.workspacesService.remove(id, request.user.userId);
   }
 
+  @Delete('admin/:id')
+  @UserRoles(UserRole.ADMIN)
+  @UseGuards(UserRolesGuard)
+  removeForAdmin(@Param('id') id: string) {
+    return this.workspacesService.removeForAdmin(id);
+  }
+
   @Post(':id/members')
   addMember(
     @Param('id') id: string,
@@ -86,10 +112,13 @@ export class WorkspacesController {
     @Param('userId') userId: string,
     @Req() request: AuthenticatedRequest,
   ) {
-    return this.workspacesService.removeMember(
-      id,
-      request.user.userId,
-      userId,
-    );
+    return this.workspacesService.removeMember(id, request.user.userId, userId);
+  }
+
+  private paginationValue(value: string, fallback: number, max = 100): number {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed)
+      ? Math.min(Math.max(parsed, 1), max)
+      : fallback;
   }
 }

@@ -34,6 +34,32 @@ export class WorkspacesService {
     });
   }
 
+  async findAllForAdmin(page: number, limit: number, search: string) {
+    const normalizedSearch = search.trim();
+    const where = normalizedSearch
+      ? { name: { contains: normalizedSearch, mode: 'insensitive' as const } }
+      : undefined;
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.workspace.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          ownerId: true,
+          createdAt: true,
+          owner: { select: this.safeUserSelect },
+          _count: { select: { boards: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.workspace.count({ where }),
+    ]);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
   async create(userId: string, createWorkspaceDto: CreateWorkspaceDto) {
     return this.prisma.$transaction(async (tx) => {
       const workspace = await tx.workspace.create({
@@ -83,6 +109,22 @@ export class WorkspacesService {
 
   async remove(id: string, userId: string) {
     await this.requireOwner(id, userId);
+
+    return this.prisma.workspace.delete({
+      where: { id },
+      include: this.workspaceInclude,
+    });
+  }
+
+  async removeForAdmin(id: string) {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!workspace) {
+      throw new NotFoundException('Workspace not found');
+    }
 
     return this.prisma.workspace.delete({
       where: { id },

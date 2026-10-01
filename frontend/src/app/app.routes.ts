@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth-guard';
+import { AdminGuard } from './core/guards/admin-guard';
 import { GuestGuard } from './core/guards/guest-guard';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
@@ -13,6 +14,7 @@ import { NotFound } from './features/not-found/not-found';
 import { Notifications } from './features/notifications/notifications';
 import { Profile } from './features/profile/profile';
 import { Workspace } from './features/workspace/workspace';
+import { Admin } from './features/admin/admin';
 
 export const routes: Routes = [
   {
@@ -46,6 +48,7 @@ export const routes: Routes = [
       { path: 'b/:boardId/activity', component: BoardActivity, data: { title: 'Aktivnost boarda | TaskFlow' } },
       { path: 'notifications', component: Notifications, data: { title: 'Notifikacije | TaskFlow' } },
       { path: 'profile', component: Profile, data: { title: 'Profil | TaskFlow' } },
+      { path: 'admin', component: Admin, canActivate: [AdminGuard], data: { title: 'Administracija | TaskFlow' } },
     ],
   },
   { path: '**', component: NotFound, data: { title: 'Stranica nije pronadjena | TaskFlow' } },

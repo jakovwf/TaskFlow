@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Board, BoardActivityPage, BoardInvite, BoardMember, BoardMemberRole } from '../../store/models';
+import { AdminBoard, Board, BoardActivityPage, BoardInvite, BoardMember, BoardMemberRole, PaginatedResponse } from '../../store/models';
 
 export interface CreateBoardData {
   title: string;
@@ -88,6 +88,16 @@ export class BoardService {
 
   deleteBoard(boardId: string): Observable<Board> {
     return this.http.delete<Board>(`${this.boardsApiUrl}/${boardId}`);
+  }
+
+  getAdminBoards(page: number, limit: number, search: string): Observable<PaginatedResponse<AdminBoard>> {
+    return this.http.get<PaginatedResponse<AdminBoard>>(`${this.boardsApiUrl}/admin`, {
+      params: { page, limit, search },
+    });
+  }
+
+  deleteBoardAsAdmin(boardId: string): Observable<Board> {
+    return this.http.delete<Board>(`${this.boardsApiUrl}/admin/${boardId}`);
   }
 
   reorderLists(boardId: string, items: ReorderListItem[]): Observable<Board['lists']> {

@@ -6,10 +6,11 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { BoardMemberRole } from '@prisma/client';
+import { BoardMemberRole, UserRole } from '@prisma/client';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from './decorators/roles.decorator';
@@ -19,6 +20,8 @@ import { UpdateBoardMemberDto } from './dto/update-board-member.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { BoardRoleGuard } from './guards/board-role.guard';
 import { BoardsService } from './boards.service';
+import { UserRoles } from '../users/guards/user-roles.decorator';
+import { UserRolesGuard } from '../users/guards/user-roles.guard';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -37,6 +40,21 @@ export class BoardsController {
     return this.boardsService.findAllForUser(request.user.userId);
   }
 
+  @Get('boards/admin')
+  @UserRoles(UserRole.ADMIN)
+  @UseGuards(UserRolesGuard)
+  findAllForAdmin(
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+    @Query('search') search = '',
+  ) {
+    return this.boardsService.findAllForAdmin(
+      this.paginationValue(page, 1),
+      this.paginationValue(limit, 10, 100),
+      search,
+    );
+  }
+
   @Post('workspaces/:workspaceId/boards')
   create(
     @Param('workspaceId') workspaceId: string,
@@ -50,11 +68,7 @@ export class BoardsController {
     );
   }
 
-  @Roles(
-    BoardMemberRole.OWNER,
-    BoardMemberRole.ADMIN,
-    BoardMemberRole.MEMBER,
-  )
+  @Roles(BoardMemberRole.OWNER, BoardMemberRole.ADMIN, BoardMemberRole.MEMBER)
   @UseGuards(BoardRoleGuard)
   @Get('boards/:id')
   findOne(@Param('id') id: string) {
@@ -79,11 +93,14 @@ export class BoardsController {
     return this.boardsService.remove(id);
   }
 
-  @Roles(
-    BoardMemberRole.OWNER,
-    BoardMemberRole.ADMIN,
-    BoardMemberRole.MEMBER,
-  )
+  @Delete('boards/admin/:id')
+  @UserRoles(UserRole.ADMIN)
+  @UseGuards(UserRolesGuard)
+  removeForAdmin(@Param('id') id: string) {
+    return this.boardsService.remove(id);
+  }
+
+  @Roles(BoardMemberRole.OWNER, BoardMemberRole.ADMIN, BoardMemberRole.MEMBER)
   @UseGuards(BoardRoleGuard)
   @Get('boards/:id/members')
   findMembers(@Param('id') id: string) {
@@ -116,5 +133,12 @@ export class BoardsController {
   @Delete('boards/:id/members/:userId')
   removeMember(@Param('id') id: string, @Param('userId') userId: string) {
     return this.boardsService.removeMember(id, userId);
+  }
+
+  private paginationValue(value: string, fallback: number, max = 100): number {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed)
+      ? Math.min(Math.max(parsed, 1), max)
+      : fallback;
   }
 }

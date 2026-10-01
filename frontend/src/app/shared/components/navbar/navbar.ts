@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import { logout } from '../../../store/auth/auth.actions';
 import { loadNotifications } from '../../../store/notifications/notifications.actions';
 import { selectUnreadCount } from '../../../store/notifications/notifications.selectors';
+import { selectCurrentUser } from '../../../store/auth/auth.selectors';
 
 @Component({
   selector: 'app-navbar',
@@ -16,6 +17,7 @@ export class NavbarComponent {
   private readonly store = inject(Store);
 
   readonly unreadCount$ = this.store.select(selectUnreadCount);
+  readonly currentUser$ = this.store.select(selectCurrentUser);
 
   constructor() {
     this.store.dispatch(loadNotifications());

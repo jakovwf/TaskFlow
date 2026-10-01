@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Workspace } from '../../store/models';
+import { AdminWorkspace, PaginatedResponse, Workspace } from '../../store/models';
 
 export interface CreateWorkspaceData {
   name: string;
@@ -37,5 +37,15 @@ export class WorkspaceService {
 
   deleteWorkspace(id: string): Observable<Workspace> {
     return this.http.delete<Workspace>(`${this.workspacesApiUrl}/${id}`);
+  }
+
+  getAdminWorkspaces(page: number, limit: number, search: string): Observable<PaginatedResponse<AdminWorkspace>> {
+    return this.http.get<PaginatedResponse<AdminWorkspace>>(`${this.workspacesApiUrl}/admin`, {
+      params: { page, limit, search },
+    });
+  }
+
+  deleteWorkspaceAsAdmin(id: string): Observable<Workspace> {
+    return this.http.delete<Workspace>(`${this.workspacesApiUrl}/admin/${id}`);
   }
 }

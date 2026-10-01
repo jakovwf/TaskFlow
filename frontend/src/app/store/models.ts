@@ -4,6 +4,34 @@ export interface User {
   displayName: string;
   avatarUrl?: string | null;
   createdAt?: string;
+  userRole?: 'ADMIN' | 'USER';
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AdminBoard extends Pick<Board, 'id' | 'title' | 'workspaceId' | 'createdAt'> {
+  workspace: { id: string; name: string; owner: User };
+  _count: { members: number };
+}
+
+export interface AdminWorkspace extends Pick<Workspace, 'id' | 'name' | 'ownerId' | 'createdAt'> {
+  owner: User;
+  _count: { boards: number };
+}
+
+export interface AdminActivity {
+  id: string;
+  type: ActivityType;
+  payload: Record<string, unknown> | null;
+  boardId: string;
+  createdAt: string;
+  board: { id: string; title: string };
 }
 
 export interface BoardMember {

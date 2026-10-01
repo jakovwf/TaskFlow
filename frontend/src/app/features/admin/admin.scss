@@ -6,3 +6,51 @@
 .admin-page .tabs {
   overflow-x: auto;
 }
+
+.admin-search {
+  display: flex;
+  width: min(100%, 19rem);
+  align-items: center;
+  gap: .5rem;
+  color: hsl(var(--bc) / .55);
+}
+
+.admin-search .input { width: 100%; }
+.admin-search svg { width: 1rem; height: 1rem; flex: 0 0 auto; }
+
+.admin-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: rgb(15 23 42 / .52);
+  backdrop-filter: blur(4px);
+}
+
+.admin-detail-panel {
+  position: relative;
+  display: flex;
+  width: min(42rem, calc(100vw - 2rem));
+  max-height: min(48rem, calc(100dvh - 4rem));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 28px 80px rgb(15 23 42 / .32);
+  animation: admin-panel-in 180ms ease-out;
+}
+
+@keyframes admin-panel-in {
+  from { opacity: 0; transform: translateY(.5rem) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 639px) {
+  .admin-search { width: 100%; }
+  .admin-detail-overlay { align-items: stretch; padding: 0; }
+  .admin-detail-panel { width: 100%; max-height: none; height: 100dvh; border: 0; border-radius: 0; }
+}

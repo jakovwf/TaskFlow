@@ -1,5 +1,6 @@
 .nav-track {
   --nav-index: 0;
+  --nav-columns: 4;
   position: relative;
   isolation: isolate;
 }
@@ -12,13 +13,25 @@
   --nav-index: 2;
 }
 
+.nav-track.has-admin {
+  --nav-columns: 5;
+}
+
+.nav-track.has-admin:has(.nav-notifications.is-active) {
+  --nav-index: 2;
+}
+
+.nav-track.has-admin:has(.nav-profile.is-active) {
+  --nav-index: 3;
+}
+
 .nav-highlight {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   z-index: -1;
-  width: calc((100% - 0.75rem) / 4);
+  width: calc((100% - (var(--nav-columns) - 1) * 0.25rem) / var(--nav-columns));
   border-radius: 1rem;
   background: #2563eb;
   box-shadow: 0 5px 14px rgb(37 99 235 / 0.24);

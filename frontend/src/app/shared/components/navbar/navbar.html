@@ -12,7 +12,7 @@
   aria-label="Glavna navigacija"
   class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300/80 bg-base-100/90 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-2xl backdrop-blur-xl md:bottom-6 md:left-1/2 md:right-auto md:w-auto md:-translate-x-1/2 md:rounded-full md:border md:px-3 md:py-2"
 >
-  <div class="nav-track mx-auto grid max-w-md gap-1 md:w-[38rem] md:max-w-none" [class.grid-cols-4]="(currentUser$ | async)?.userRole !== 'ADMIN'" [class.grid-cols-5]="(currentUser$ | async)?.userRole === 'ADMIN'">
+  <div class="nav-track mx-auto grid max-w-md gap-1 md:w-[38rem] md:max-w-none" [class.grid-cols-4]="(currentUser$ | async)?.userRole !== 'ADMIN'" [class.grid-cols-5]="(currentUser$ | async)?.userRole === 'ADMIN'" [class.has-admin]="(currentUser$ | async)?.userRole === 'ADMIN'">
     <span class="nav-highlight" aria-hidden="true"></span>
     <a
       routerLink="/home"

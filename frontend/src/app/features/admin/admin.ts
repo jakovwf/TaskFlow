@@ -1,8 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { finalize, take } from 'rxjs';
+import { ChangeDetectorRef, Component, DestroyRef, HostListener, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, of, switchMap, take, tap } from 'rxjs';
 import { BoardService } from '../../core/services/board';
 import { UserService } from '../../core/services/user';
 import { WorkspaceService } from '../../core/services/workspace';
@@ -14,7 +14,7 @@ type AdminTab = 'users' | 'boards' | 'workspaces';
 
 @Component({
   selector: 'app-admin',
-  imports: [DatePipe, FormsModule, ReactiveFormsModule],
+  imports: [DatePipe, ReactiveFormsModule],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
 })
@@ -22,8 +22,8 @@ export class Admin {
   private readonly boardsService = inject(BoardService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly confirmModal = inject(ConfirmModalService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
-  private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly usersService = inject(UserService);
   private readonly workspacesService = inject(WorkspaceService);
@@ -59,8 +59,12 @@ export class Admin {
     email: ['', [Validators.required, Validators.email]],
     avatarUrl: [''],
   });
+  readonly userSearchControl = this.formBuilder.nonNullable.control('');
+  readonly boardSearchControl = this.formBuilder.nonNullable.control('');
+  readonly workspaceSearchControl = this.formBuilder.nonNullable.control('');
 
   constructor() {
+    this.bindSearch();
     this.loadUsers();
   }
 
@@ -69,6 +73,113 @@ export class Admin {
     this.error = null;
     if (tab === 'boards' && this.boards.length === 0) this.loadBoards();
     if (tab === 'workspaces' && this.workspaces.length === 0) this.loadWorkspaces();
+  }
+
+  private bindSearch(): void {
+    this.userSearchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        map((query) => query.trim()),
+        distinctUntilChanged(),
+        tap((query) => {
+          this.userSearch = query;
+          this.usersPage = 1;
+        }),
+        switchMap(() => {
+          this.usersLoading = true;
+          this.error = null;
+          this.cdr.markForCheck();
+          return this.usersService.getAdminUsers(1, this.pageSize, this.userSearch).pipe(
+            catchError(() => {
+              this.usersLoading = false;
+              this.error = 'Korisnici nisu mogli da se ucitaju.';
+              this.cdr.markForCheck();
+              return of(null);
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (response) => {
+          if (!response) return;
+          this.users = response.data;
+          this.usersPage = response.page;
+          this.usersTotalPages = Math.max(response.totalPages, 1);
+          this.usersLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+
+    this.boardSearchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        map((query) => query.trim()),
+        distinctUntilChanged(),
+        tap((query) => {
+          this.boardSearch = query;
+          this.boardsPage = 1;
+        }),
+        switchMap(() => {
+          this.boardsLoading = true;
+          this.error = null;
+          this.cdr.markForCheck();
+          return this.boardsService.getAdminBoards(1, this.pageSize, this.boardSearch).pipe(
+            catchError(() => {
+              this.boardsLoading = false;
+              this.error = 'Boardovi nisu mogli da se ucitaju.';
+              this.cdr.markForCheck();
+              return of(null);
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (response) => {
+          if (!response) return;
+          this.boards = response.data;
+          this.boardsPage = response.page;
+          this.boardsTotalPages = Math.max(response.totalPages, 1);
+          this.boardsLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+
+    this.workspaceSearchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        map((query) => query.trim()),
+        distinctUntilChanged(),
+        tap((query) => {
+          this.workspaceSearch = query;
+          this.workspacesPage = 1;
+        }),
+        switchMap(() => {
+          this.workspacesLoading = true;
+          this.error = null;
+          this.cdr.markForCheck();
+          return this.workspacesService.getAdminWorkspaces(1, this.pageSize, this.workspaceSearch).pipe(
+            catchError(() => {
+              this.workspacesLoading = false;
+              this.error = 'Workspace-ovi nisu mogli da se ucitaju.';
+              this.cdr.markForCheck();
+              return of(null);
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (response) => {
+          if (!response) return;
+          this.workspaces = response.data;
+          this.workspacesPage = response.page;
+          this.workspacesTotalPages = Math.max(response.totalPages, 1);
+          this.workspacesLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   loadUsers(page = this.usersPage): void {
@@ -160,6 +271,11 @@ export class Admin {
     this.editUserForm.reset();
   }
 
+  @HostListener('document:keydown.escape')
+  closeUserPanelOnEscape(): void {
+    if (this.editingUser || this.selectedUser) this.cancelUserPanel();
+  }
+
   saveUser(): void {
     if (!this.editingUser || this.editUserForm.invalid || this.busyId) {
       this.editUserForm.markAllAsTouched();
@@ -237,7 +353,4 @@ export class Admin {
     });
   }
 
-  openBoard(boardId: string): void {
-    void this.router.navigate(['/b', boardId]);
-  }
 }

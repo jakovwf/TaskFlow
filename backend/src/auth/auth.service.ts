@@ -96,6 +96,7 @@ export class AuthService {
         displayName: true,
         avatarUrl: true,
         createdAt: true,
+        userRole: true,
       },
     });
 

@@ -16,6 +16,10 @@ enum BoardMemberRole {
   ADMIN
   MEMBER
 }
+enum UserRole {
+  ADMIN
+  USER
+}
 
 enum InviteStatus {
   PENDING
@@ -69,6 +73,7 @@ model User {
   activities           Activity[]
   notifications        Notification[]
   pushSubscriptions    PushSubscription[]
+  userRole             UserRole @default(USER)
 }
 
 model Workspace {

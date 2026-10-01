@@ -6,4 +6,9 @@ Dockerfile
 README.md
 npm-debug.log
 .env
+.env.*
+!.env.example
+src/environments/environment.local.ts
+src/environments/environment.*.local.ts
+src/environments/*.secret.ts
 coverage

@@ -82,7 +82,7 @@ model Workspace {
   ownerId   String
   createdAt DateTime @default(now())
 
-  owner   User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  owner   User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members WorkspaceMember[]
   boards  Board[]
 }
@@ -140,7 +140,7 @@ model BoardInvite {
   createdAt       DateTime        @default(now())
 
   board         Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  invitedBy     User           @relation("InviteSender", fields: [invitedByUserId], references: [id])
+  invitedBy     User           @relation("InviteSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
   notifications Notification[]
 }
 
@@ -216,7 +216,7 @@ model Comment {
   updatedAt DateTime @updatedAt
 
   card   Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  author User @relation(fields: [authorId], references: [id])
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model Attachment {
@@ -229,7 +229,7 @@ model Attachment {
   createdAt    DateTime @default(now())
 
   card       Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  uploadedBy User @relation(fields: [uploadedById], references: [id])
+  uploadedBy User @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 }
 
 model Activity {
@@ -241,7 +241,7 @@ model Activity {
   createdAt DateTime     @default(now())
 
   board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
